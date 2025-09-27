@@ -17,7 +17,7 @@ what I have planned for this project:
 
 As stated before, this project is in a very *slow* and
 *early* development stage. Below are some images of a
-a few of the guis that have been implemented for this plugin.
+few of the guis that have been implemented for this plugin.
 
 ![yourvaults.png](images/yourvaults.png)
 
