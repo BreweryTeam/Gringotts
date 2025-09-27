@@ -2,7 +2,7 @@ An expansive "playervaults" style plugin that incorporates a warehouse for mass 
 
 This project is currently in early development.
 
-In case your checking this out, here's
+In case you're checking this out, here's
 what I have planned for this project:
 
 - A vault system similar to "PlayerVaults" vaults plugin.
