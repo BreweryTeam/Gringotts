@@ -1,30 +1,38 @@
 package dev.jsinco.gringotts.obj;
 
+import dev.jsinco.gringotts.storage.DataSource;
 import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
 @Getter
-public class GringottsPlayer {
+public class GringottsPlayer implements CachedObject {
+
+    private final long cacheTime = System.currentTimeMillis();
+    @Setter
+    private Long expire;
 
     private final UUID uuid;
     private int maxVaults;
-    private int maxWarehouses;
-    private int maxTotalWarehouse;
-    private final Map<Material, Integer> warehouse;
+    private int maxWarehouseStock;
 
-    public GringottsPlayer(UUID uuid, int maxVaults, int maxWarehouses, int maxTotalWarehouse, Map<Material, Integer> warehouse) {
+
+    public GringottsPlayer(UUID uuid) {
+        this.uuid = uuid;
+        // TODO: Config
+        this.maxVaults = 5;
+        this.maxWarehouseStock = 100;
+    }
+
+    public GringottsPlayer(UUID uuid, int maxVaults, int maxWarehouseStock) {
         this.uuid = uuid;
         this.maxVaults = maxVaults;
-        this.maxWarehouses = maxWarehouses;
-        this.maxTotalWarehouse = maxTotalWarehouse;
-        this.warehouse = warehouse;
+        this.maxWarehouseStock = maxWarehouseStock;
     }
 
     @Nullable
@@ -33,55 +41,17 @@ public class GringottsPlayer {
     }
 
 
-    public int getMaxVaults() {
+    public int getCalculatedMaxVaults() {
         // TODO: Include configured default max.
         int maxByPermission = getMaxByPermission("gringotts.maxvaults");
         // Whichever is greater, use that
         return Math.max(maxByPermission, maxVaults);
     }
 
-    public int getMaxWarehouses() {
+    public int getCalculatedMaxWarehouseStock() {
         // TODO: Include configured default max.
-        int maxByPermission = getMaxByPermission("gringotts.maxwarehouses");
-        return Math.max(maxByPermission, maxWarehouses);
-    }
-
-    public int getMaxTotalWarehouse() {
-        // TODO: Include configured default max.
-        int maxByPermission = getMaxByPermission("gringotts.maxtotalwarehouse");
-        return Math.max(maxByPermission, maxTotalWarehouse);
-    }
-
-    public boolean addWarehouseItem(Material material) {
-        if (warehouse.containsKey(material)) {
-            return  false; // Item already exists in warehouse
-        }
-
-        int maxWarehouses = getMaxWarehouses();
-        if (warehouse.size() >= maxWarehouses) {
-            return false; // Warehouse is full
-        }
-
-        warehouse.put(material, 0); // Initialize with 0 quantity
-        return true; // Item added successfully
-    }
-
-    public int removeWarehouseItem(Material material) {
-        if (!warehouse.containsKey(material)) {
-            return -1; // Item does not exist in warehouse
-        }
-
-        int quantity = warehouse.get(material);
-        warehouse.remove(material);
-        return quantity; // Item removed successfully
-    }
-
-    public boolean updateWarehouseItemQuantity(Material material, int quantity) {
-        if (!warehouse.containsKey(material)) {
-            return false; // Item does not exist in warehouse
-        }
-        warehouse.put(material, quantity);
-        return true; // Quantity updated successfully
+        int maxByPermission = getMaxByPermission("gringotts.maxstock");
+        return Math.max(maxByPermission, maxWarehouseStock);
     }
 
     private int getMaxByPermission(String permissionPrefix) {
@@ -100,5 +70,11 @@ public class GringottsPlayer {
                 })
                 .max(Integer::compareTo)
                 .orElse(0);
+    }
+
+
+    @Override
+    public void save(DataSource dataSource) {
+        dataSource.saveGringottsPlayer(this);
     }
 }

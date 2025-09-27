@@ -19,6 +19,8 @@ public final class ExceptionUtil {
             runnable.run();
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        } catch (Throwable t) {
+            throw new RuntimeException("An unexpected error occurred", t);
         }
     }
 
@@ -26,7 +28,11 @@ public final class ExceptionUtil {
         try {
             return supplier.run();
         } catch (SQLException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("An unexpected error occurred", e);
         }
     }
 }

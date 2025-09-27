@@ -1,9 +1,14 @@
 package dev.jsinco.gringotts.commands;
 
 import dev.jsinco.gringotts.Gringotts;
+import dev.jsinco.gringotts.commands.subcommands.VaultCommand;
+import dev.jsinco.gringotts.commands.subcommands.VaultOpenTestCommand;
+import dev.jsinco.gringotts.commands.subcommands.WarehouseCommand;
+import dev.jsinco.gringotts.commands.subcommands.YourVaultsCommand;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,7 +22,10 @@ public class CommandManager implements TabExecutor {
     private final Map<String, SubCommand> commands = new HashMap<>();
 
     public CommandManager() {
-        commands.put("vault", new VaultOpenTestCommand());
+        commands.put("vault", new VaultCommand());
+        commands.put("vaulttest", new VaultOpenTestCommand());
+        commands.put("yourvaults", new YourVaultsCommand());
+        commands.put("warehouse", new WarehouseCommand());
     }
 
     @Override
@@ -58,10 +66,10 @@ public class CommandManager implements TabExecutor {
         String subCommandName = args[0].toLowerCase();
         SubCommand subCommand = commands.get(subCommandName);
 
-        if (subCommand != null) {
-            return subCommand.tabComplete(Gringotts.getInstance(), sender, label, List.of(args));
+        if (subCommand == null || subCommand.playerOnly() && !(sender instanceof Player)) {
+            return null; // No tab completion for player-only commands if sender is not a player
         }
 
-        return null; // No tab completion for unknown commands
+        return subCommand.tabComplete(Gringotts.getInstance(), sender, label, List.of(args));
     }
 }

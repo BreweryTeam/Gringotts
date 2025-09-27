@@ -4,10 +4,12 @@ import com.zaxxer.hikari.HikariConfig;
 import dev.jsinco.gringotts.obj.GringottsPlayer;
 import dev.jsinco.gringotts.obj.SnapshotVault;
 import dev.jsinco.gringotts.obj.Vault;
+import dev.jsinco.gringotts.obj.Warehouse;
 import dev.jsinco.gringotts.storage.DataSource;
 import dev.jsinco.gringotts.utility.Executors;
 import dev.jsinco.gringotts.utility.Text;
 import org.bukkit.Material;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -16,12 +18,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 public class SQLiteDataSource extends DataSource {
 
@@ -61,7 +62,10 @@ public class SQLiteDataSource extends DataSource {
                 statement.setString(1, owner.toString());
                 statement.setInt(2, id);
                 ResultSet resultSet = statement.executeQuery();
-                return this.mapVault(resultSet, owner);
+                return this.mapVault(resultSet, owner, id);
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return null;
             }
         });
     }
@@ -91,7 +95,8 @@ public class SQLiteDataSource extends DataSource {
                 statement.setInt(2, vault.getId());
                 statement.setString(3, vault.encodeInventory());
                 statement.setString(4, vault.getCustomName());
-                statement.setString(5, vault.encodeTrusted());
+                statement.setString(5, vault.getIcon().toString());
+                statement.setString(6, vault.encodeTrusted());
                 statement.executeUpdate();
                 Text.debug("Saved vault: " + vault.getOwner() + " #" + vault.getId());
             }
@@ -115,27 +120,75 @@ public class SQLiteDataSource extends DataSource {
 
 
     @Override
-    public CompletableFuture<Map<Material, Integer>> getWarehouse(UUID owner) {
+    public CompletableFuture<@NotNull Warehouse> getWarehouse(UUID owner) {
         return Executors.supplyAsyncWithSQLException(() -> {
+
             try (Connection connection = this.connection()) {
-                Map<Material, Integer> warehouse = new HashMap<>();
-                PreparedStatement statement = connection.prepareStatement(
+
+                PreparedStatement warehouseStatement = connection.prepareStatement(
                         this.getStatement("warehouses/select_warehouse.sql")
                 );
-                statement.setString(1, owner.toString());
-                ResultSet resultSet = statement.executeQuery();
-                while (resultSet.next()) {
-                    Material material = Material.matchMaterial(resultSet.getString("material"));
-                    int quantity = resultSet.getInt("quantity");
-                    warehouse.put(material, quantity);
+
+                warehouseStatement.setString(1, owner.toString());
+
+                ResultSet resultSet = warehouseStatement.executeQuery();
+                return this.mapWarehouse(resultSet, owner);
+            }
+        });
+    }
+
+    // TODO: Redo this method
+    @Override
+    public void saveWarehouse(Warehouse warehouse) {
+        Executors.runAsyncWithSQLException(() -> {
+            try (Connection connection = this.connection()) {
+                UUID owner = warehouse.getOwner();
+                Map<Material, Integer> map = warehouse.stockCopy();
+
+                for (String sql : this.getStatements("warehouses/sqlite/insert_or_update_warehouse.sql")) {
+                    if (sql.trim().startsWith("INSERT")) {
+                        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                            for (Map.Entry<Material, Integer> entry : map.entrySet()) {
+                                ps.setString(1, owner.toString());
+                                ps.setString(2, entry.getKey().name());
+                                ps.setInt(3, entry.getValue());
+                                ps.addBatch();
+                            }
+                            ps.executeBatch();
+                        }
+                    }
+                    else if (sql.trim().startsWith("DELETE")) {
+                        if (!map.isEmpty()) {
+                            // Build placeholders dynamically
+                            String placeholders = map.keySet().stream()
+                                    .map(m -> "?")
+                                    .collect(Collectors.joining(", "));
+
+                            String purgeSql = sql.replace("(?, ?, ?, ...)", "(" + placeholders + ")");
+
+                            try (PreparedStatement ps = connection.prepareStatement(purgeSql)) {
+                                ps.setString(1, owner.toString());
+                                int i = 2;
+                                for (Material m : map.keySet()) {
+                                    ps.setString(i++, m.name());
+                                }
+                                ps.executeUpdate();
+                            }
+                        } else {
+                            try (PreparedStatement ps = connection.prepareStatement(
+                                    "DELETE FROM warehouses WHERE owner = ?")) {
+                                ps.setString(1, owner.toString());
+                                ps.executeUpdate();
+                            }
+                        }
+                    }
                 }
-                return warehouse;
             }
         });
     }
 
     @Override
-    public CompletableFuture<GringottsPlayer> getGringottsPlayer(UUID uuid, Map<Material, Integer> warehouse) {
+    public CompletableFuture<GringottsPlayer> getGringottsPlayer(UUID uuid) {
         return Executors.supplyAsyncWithSQLException(() -> {
             try (Connection connection = this.connection()) {
                 PreparedStatement statement = connection.prepareStatement(
@@ -143,8 +196,24 @@ public class SQLiteDataSource extends DataSource {
                 );
                 statement.setString(1, uuid.toString());
                 ResultSet resultSet = statement.executeQuery();
+                return this.mapGringottsPlayer(resultSet, uuid);
+            }
+        });
+    }
 
-                return this.mapGringottsPlayer(resultSet, uuid, warehouse);
+
+    @Override
+    public void saveGringottsPlayer(GringottsPlayer gringottsPlayer) {
+        Executors.runAsyncWithSQLException(() -> {
+            try (Connection connection = this.connection()) {
+                PreparedStatement statement = connection.prepareStatement(
+                        this.getStatement("players/sqlite/insert_or_update_player.sql")
+                );
+                statement.setString(1, gringottsPlayer.getUuid().toString());
+                statement.setInt(2, gringottsPlayer.getMaxVaults());
+                statement.setInt(3, gringottsPlayer.getMaxWarehouseStock());
+                statement.executeUpdate();
+                Text.debug("Saved gringotts player: " + gringottsPlayer.getUuid());
             }
         });
     }

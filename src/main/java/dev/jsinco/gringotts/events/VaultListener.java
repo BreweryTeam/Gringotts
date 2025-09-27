@@ -1,7 +1,6 @@
 package dev.jsinco.gringotts.events;
 
 import dev.jsinco.gringotts.storage.DataSource;
-import dev.jsinco.gringotts.storage.DataSourceManager;
 import dev.jsinco.gringotts.obj.Vault;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,7 +16,7 @@ public class VaultListener implements Listener {
         if (!(holder instanceof Vault vault)) {
             return;
         }
-        DataSource dataSource = DataSourceManager.getInstance().getDataSource();
+        DataSource dataSource = DataSource.getInstance();
         dataSource.saveVault(vault);
     }
 }

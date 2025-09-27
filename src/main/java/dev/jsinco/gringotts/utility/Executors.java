@@ -4,6 +4,7 @@ import dev.jsinco.gringotts.Gringotts;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -33,14 +34,23 @@ public final class Executors {
         return Bukkit.getScheduler().runTaskAsynchronously(instance, runnable);
     }
 
+    @Nullable
     public static BukkitTask runAsyncWithSQLException(ExceptionUtil.ThrowingSQLException runnable) {
+        if (Gringotts.isShutdown()) {
+            runSync(() -> ExceptionUtil.runWithSQLExceptionHandling(runnable));
+            return null;
+        }
         return runAsync(() -> ExceptionUtil.runWithSQLExceptionHandling(runnable));
     }
+
 
     // CompletableFuture
 
     public static <U> CompletableFuture<U> supplyAsyncWithSQLException(ExceptionUtil.ThrowingSQLExceptionWithReturn<U> supplier) {
-        return CompletableFuture.supplyAsync(() -> ExceptionUtil.runWithSQLExceptionHandling(supplier));
+        return CompletableFuture.supplyAsync(() -> ExceptionUtil.runWithSQLExceptionHandling(supplier)).exceptionally(throwable -> {
+            throwable.printStackTrace();
+            return null;
+        });
     }
 
     // Synchronous
@@ -51,5 +61,13 @@ public final class Executors {
 
     public static BukkitTask sync(Runnable runnable) {
         return Bukkit.getScheduler().runTask(instance, runnable);
+    }
+
+    public static void runSync(Runnable runnable) {
+        if (Bukkit.isPrimaryThread()) {
+            runnable.run();
+        } else {
+            sync(runnable);
+        }
     }
 }

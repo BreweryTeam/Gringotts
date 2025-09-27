@@ -20,10 +20,12 @@ public class PaginatedGui {
     private final Inventory base;
     private final List<Inventory> pages = new ArrayList<>();
 
-    public PaginatedGui(String name, Inventory base, List<ItemStack> items, Couple<Integer, Integer> startEndSlots, List<Integer> ignoredSlots) {
+    private final Inventory secondBase;
+
+    public PaginatedGui(String name, Inventory base, List<ItemStack> items, Couple<Integer, Integer> startEndSlots, List<Integer> ignoredSlots, @Nullable Inventory secondBase) {
         this.name = name;
         this.base = base;
-
+        this.secondBase = secondBase;
         Inventory currentPage = newPage();
         int currentItem = 0;
         int currentSlot = startEndSlots.getFirst();
@@ -48,6 +50,9 @@ public class PaginatedGui {
     }
 
     private Inventory newPage() {
+        Inventory base = this.secondBase != null && !pages.isEmpty() ? this.secondBase : this.base;
+
+
         Inventory inventory = Bukkit.createInventory(base.getHolder(), base.getSize(), Text.mm(name));
         for (int i = 0; i < base.getSize(); i++) {
             inventory.setItem(i, base.getItem(i));
@@ -86,6 +91,7 @@ public class PaginatedGui {
         private List<ItemStack> items = Collections.emptyList();
         private Couple<Integer, Integer> startEndSlots = new Couple<>(0, 0);
         private List<Integer> ignoredSlots = Collections.emptyList();
+        private Inventory secondBase;
 
         public Builder name(String name) {
             this.name = name;
@@ -112,8 +118,13 @@ public class PaginatedGui {
             return this;
         }
 
+        public Builder secondBase(Inventory secondBase) {
+            this.secondBase = secondBase;
+            return this;
+        }
+
         public PaginatedGui build() {
-            return new PaginatedGui(name, base, items, startEndSlots, ignoredSlots);
+            return new PaginatedGui(name, base, items, startEndSlots, ignoredSlots, secondBase);
         }
     }
 
