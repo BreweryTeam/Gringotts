@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+// TODO: Config
 @AutoRegisterGuiItems
 public class YourVaultsGui extends GringottsGui implements PromisedInventory {
 
@@ -84,7 +85,7 @@ public class YourVaultsGui extends GringottsGui implements PromisedInventory {
         this.secondInv = Bukkit.createInventory(this, 54, Text.mm("Your Vaults"));
 
         Warehouse warehouse = DataSource.getInstance().cachedWarehouse(gringottsPlayer.getUuid());
-        List<GuiItem> warehouseItems = warehouse.stockAsGuiItems(7);
+        List<GuiItem> warehouseItems = warehouse.stockAsGuiItems(8);
         this.indexStop = warehouseItems.isEmpty() ? 45 : 36;
 
         if (!warehouseItems.isEmpty()) {

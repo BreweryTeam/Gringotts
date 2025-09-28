@@ -3,6 +3,7 @@ package dev.jsinco.gringotts.storage.sources;
 import com.zaxxer.hikari.HikariConfig;
 import dev.jsinco.gringotts.obj.GringottsPlayer;
 import dev.jsinco.gringotts.obj.SnapshotVault;
+import dev.jsinco.gringotts.obj.Stock;
 import dev.jsinco.gringotts.obj.Vault;
 import dev.jsinco.gringotts.obj.Warehouse;
 import dev.jsinco.gringotts.storage.DataSource;
@@ -143,15 +144,16 @@ public class SQLiteDataSource extends DataSource {
         Executors.runAsyncWithSQLException(() -> {
             try (Connection connection = this.connection()) {
                 UUID owner = warehouse.getOwner();
-                Map<Material, Integer> map = warehouse.stockCopy();
+                Map<Material, Stock> map = warehouse.stock();
 
                 for (String sql : this.getStatements("warehouses/sqlite/insert_or_update_warehouse.sql")) {
                     if (sql.trim().startsWith("INSERT")) {
                         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-                            for (Map.Entry<Material, Integer> entry : map.entrySet()) {
+                            for (Map.Entry<Material, Stock> entry : map.entrySet()) {
                                 ps.setString(1, owner.toString());
                                 ps.setString(2, entry.getKey().name());
-                                ps.setInt(3, entry.getValue());
+                                ps.setInt(3, entry.getValue().getAmount());
+                                ps.setLong(4, entry.getValue().getLastUpdate());
                                 ps.addBatch();
                             }
                             ps.executeBatch();

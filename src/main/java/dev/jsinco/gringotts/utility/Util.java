@@ -3,7 +3,10 @@ package dev.jsinco.gringotts.utility;
 import com.google.gson.Gson;
 import dev.jsinco.gringotts.Gringotts;
 import dev.jsinco.gringotts.utility.interfaces.EditMeta;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
@@ -18,6 +21,14 @@ public class Util {
             return Integer.parseInt(value);
         } catch (NumberFormatException e) {
             return defaultValue;
+        }
+    }
+
+    public static Integer getInteger(String value) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return null;
         }
     }
 
@@ -67,5 +78,30 @@ public class Util {
             }
         }
         return name;
+    }
+
+    public static int getMaterialAmount(Inventory inv, Material material) {
+        int amount = 0;
+        for (ItemStack item : inv.getStorageContents()) {
+            if (item == null) {
+                continue;
+            }
+            if (item.getType() == material && !item.hasItemMeta()) {
+                amount += item.getAmount();
+            }
+        }
+        return amount;
+    }
+
+    public static int getAmountInvCanHold(Inventory inv, Material material) {
+        int amount = 0;
+        for (ItemStack item : inv.getStorageContents()) {
+            if (item == null) {
+                amount += material.getMaxStackSize();
+            } else if (item.getType() == material && !item.hasItemMeta()) {
+                amount += item.getMaxStackSize() - item.getAmount();
+            }
+        }
+        return amount;
     }
 }

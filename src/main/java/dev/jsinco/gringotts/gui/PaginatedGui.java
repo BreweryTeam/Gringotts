@@ -118,6 +118,11 @@ public class PaginatedGui {
             return this;
         }
 
+        public Builder ignoredSlots(List<Integer> ignoredSlots) {
+            this.ignoredSlots = ignoredSlots;
+            return this;
+        }
+
         public Builder secondBase(Inventory secondBase) {
             this.secondBase = secondBase;
             return this;

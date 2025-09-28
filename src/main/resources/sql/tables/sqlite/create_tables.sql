@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS warehouses(
     owner VARCHAR(36) NOT NULL,
     material VARCHAR(64) NOT NULL,
     quantity INTEGER NOT NULL,
+    last_update BIGINT NOT NULL,
     PRIMARY KEY (owner, material),
     FOREIGN KEY (owner) REFERENCES players(uuid)
 );

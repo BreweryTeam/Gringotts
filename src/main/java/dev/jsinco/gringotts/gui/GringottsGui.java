@@ -11,25 +11,23 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
 public abstract class GringottsGui implements InventoryHolder {
 
     @Getter
     protected final Inventory inventory;
-    protected final Set<AbstractGuiItem> guiItems;
+    protected final List<AbstractGuiItem> guiItems;
     boolean constructedViaFactory = false;
 
 
     public GringottsGui(String title, int size) {
         this.inventory = Bukkit.createInventory(this, size, Text.mm(title));
-        this.guiItems = new HashSet<>();
+        this.guiItems = new ArrayList<>();
     }
 
     public abstract void onInventoryClick(InventoryClickEvent event);
@@ -39,7 +37,6 @@ public abstract class GringottsGui implements InventoryHolder {
 
     public void addGuiItem(AbstractGuiItem item) {
         int index = item.index() != null ? item.index() : -1;
-        System.out.println(index);
         addGuiItem(item, index);
     }
 
@@ -66,7 +63,6 @@ public abstract class GringottsGui implements InventoryHolder {
     }
 
     protected void autoRegister(Class<?> forClass) {
-        System.out.println(forClass.getSimpleName());
         for (Field field : forClass.getDeclaredFields()) {
             field.setAccessible(true);
             if (!AbstractGuiItem.class.isAssignableFrom(field.getType()) || field.isAnnotationPresent(IgnoreAutoRegister.class)) continue;

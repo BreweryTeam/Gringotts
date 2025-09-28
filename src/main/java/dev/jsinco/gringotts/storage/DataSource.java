@@ -8,6 +8,7 @@ import dev.jsinco.gringotts.enums.Driver;
 import dev.jsinco.gringotts.obj.CachedObject;
 import dev.jsinco.gringotts.obj.GringottsPlayer;
 import dev.jsinco.gringotts.obj.SnapshotVault;
+import dev.jsinco.gringotts.obj.Stock;
 import dev.jsinco.gringotts.obj.Vault;
 import dev.jsinco.gringotts.obj.Warehouse;
 import dev.jsinco.gringotts.utility.FileUtil;
@@ -34,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class DataSource {
 
-    protected static final Path DATA_FOLDER = Gringotts.getInstance().getDataPath();
+    public static final Path DATA_FOLDER = Gringotts.getInstance().getDataPath();
 
     @Getter
     private static DataSource instance;
@@ -148,23 +149,27 @@ public abstract class DataSource {
     }
 
     public Warehouse mapWarehouse(ResultSet rs, UUID uuid) throws SQLException {
-        Map<Material, Integer> warehouseMap = new HashMap<>();
+        Map<Material, Stock> warehouseMap = new HashMap<>();
 
         while (rs.next()) {
             String mstring = rs.getString("material");
+
             Material material = Material.matchMaterial(mstring);
             int quantity = rs.getInt("quantity");
+            long lastUpdate = rs.getLong("last_update");
+
             if (material == null) {
                 throw new RuntimeException("Material " + mstring + " does not exist");
             }
-            warehouseMap.put(material, quantity);
+            warehouseMap.put(material, new Stock(material, quantity, lastUpdate));
         }
 
-        if (warehouseMap.isEmpty()) {
-            warehouseMap.put(Material.APPLE, 0);
-            warehouseMap.put(Material.COAL, 0);
-            warehouseMap.put(Material.DIAMOND, 0);
-        }
+        // TODO: Figure out a way to have default stock
+//        if (warehouseMap.isEmpty()) {
+//            warehouseMap.put(Material.APPLE, 0);
+//            warehouseMap.put(Material.COAL, 0);
+//            warehouseMap.put(Material.DIAMOND, 0);
+//        }
         return new Warehouse(uuid, warehouseMap);
     }
 
@@ -200,7 +205,6 @@ public abstract class DataSource {
     }
 
     public void cacheObject(CompletableFuture<? extends CachedObject> future) {
-        System.out.println("attempting to cache: " + future.toString());
         future.thenAccept(cachedObject -> {
             Text.debug("Caching " + cachedObject.getClass().getSimpleName() + ": " + cachedObject.getUuid());
             cachedObjects.add(cachedObject);

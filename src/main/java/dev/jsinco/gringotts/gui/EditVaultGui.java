@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+// TODO: Config
 // TODO: Add cap to trust list
 @AutoRegisterGuiItems
 public class EditVaultGui extends GringottsGui {

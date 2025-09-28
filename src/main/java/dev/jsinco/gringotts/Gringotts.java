@@ -1,6 +1,7 @@
 package dev.jsinco.gringotts;
 
 import dev.jsinco.gringotts.commands.CommandManager;
+import dev.jsinco.gringotts.configuration.ConfigManager;
 import dev.jsinco.gringotts.events.ChatPromptInputListener;
 import dev.jsinco.gringotts.events.GuiListener;
 import dev.jsinco.gringotts.events.PlayerListener;
@@ -38,6 +39,8 @@ public final class Gringotts extends JavaPlugin {
             dataSource.cacheObject(dataSource.getGringottsPlayer(player.getUniqueId()));
             dataSource.cacheObject(dataSource.getWarehouse(player.getUniqueId()));
         }
+
+        ConfigManager.instance();
     }
 
     @Override

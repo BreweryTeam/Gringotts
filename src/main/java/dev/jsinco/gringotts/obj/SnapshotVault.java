@@ -75,7 +75,6 @@ public class SnapshotVault implements AbstractGuiItem {
         if (!Util.hasPersistentKey(clickedItem, key())) {
             return;
         }
-        // TODO: Logic to open vault
         Player player = (Player) event.getWhoClicked();
         player.sendMessage("Not yet implemented");
         if (event.isLeftClick()) {
