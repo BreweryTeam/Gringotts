@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import dev.jsinco.gringotts.configuration.ConfigManager;
 import dev.jsinco.gringotts.configuration.GuiConfig;
+import dev.jsinco.gringotts.utility.Couple;
 import dev.jsinco.gringotts.utility.Executors;
 import dev.jsinco.gringotts.utility.Text;
 import dev.jsinco.gringotts.utility.Util;
@@ -17,11 +18,13 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Getter
@@ -29,7 +32,7 @@ import java.util.UUID;
 public class Vault implements InventoryHolder {
 
     private static final Gson GSON = Util.GSON;
-    private static final Type TYPE_TOKEN = new TypeToken<List<UUID>>(){}.getType();
+    public static final Type TYPE_TOKEN = new TypeToken<List<UUID>>(){}.getType();
     private static final GuiConfig cfg = ConfigManager.instance().guiConfig();
 
     private final UUID owner;
@@ -103,26 +106,51 @@ public class Vault implements InventoryHolder {
     }
 
     public void open(Player player) {
-        if (!this.isVaultOpen()){
-            Executors.runSync(() -> player.openInventory(inventory));
-        } else {
+        var couple = this.getOpenState();
+        var state = couple.a();
+        var otherPlayer = couple.b();
+        if (state == VaultOpenState.OPEN) {
             player.sendMessage("This vault is currently open by another player.");
+            return;
         }
+
+        Executors.runSync(() -> {
+            // TODO: fixup
+            player.openInventory(this.inventory);
+            Inventory otherInv = otherPlayer.getOpenInventory().getTopInventory();
+            if (state == VaultOpenState.OPEN_BY_MOD && otherInv.getHolder(false) instanceof Vault otherVault) {
+                otherVault.update(otherPlayer);
+            }
+        });
     }
 
-    // TODO: I can't figure out a good solution to having player inventory open at the same time as another player.
-    // TODO: make it so that when an admin or mod opens a vault it closes for the player that has it open.
-    public boolean isVaultOpen() {
-        return !inventory.getViewers()
-                .stream()
-                .filter(viewer ->
-                        // Check if the viewer is a mod or admin viewing another player's vault
-                    !viewer.hasPermission("gringotts.viewothers")
-                            && viewer.getUniqueId() != this.owner
-                            && !this.trustedPlayers.contains(viewer.getUniqueId())
-                )
-                .toList()
-                .isEmpty();
+    public Couple<@NotNull VaultOpenState, @Nullable Player> getOpenState() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (this.equals(player.getOpenInventory().getTopInventory().getHolder(false))) {
+                if (player.hasPermission("gringotts.viewothers")) {
+                    return Couple.of(VaultOpenState.OPEN_BY_MOD, player);
+                }
+                return Couple.of(VaultOpenState.OPEN, player);
+            }
+        }
+        return Couple.of(VaultOpenState.CLOSED, null);
+    }
+
+    public void update(Player updater) {
+        Executors.delayedSync(1, () -> {
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                if (player.getUniqueId() == updater.getUniqueId()) continue;
+                Inventory inv = player.getOpenInventory().getTopInventory();
+                if (this.equals(inv.getHolder(false))) {
+                    inv.setContents(this.inventory.getContents());
+                    Text.debug("Updated inventory for player " + player.getName() + " with vault " + this.id);
+                }
+            }
+        });
+    }
+
+    public boolean canAccess(Player player) {
+        return player.getUniqueId() == this.owner || this.trustedPlayers.contains(player.getUniqueId()) || player.hasPermission("gringotts.viewothers");
     }
 
     public boolean isTrusted(UUID uuid) {
@@ -140,5 +168,23 @@ public class Vault implements InventoryHolder {
     private static ItemStack[] decodeInventory(String encodedInventory) {
         byte[] itemByteArray = Base64.getDecoder().decode(encodedInventory);
         return ItemStack.deserializeItemsFromBytes(itemByteArray);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Vault vault = (Vault) o;
+        return id == vault.id && Objects.equals(owner, vault.owner);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(owner, id);
+    }
+
+    public enum VaultOpenState {
+        OPEN,
+        OPEN_BY_MOD,
+        CLOSED;
     }
 }

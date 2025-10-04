@@ -59,6 +59,9 @@ public class GringottsBaseCommand implements TabExecutor {
             return null;
         }
 
-        return subCommand.tabComplete(Gringotts.getInstance(), sender, label, List.of(args));
+        List<String> commandArgs = new ArrayList<>(List.of(args));
+        commandArgs.removeFirst();
+
+        return subCommand.tabComplete(Gringotts.getInstance(), sender, label, commandArgs);
     }
 }

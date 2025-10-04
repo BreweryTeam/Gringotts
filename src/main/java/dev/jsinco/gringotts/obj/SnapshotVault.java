@@ -1,5 +1,6 @@
 package dev.jsinco.gringotts.obj;
 
+import com.google.common.collect.ImmutableList;
 import dev.jsinco.gringotts.gui.EditVaultGui;
 import dev.jsinco.gringotts.gui.GringottsGui;
 import dev.jsinco.gringotts.gui.item.AbstractGuiItem;
@@ -13,6 +14,8 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -27,16 +30,34 @@ public class SnapshotVault implements AbstractGuiItem {
     private final String customName;
     @Getter
     private final Material icon;
+    @Getter
+    private final ImmutableList<UUID> trustedPlayers;
 
 
     @Nullable
     private Vault lazyVault;
 
     public SnapshotVault(UUID owner, int id, String customName, Material icon) {
+        this(owner, id, customName, icon, ImmutableList.of());
+    }
+
+    public SnapshotVault(UUID owner, int id, String customName, Material icon, ImmutableList<UUID> trustedPlayers) {
         this.owner = owner;
         this.id = id;
         this.customName = customName != null && !customName.isEmpty() ? customName : "Vault #" + id;
         this.icon = icon != null && icon.isItem() ? icon : Material.CHEST;
+        this.trustedPlayers = trustedPlayers;
+    }
+
+
+    public SnapshotVault(UUID owner, int id, String customName, Material icon, String trustedPlayers) {
+        this.owner = owner;
+        this.id = id;
+        this.customName = customName != null && !customName.isEmpty() ? customName : "Vault #" + id;
+        this.icon = icon != null && icon.isItem() ? icon : Material.CHEST;
+
+        List<UUID> json = Util.GSON.fromJson(trustedPlayers, Vault.TYPE_TOKEN);
+        this.trustedPlayers = json != null ? ImmutableList.copyOf(json) : ImmutableList.of();
     }
 
 
@@ -44,6 +65,15 @@ public class SnapshotVault implements AbstractGuiItem {
         DataSource dataSource = DataSource.getInstance();
         return dataSource.getVault(owner, id);
     }
+
+    public boolean isTrusted(UUID uuid) {
+        return trustedPlayers.contains(uuid);
+    }
+
+    public boolean canAccess(Player player) {
+        return player.getUniqueId() == this.owner || this.trustedPlayers.contains(player.getUniqueId()) || player.hasPermission("gringotts.viewothers");
+    }
+
 
     @Override
     public ItemStack itemStack() {
@@ -60,7 +90,7 @@ public class SnapshotVault implements AbstractGuiItem {
                 .build();
     }
 
-    private CompletableFuture<Vault> lazyVault() {
+    public CompletableFuture<Vault> lazyVault() {
         if (this.lazyVault == null) {
             return toVault().thenApply(vault -> {
                 this.lazyVault = vault;

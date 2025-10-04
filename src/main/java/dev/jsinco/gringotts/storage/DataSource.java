@@ -132,7 +132,8 @@ public abstract class DataSource {
                             owner,
                             rs.getInt("id"),
                             rs.getString("custom_name"),
-                            Material.getMaterial(rs.getString("icon"))
+                            Material.getMaterial(rs.getString("icon")),
+                            rs.getString("trusted_players")
                     )
             );
         }
@@ -196,20 +197,68 @@ public abstract class DataSource {
         ).findFirst().orElse(null);
     }
 
-    public void cacheObject(CompletableFuture<? extends CachedObject> future, long expire) {
-        future.thenAccept(cachedObject -> {
-            Text.debug("Caching " + cachedObject.getClass().getSimpleName() + ": " + cachedObject.getUuid() + " until " + expire);
-            cachedObject.setExpire(System.currentTimeMillis() + expire);
-            cachedObjects.add(cachedObject);
+    public <T extends CachedObject> CompletableFuture<T> cacheObject(CompletableFuture<T> future, long expire) {
+        return future.thenCompose(obj -> {
+            if (obj == null) {
+                return CompletableFuture.completedFuture(null);
+            }
+
+            // First, try to find a cached version
+            synchronized (cachedObjects) {
+                for (CachedObject cached : cachedObjects) {
+                    if (cached.getClass().equals(obj.getClass()) &&
+                            cached.getUuid().equals(obj.getUuid())) {
+
+                        @SuppressWarnings("unchecked")
+                        T alreadyCached = (T) cached;
+                        Text.debug("Using cached " + obj.getClass().getSimpleName() + ": " + obj.getUuid());
+                        return CompletableFuture.completedFuture(alreadyCached);
+                    }
+                }
+            }
+
+            // Not found, cache the new object
+            obj.setExpire(System.currentTimeMillis() + expire);
+            synchronized (cachedObjects) {
+                cachedObjects.add(obj);
+            }
+
+            Text.debug("Caching " + obj.getClass().getSimpleName() + ": " + obj.getUuid() + " until " + expire);
+            return CompletableFuture.completedFuture(obj);
         });
     }
 
-    public void cacheObject(CompletableFuture<? extends CachedObject> future) {
-        future.thenAccept(cachedObject -> {
-            Text.debug("Caching " + cachedObject.getClass().getSimpleName() + ": " + cachedObject.getUuid());
-            cachedObjects.add(cachedObject);
+
+    public <T extends CachedObject> CompletableFuture<T> cacheObject(CompletableFuture<T> future) {
+        return future.thenCompose(obj -> {
+            if (obj == null) {
+                return CompletableFuture.completedFuture(null);
+            }
+
+            // First, try to find a cached version
+            synchronized (cachedObjects) {
+                for (CachedObject cached : cachedObjects) {
+                    if (cached.getClass().equals(obj.getClass()) &&
+                            cached.getUuid().equals(obj.getUuid())) {
+
+                        @SuppressWarnings("unchecked")
+                        T alreadyCached = (T) cached;
+                        Text.debug("Using cached " + obj.getClass().getSimpleName() + ": " + obj.getUuid());
+                        return CompletableFuture.completedFuture(alreadyCached);
+                    }
+                }
+            }
+
+            // Not found, cache the new object
+            synchronized (cachedObjects) {
+                cachedObjects.add(obj);
+            }
+
+            Text.debug("Caching " + obj.getClass().getSimpleName() + ": " + obj.getUuid());
+            return CompletableFuture.completedFuture(obj);
         });
     }
+
 
     public void uncacheObject(UUID uuid, Class<? extends CachedObject> objectClass) {
         CachedObject cachedObject = cachedObject(uuid, objectClass);

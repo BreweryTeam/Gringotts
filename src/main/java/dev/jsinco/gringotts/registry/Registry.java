@@ -2,7 +2,9 @@ package dev.jsinco.gringotts.registry;
 
 import dev.jsinco.gringotts.commands.interfaces.SubCommand;
 import dev.jsinco.gringotts.commands.subcommands.ImportCommand;
+import dev.jsinco.gringotts.commands.subcommands.VaultOtherCommand;
 import dev.jsinco.gringotts.commands.subcommands.VaultsCommand;
+import dev.jsinco.gringotts.commands.subcommands.WarehouseAdminCommand;
 import dev.jsinco.gringotts.commands.subcommands.WarehouseCommand;
 import dev.jsinco.gringotts.importers.Importer;
 import dev.jsinco.gringotts.importers.PlayerVaultsImporter;
@@ -17,7 +19,7 @@ import java.util.Map;
 
 public class Registry<T extends RegistryItem> {
 
-    public static final Registry<SubCommand> SUB_COMMANDS = fromClasses(VaultsCommand.class, WarehouseCommand.class, ImportCommand.class);
+    public static final Registry<SubCommand> SUB_COMMANDS = fromClasses(VaultsCommand.class, WarehouseCommand.class, ImportCommand.class, VaultOtherCommand.class, WarehouseAdminCommand.class);
     public static final Registry<Importer> IMPORTERS = fromClasses(PlayerVaultsImporter.class);
 
     private final Map<String, T> registry;
@@ -25,7 +27,9 @@ public class Registry<T extends RegistryItem> {
     public Registry(Collection<T> values) {
         this.registry = new HashMap<>();
         values.forEach(item -> {
-            registry.put(item.name(), item);
+            for (String name : item.names()) {
+                registry.put(name, item);
+            }
         });
     }
 

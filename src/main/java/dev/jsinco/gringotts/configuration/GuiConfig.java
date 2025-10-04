@@ -18,6 +18,7 @@ public class GuiConfig extends OkaeriConfig {
     private YourVaultsGui yourVaultsGui = new YourVaultsGui();
     private WarehouseGui warehouseGui = new WarehouseGui();
     private VaultGui vaultGui = new VaultGui();
+    private VaultOtherGui vaultOtherGui = new VaultOtherGui();
 
     @Getter
     @Accessors(fluent = true)
@@ -32,6 +33,40 @@ public class GuiConfig extends OkaeriConfig {
                 "The size of all vaults for Gringotts."
         })
         private int size = 54;
+    }
+
+    @Getter
+    @Accessors(fluent = true)
+    public static class VaultOtherGui extends OkaeriConfig {
+        private String title = "{name}'s Vaults";
+        private int size = 54;
+
+        private VaultItem vaultItem = new VaultItem();
+        private VaultOtherGuiArrowItem previousPage = new VaultOtherGuiArrowItem("Previous Page", List.of(), 48, Material.ARROW);
+        private VaultOtherGuiArrowItem nextPage = new VaultOtherGuiArrowItem("Next Page", List.of(), 50, Material.ARROW);
+
+        @Getter
+        @Accessors(fluent = true)
+        @AllArgsConstructor
+        public static class VaultOtherGuiArrowItem extends OkaeriConfig {
+            private String title;
+            private List<String> lore;
+            private int slot;
+            private Material material;
+        }
+
+        @Getter
+        @Accessors(fluent = true)
+        public static class VaultItem extends OkaeriConfig {
+            private String title = "<aqua>{name}";
+            private List<String> lore = List.of(
+                    "<white>Left-click to open",
+                    "<white>this vault."
+            );
+            private IntPair slots = IntPair.of(0, 44);
+            private List<Integer> ignoredSlots = List.of();
+        }
+
     }
 
     @Getter
@@ -68,7 +103,7 @@ public class GuiConfig extends OkaeriConfig {
                     "<white>your vault settings."
             );
             private IntPair slots = IntPair.of(0, 35);
-            private IntPair altSlots = IntPair.of(0, 45);
+            private IntPair altSlots = IntPair.of(0, 44);
             private List<Integer> ignoredSlots = List.of();
             private List<Integer> altIgnoredSlots = List.of();
         }

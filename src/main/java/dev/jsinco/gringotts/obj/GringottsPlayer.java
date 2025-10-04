@@ -6,6 +6,7 @@ import dev.jsinco.gringotts.storage.DataSource;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,9 +19,8 @@ public class GringottsPlayer implements CachedObject {
 
     private static final Config cfg = ConfigManager.instance().config();
 
-    private final long cacheTime = System.currentTimeMillis();
-    private Long expire;
 
+    private Long expire;
 
     private final UUID uuid;
     private int maxVaults;
@@ -42,6 +42,10 @@ public class GringottsPlayer implements CachedObject {
     @Nullable
     public Player getPlayer() {
         return Bukkit.getPlayer(uuid);
+    }
+
+    public OfflinePlayer offlinePlayer() {
+        return Bukkit.getOfflinePlayer(uuid);
     }
 
 

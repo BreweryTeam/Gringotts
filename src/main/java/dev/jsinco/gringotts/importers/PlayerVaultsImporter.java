@@ -8,7 +8,6 @@ import dev.jsinco.gringotts.utility.ClassUtil;
 import dev.jsinco.gringotts.utility.Couple;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.nio.file.Path;

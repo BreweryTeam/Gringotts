@@ -23,8 +23,6 @@ import java.util.UUID;
 
 public class Warehouse implements CachedObject {
 
-    @Getter
-    private final long cacheTime = System.currentTimeMillis();
     @Getter @Setter
     private Long expire;
 
@@ -177,6 +175,7 @@ public class Warehouse implements CachedObject {
 
                                 ItemStack item = destockItem(material, invAmt);
                                 if (item != null) {
+                                    inv.addItem(item);
                                 } else {
                                     player.sendMessage("You do not have any" + material + ".");
                                 }

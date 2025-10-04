@@ -190,13 +190,13 @@ public class YourVaultsGui extends GringottsGui implements PromisedInventory {
             return false;
         }
 
-        inv.setItem(warehouseButtonSlot, warehouseButton.guiItemStack());
-
         int amount = slots.difference(false) + 1;
         List<GuiItem> warehouseItems = warehouse.stockAsGuiItems(amount);
         if (warehouseItems.isEmpty()) {
-            return true;
+            return false;
         }
+
+        inv.setItem(warehouseButtonSlot, warehouseButton.guiItemStack());
 
         List<Integer> ignoredSlots = cfg.warehouseQuickbar().ignoredSlots();
         for (int i = 0; i < Math.min(amount, warehouseItems.size()); i++) {

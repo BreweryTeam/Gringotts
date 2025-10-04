@@ -6,7 +6,6 @@ import java.util.UUID;
 
 public interface CachedObject {
     UUID getUuid();
-    long getCacheTime();
     Long getExpire();
     void setExpire(Long expire);
     void save(DataSource dataSource);

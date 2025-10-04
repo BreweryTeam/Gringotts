@@ -41,7 +41,7 @@ public class VaultsCommand implements SubCommand {
         dataSource.getVault(player.getUniqueId(), vaultId).thenAccept(qVault -> {
             Vault vault = Objects.requireNonNullElseGet(qVault, () -> new Vault(player.getUniqueId(), vaultId));
             Executors.sync(() -> {
-                player.openInventory(vault.getInventory());
+                vault.open(player);
             });
             player.sendMessage("Opening vault #" + vaultId + "...");
         });
