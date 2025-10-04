@@ -1,6 +1,8 @@
 package dev.jsinco.gringotts;
 
-import dev.jsinco.gringotts.commands.CommandManager;
+import dev.jsinco.gringotts.commands.GringottsBaseCommand;
+import dev.jsinco.gringotts.commands.PlayerVaultsBaseCommand;
+import dev.jsinco.gringotts.commands.WarehouseBaseCommand;
 import dev.jsinco.gringotts.configuration.ConfigManager;
 import dev.jsinco.gringotts.events.ChatPromptInputListener;
 import dev.jsinco.gringotts.events.GuiListener;
@@ -25,9 +27,12 @@ public final class Gringotts extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        ConfigManager.instance();
         DataSource.createInstance();
 
-        getServer().getPluginCommand("gringotts").setExecutor(new CommandManager());
+        getServer().getPluginCommand("gringotts").setExecutor(new GringottsBaseCommand());
+        getServer().getPluginCommand("playervaults").setExecutor(new PlayerVaultsBaseCommand());
+        getServer().getPluginCommand("warehouse").setExecutor(new WarehouseBaseCommand());
 
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
         getServer().getPluginManager().registerEvents(new VaultListener(), this);
@@ -39,8 +44,6 @@ public final class Gringotts extends JavaPlugin {
             dataSource.cacheObject(dataSource.getGringottsPlayer(player.getUniqueId()));
             dataSource.cacheObject(dataSource.getWarehouse(player.getUniqueId()));
         }
-
-        ConfigManager.instance();
     }
 
     @Override

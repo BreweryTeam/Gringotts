@@ -177,7 +177,6 @@ public class Warehouse implements CachedObject {
 
                                 ItemStack item = destockItem(material, invAmt);
                                 if (item != null) {
-                                    System.out.println(inv.addItem(item));
                                 } else {
                                     player.sendMessage("You do not have any" + material + ".");
                                 }

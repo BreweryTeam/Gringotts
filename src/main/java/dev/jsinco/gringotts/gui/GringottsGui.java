@@ -42,7 +42,6 @@ public abstract class GringottsGui implements InventoryHolder {
 
     public void addGuiItem(AbstractGuiItem item, int index) {
         if (index >= 0 && index < inventory.getSize()) {
-            System.out.println("adding item to index");
             inventory.setItem(index, item.guiItemStack());
         }
         guiItems.add(item);
@@ -70,7 +69,6 @@ public abstract class GringottsGui implements InventoryHolder {
             try {
                 AbstractGuiItem guiItem = (AbstractGuiItem) field.get(this);
                 if (guiItem != null) {
-                    System.out.println("adding item");
                     addGuiItem(guiItem);
                 } else {
                     Text.debug("GuiItem field '" + field.getName() + "' is null in " + forClass.getSimpleName());

@@ -3,6 +3,8 @@ package dev.jsinco.gringotts.obj;
 import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import dev.jsinco.gringotts.configuration.ConfigManager;
+import dev.jsinco.gringotts.configuration.GuiConfig;
 import dev.jsinco.gringotts.utility.Executors;
 import dev.jsinco.gringotts.utility.Text;
 import dev.jsinco.gringotts.utility.Util;
@@ -26,8 +28,9 @@ import java.util.UUID;
 @Setter
 public class Vault implements InventoryHolder {
 
-    private static Gson GSON = Util.GSON;
+    private static final Gson GSON = Util.GSON;
     private static final Type TYPE_TOKEN = new TypeToken<List<UUID>>(){}.getType();
+    private static final GuiConfig cfg = ConfigManager.instance().guiConfig();
 
     private final UUID owner;
     private final int id;
@@ -42,11 +45,30 @@ public class Vault implements InventoryHolder {
         Preconditions.checkArgument(id > 0, "Vault ID must be greater than 0");
         this.owner = owner;
         this.id = id;
-        this.customName = "Vault #" + id;
+        this.customName = cfg.vaultGui().title().replace("{id}", String.valueOf(id));
         this.icon = Material.CHEST;
         this.trustedPlayers = new ArrayList<>();
 
-        this.inventory = Bukkit.createInventory(this, 54, Text.mm(customName));
+        int size = cfg.vaultGui().size();
+
+        this.inventory = Bukkit.createInventory(this, size, Text.mm(customName));
+    }
+
+    public Vault(UUID owner, int id, ItemStack[] items) {
+        Preconditions.checkArgument(id > 0, "Vault ID must be greater than 0");
+        this.owner = owner;
+        this.id = id;
+        this.customName = cfg.vaultGui().title().replace("{id}", String.valueOf(id));
+        this.icon = Material.CHEST;
+        this.trustedPlayers = new ArrayList<>();
+
+
+        int count = items != null ? items.length : 9;
+        int size = Math.max(((count + 8) / 9) * 9, cfg.vaultGui().size());
+        this.inventory = Bukkit.createInventory(this, size, Text.mm(customName));
+        if (items != null) {
+            inventory.setContents(items);
+        }
     }
 
     public Vault(UUID owner, int id, String encodedInventory, String customName, Material icon, String trustedPlayers) {
@@ -58,9 +80,15 @@ public class Vault implements InventoryHolder {
         List<UUID> json = GSON.fromJson(trustedPlayers, TYPE_TOKEN);
         this.trustedPlayers = json != null ? json : new ArrayList<>();
 
-        this.inventory = Bukkit.createInventory(this, 54, Text.mm(customName));
+        ItemStack[] items = null;
         if (encodedInventory != null && !encodedInventory.isEmpty()) {
-            ItemStack[] items = decodeInventory(encodedInventory);
+            items = decodeInventory(encodedInventory);
+        }
+
+        int count = items != null ? items.length : 9;
+        int size = Math.max(((count + 8) / 9) * 9, cfg.vaultGui().size());
+        this.inventory = Bukkit.createInventory(this, size, Text.mm(customName));
+        if (items != null) {
             inventory.setContents(items);
         }
     }

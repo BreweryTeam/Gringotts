@@ -1,10 +1,8 @@
 package dev.jsinco.gringotts.commands;
 
 import dev.jsinco.gringotts.Gringotts;
-import dev.jsinco.gringotts.commands.subcommands.VaultCommand;
-import dev.jsinco.gringotts.commands.subcommands.VaultOpenTestCommand;
-import dev.jsinco.gringotts.commands.subcommands.WarehouseCommand;
-import dev.jsinco.gringotts.commands.subcommands.YourVaultsCommand;
+import dev.jsinco.gringotts.registry.Registry;
+import dev.jsinco.gringotts.commands.interfaces.SubCommand;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -13,38 +11,29 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-public class CommandManager implements TabExecutor {
-
-    private final Map<String, SubCommand> commands = new HashMap<>();
-
-    public CommandManager() {
-        commands.put("vault", new VaultCommand());
-        commands.put("vaulttest", new VaultOpenTestCommand());
-        commands.put("yourvaults", new YourVaultsCommand());
-        commands.put("warehouse", new WarehouseCommand());
-    }
+public class GringottsBaseCommand implements TabExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
         if (args.length == 0) {
-            sender.sendMessage("Available commands: " + String.join(", ", commands.keySet()));
+            // TODO: Help command
+            sender.sendMessage("Available commands: " + String.join(", ", Registry.SUB_COMMANDS.keySet()));
             return true;
         }
 
         String subCommandName = args[0].toLowerCase();
-        SubCommand subCommand = commands.get(subCommandName);
+        SubCommand subCommand = Registry.SUB_COMMANDS.get(subCommandName);
 
         if (subCommand == null) {
             sender.sendMessage("Unknown command: " + subCommandName);
             return true;
-        }
-
-        if (subCommand.playerOnly() && !(sender instanceof org.bukkit.entity.Player)) {
+        } else if (subCommand.playerOnly() && !(sender instanceof Player)) {
             sender.sendMessage("This command can only be executed by a player.");
+            return true;
+        } else if (subCommand.permission() != null && !sender.hasPermission(subCommand.permission())) {
+            sender.sendMessage("You do not have permission to use this command.");
             return true;
         }
 
@@ -57,17 +46,17 @@ public class CommandManager implements TabExecutor {
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
         if (args.length == 1) {
-            List<String> subCommandNames = new ArrayList<>(commands.keySet());
+            List<String> subCommandNames = new ArrayList<>(Registry.SUB_COMMANDS.keySet());
             return subCommandNames.stream()
                     .filter(name -> name.startsWith(args[0].toLowerCase()))
                     .toList();
         }
 
         String subCommandName = args[0].toLowerCase();
-        SubCommand subCommand = commands.get(subCommandName);
+        SubCommand subCommand = Registry.SUB_COMMANDS.get(subCommandName);
 
-        if (subCommand == null || subCommand.playerOnly() && !(sender instanceof Player)) {
-            return null; // No tab completion for player-only commands if sender is not a player
+        if (subCommand == null || (subCommand.permission() != null && !sender.hasPermission(subCommand.permission()))) {
+            return null;
         }
 
         return subCommand.tabComplete(Gringotts.getInstance(), sender, label, List.of(args));

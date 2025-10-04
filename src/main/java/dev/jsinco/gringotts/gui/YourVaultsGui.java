@@ -1,8 +1,9 @@
 package dev.jsinco.gringotts.gui;
 
-import dev.jsinco.gringotts.gui.item.AutoRegisterGuiItems;
+import dev.jsinco.gringotts.configuration.ConfigManager;
+import dev.jsinco.gringotts.configuration.GuiConfig;
+import dev.jsinco.gringotts.configuration.IntPair;
 import dev.jsinco.gringotts.gui.item.GuiItem;
-import dev.jsinco.gringotts.gui.item.IgnoreAutoRegister;
 import dev.jsinco.gringotts.obj.GringottsPlayer;
 import dev.jsinco.gringotts.obj.SnapshotVault;
 import dev.jsinco.gringotts.obj.Warehouse;
@@ -11,31 +12,33 @@ import dev.jsinco.gringotts.utility.Executors;
 import dev.jsinco.gringotts.utility.ItemStacks;
 import dev.jsinco.gringotts.utility.Text;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 // TODO: Config
-@AutoRegisterGuiItems
 public class YourVaultsGui extends GringottsGui implements PromisedInventory {
+
+    private static final GuiConfig.YourVaultsGui cfg = ConfigManager.instance().guiConfig().yourVaultsGui();
 
     private PaginatedGui paginatedGui;
     private GringottsPlayer gringottsPlayer;
-    private Inventory secondInv;
-    private int indexStop;
+    private final Inventory secondInv;
+    private final boolean withQuickbar;
 
-    @IgnoreAutoRegister
     private final GuiItem warehouseButton = GuiItem.builder()
             .itemStack(b -> b
-                    .displayName("View all Warehouse")
-                    .lore("Click to view your warehouse")
-                    .material(Material.ENDER_CHEST)
+                    .displayName(cfg.warehouseQuickbar().title())
+                    .lore(cfg.warehouseQuickbar().lore())
+                    .material(cfg.warehouseQuickbar().material())
             )
             .action(e -> {
                 Warehouse warehouse = DataSource.getInstance().cachedWarehouse(gringottsPlayer.getUuid());
@@ -44,10 +47,10 @@ public class YourVaultsGui extends GringottsGui implements PromisedInventory {
             })
             .build();
     private final GuiItem previousPage = GuiItem.builder()
-            .index(() -> indexStop + 3)
             .itemStack(b -> b
-                    .displayName("Previous Page")
-                    .material(Material.ARROW)
+                    .displayName(cfg.previousPage().title())
+                    .material(cfg.previousPage().material())
+                    .lore(cfg.previousPage().lore())
             )
             .action(e -> {
                 Player player = (Player) e.getWhoClicked();
@@ -61,10 +64,10 @@ public class YourVaultsGui extends GringottsGui implements PromisedInventory {
             })
             .build();
     private final GuiItem nextPage = GuiItem.builder()
-            .index(() -> indexStop + 5)
             .itemStack(b -> b
-                    .displayName("Next Page")
-                    .material(Material.ARROW)
+                    .displayName(cfg.nextPage().title())
+                    .material(cfg.nextPage().material())
+                    .lore(cfg.nextPage().lore())
             )
             .action(e -> {
                 Player player = (Player) e.getWhoClicked();
@@ -80,38 +83,17 @@ public class YourVaultsGui extends GringottsGui implements PromisedInventory {
 
 
     public YourVaultsGui(GringottsPlayer gringottsPlayer) {
-        super("Your Vaults", 54);
+        super(cfg.title(), cfg.size());
         this.gringottsPlayer = gringottsPlayer;
-        this.secondInv = Bukkit.createInventory(this, 54, Text.mm("Your Vaults"));
+        this.secondInv = Bukkit.createInventory(this, 54, Text.mm(cfg.title()));
+        this.addGuiItem(warehouseButton);
+        this.addGuiItem(previousPage);
+        this.addGuiItem(nextPage);
 
         Warehouse warehouse = DataSource.getInstance().cachedWarehouse(gringottsPlayer.getUuid());
-        List<GuiItem> warehouseItems = warehouse.stockAsGuiItems(8);
-        this.indexStop = warehouseItems.isEmpty() ? 45 : 36;
 
-        if (!warehouseItems.isEmpty()) {
-            addGuiItem(warehouseButton, 45);
-
-            int i = 0;
-            for (GuiItem item : warehouseItems) {
-
-                addGuiItem(item, 46 + i);
-                i++;
-            }
-        }
-
-
-
-        for (int i = indexStop; i < indexStop + 9; i++) {
-            this.inventory.setItem(i, ItemStacks.BORDER);
-        }
-
-        // secondInv
-
-        for (int i = 45; i < 54; i++) {
-            this.secondInv.setItem(i, ItemStacks.BORDER);
-        }
-        this.secondInv.setItem(48, previousPage.guiItemStack());
-        this.secondInv.setItem(50, nextPage.guiItemStack());
+        this.withQuickbar = this.assemble(this.inventory, warehouse);
+        this.assemble(this.secondInv, null);
     }
 
     @Override
@@ -132,18 +114,29 @@ public class YourVaultsGui extends GringottsGui implements PromisedInventory {
                     snapshotVault = new SnapshotVault(gringottsPlayer.getUuid(), i + 1, null, null);
                 }
 
-                addGuiItem(snapshotVault, -1);
+                addGuiItem(snapshotVault);
                 itemStacks.add(snapshotVault.guiItemStack());
             }
+            IntPair slots = withQuickbar ? cfg.vaultItem().slots() : cfg.vaultItem().altSlots();
+            List<Integer> ignoredSlots = withQuickbar ? cfg.vaultItem().ignoredSlots() : cfg.vaultItem().altIgnoredSlots();
 
-            // Initialize the paginated GUI with the current items
+            for (int i = 0; i < inventory.getSize() && !itemStacks.isEmpty(); i++) {
+                if (slots.includes(i) && !ignoredSlots.contains(i) && !itemStacks.isEmpty()) {
+                    ItemStack itemStack = itemStacks.removeFirst();
+                    inventory.setItem(i, itemStack);
+                }
+            }
+
+
+            IntPair paginatedSlots = cfg.vaultItem().altSlots();
             this.paginatedGui = PaginatedGui.builder()
-                    .name("Your Vaults")
+                    .name(cfg.title())
                     .items(itemStacks)
-                    .startEndSlots(0, indexStop)
-                    .base(this.getInventory())
-                    .secondBase(this.secondInv)
+                    .startEndSlots(paginatedSlots.a(), paginatedSlots.b())
+                    .ignoredSlots(cfg.vaultItem().altIgnoredSlots())
+                    .base(this.secondInv)
                     .build();
+            this.paginatedGui.insert(this.inventory, 0);
 
 
             future.complete(this.paginatedGui.getPage(0));
@@ -163,5 +156,57 @@ public class YourVaultsGui extends GringottsGui implements PromisedInventory {
         promiseInventory().thenAccept(inventory -> {
             Executors.sync(() -> player.openInventory(inventory));
         });
+    }
+
+
+    private boolean assemble(Inventory inv, @Nullable Warehouse warehouse) {
+        boolean quickBar = assembleQuickbar(inv, warehouse);
+
+        int previousPageSlot = quickBar ? cfg.previousPage().slot() : cfg.previousPage().altSlot();
+        int nextPageSlot = quickBar ? cfg.nextPage().slot() : cfg.nextPage().altSlot();
+        inv.setItem(previousPageSlot, previousPage.guiItemStack());
+        inv.setItem(nextPageSlot, nextPage.guiItemStack());
+
+        IntPair slots = quickBar ? cfg.vaultItem().slots() : cfg.vaultItem().altSlots();
+        IntPair warehouseSlots = quickBar ? cfg.warehouseQuickbar().slots() : null;
+        List<Integer> ignoredSlots = quickBar ? cfg.vaultItem().ignoredSlots() : cfg.vaultItem().altIgnoredSlots();
+        List<Integer> ignoredWarehouseSlots = quickBar ? cfg.warehouseQuickbar().ignoredSlots() : null;
+
+        for (int i = 0; i < inv.getSize(); i++) {
+            ItemStack itemStack = inv.getItem(i);
+            if (itemStack != null || (slots.includes(i) && !ignoredSlots.contains(i))) continue;
+            else if (quickBar && (warehouseSlots.includes(i) || ignoredWarehouseSlots.contains(i))) continue;
+
+            inv.setItem(i, ItemStacks.BORDER);
+        }
+        return quickBar;
+    }
+
+    private boolean assembleQuickbar(Inventory inv, @Nullable Warehouse warehouse) {
+        IntPair slots = cfg.warehouseQuickbar().slots();
+        int warehouseButtonSlot = cfg.warehouseQuickbar().slot();
+
+        if (warehouse == null || slots.negative() || warehouseButtonSlot < 0) {
+            return false;
+        }
+
+        inv.setItem(warehouseButtonSlot, warehouseButton.guiItemStack());
+
+        int amount = slots.difference(false) + 1;
+        List<GuiItem> warehouseItems = warehouse.stockAsGuiItems(amount);
+        if (warehouseItems.isEmpty()) {
+            return true;
+        }
+
+        List<Integer> ignoredSlots = cfg.warehouseQuickbar().ignoredSlots();
+        for (int i = 0; i < Math.min(amount, warehouseItems.size()); i++) {
+            if (ignoredSlots.contains(i)) {
+                continue;
+            }
+            GuiItem item = warehouseItems.get(i);
+            inv.setItem(slots.a() + i, item.guiItemStack());
+            this.addGuiItem(item);
+        }
+        return true;
     }
 }

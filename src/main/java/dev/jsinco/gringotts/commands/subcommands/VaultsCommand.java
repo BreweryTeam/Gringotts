@@ -1,7 +1,9 @@
 package dev.jsinco.gringotts.commands.subcommands;
 
 import dev.jsinco.gringotts.Gringotts;
-import dev.jsinco.gringotts.commands.SubCommand;
+import dev.jsinco.gringotts.commands.interfaces.SubCommand;
+import dev.jsinco.gringotts.gui.GringottsGui;
+import dev.jsinco.gringotts.gui.YourVaultsGui;
 import dev.jsinco.gringotts.obj.GringottsPlayer;
 import dev.jsinco.gringotts.obj.Vault;
 import dev.jsinco.gringotts.storage.DataSource;
@@ -15,12 +17,19 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class VaultCommand implements SubCommand {
+public class VaultsCommand implements SubCommand {
+
     @Override
     public boolean execute(Gringotts plugin, CommandSender sender, String label, List<String> args) {
         Player player = (Player) sender;
         DataSource dataSource = DataSource.getInstance();
         GringottsPlayer gringottsPlayer = dataSource.cachedGringottsPlayer(player.getUniqueId());
+
+        if (args.isEmpty()) {
+            YourVaultsGui yourVaultsGui = GringottsGui.factory(() -> new YourVaultsGui(gringottsPlayer));
+            yourVaultsGui.open(player);
+            return true;
+        }
 
         int vaultId = Util.getInteger(args.getFirst(), 1);
 
@@ -34,10 +43,8 @@ public class VaultCommand implements SubCommand {
             Executors.sync(() -> {
                 player.openInventory(vault.getInventory());
             });
-
-            player.sendMessage("Opening vault " + vaultId + "...");
+            player.sendMessage("Opening vault #" + vaultId + "...");
         });
-
 
         return true;
     }
@@ -54,17 +61,18 @@ public class VaultCommand implements SubCommand {
     }
 
     @Override
-    public String getPermission() {
-        return "";
+    public String name() {
+        return "vaults";
     }
 
     @Override
-    public String getUsage() {
-        return "/<command> vault <vault-id>";
+    public String permission() {
+        return "gringotts.command.vaults";
     }
 
     @Override
     public boolean playerOnly() {
         return true;
     }
+
 }

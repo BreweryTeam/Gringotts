@@ -3,7 +3,6 @@ package dev.jsinco.gringotts.utility;
 import com.google.gson.Gson;
 import dev.jsinco.gringotts.Gringotts;
 import dev.jsinco.gringotts.utility.interfaces.EditMeta;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.Inventory;

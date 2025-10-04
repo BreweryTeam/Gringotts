@@ -1,5 +1,7 @@
 package dev.jsinco.gringotts.obj;
 
+import dev.jsinco.gringotts.configuration.Config;
+import dev.jsinco.gringotts.configuration.ConfigManager;
 import dev.jsinco.gringotts.storage.DataSource;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,11 +13,14 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 @Getter
+@Setter
 public class GringottsPlayer implements CachedObject {
 
+    private static final Config cfg = ConfigManager.instance().config();
+
     private final long cacheTime = System.currentTimeMillis();
-    @Setter
     private Long expire;
+
 
     private final UUID uuid;
     private int maxVaults;
@@ -24,9 +29,8 @@ public class GringottsPlayer implements CachedObject {
 
     public GringottsPlayer(UUID uuid) {
         this.uuid = uuid;
-        // TODO: Config
-        this.maxVaults = 5;
-        this.maxWarehouseStock = 100;
+        this.maxVaults = 0;
+        this.maxWarehouseStock = 0;
     }
 
     public GringottsPlayer(UUID uuid, int maxVaults, int maxWarehouseStock) {
@@ -42,16 +46,14 @@ public class GringottsPlayer implements CachedObject {
 
 
     public int getCalculatedMaxVaults() {
-        // TODO: Include configured default max.
         int maxByPermission = getMaxByPermission("gringotts.maxvaults");
         // Whichever is greater, use that
-        return Math.max(maxByPermission, maxVaults);
+        return Math.max(Math.max(maxByPermission, maxVaults), cfg.defaultMaxVaults());
     }
 
     public int getCalculatedMaxWarehouseStock() {
-        // TODO: Include configured default max.
         int maxByPermission = getMaxByPermission("gringotts.maxstock");
-        return Math.max(maxByPermission, maxWarehouseStock);
+        return Math.max(Math.max(maxByPermission, maxWarehouseStock), cfg.defaultMaxStock());
     }
 
     private int getMaxByPermission(String permissionPrefix) {

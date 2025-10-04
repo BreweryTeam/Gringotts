@@ -19,6 +19,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.30")
 
     compileOnly("org.xerial:sqlite-jdbc:3.47.2.0")
+    compileOnly("com.drtshock.playervaults:PlayerVaultsX:4.4.7")
     implementation("com.zaxxer:HikariCP:6.3.0")
     implementation("eu.okaeri:okaeri-configs-yaml-bukkit:5.0.5")
     implementation("eu.okaeri:okaeri-configs-serdes-bukkit:5.0.5")

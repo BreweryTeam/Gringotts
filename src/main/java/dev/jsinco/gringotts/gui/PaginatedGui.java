@@ -5,6 +5,7 @@ import dev.jsinco.gringotts.utility.Text;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,43 +21,31 @@ public class PaginatedGui {
     private final Inventory base;
     private final List<Inventory> pages = new ArrayList<>();
 
-    private final Inventory secondBase;
 
-    public PaginatedGui(String name, Inventory base, List<ItemStack> items, Couple<Integer, Integer> startEndSlots, List<Integer> ignoredSlots, @Nullable Inventory secondBase) {
+    public PaginatedGui(String name, Inventory base, List<ItemStack> items, Couple<Integer, Integer> startEndSlots, List<Integer> ignoredSlots) {
         this.name = name;
         this.base = base;
-        this.secondBase = secondBase;
         Inventory currentPage = newPage();
         int currentItem = 0;
         int currentSlot = startEndSlots.getFirst();
 
         while (currentItem < items.size()) {
-            if (ignoredSlots.contains(currentSlot)) {
-                currentSlot++;
-                continue;
+            if (!ignoredSlots.contains(currentSlot) && currentPage.getItem(currentSlot) == null) {
+                currentPage.setItem(currentSlot, items.get(currentItem++));
             }
 
-            if (currentSlot == startEndSlots.getSecond()) {
+            if (currentSlot >= startEndSlots.getSecond()) {
                 currentPage = newPage();
                 currentSlot = startEndSlots.getFirst();
+            } else {
+                currentSlot++;
             }
-
-            if (currentPage.getItem(currentSlot) == null) {
-                currentPage.setItem(currentSlot, items.get(currentItem));
-                currentItem++;
-            }
-            currentSlot++;
         }
     }
 
     private Inventory newPage() {
-        Inventory base = this.secondBase != null && !pages.isEmpty() ? this.secondBase : this.base;
-
-
         Inventory inventory = Bukkit.createInventory(base.getHolder(), base.getSize(), Text.mm(name));
-        for (int i = 0; i < base.getSize(); i++) {
-            inventory.setItem(i, base.getItem(i));
-        }
+        inventory.setContents(base.getContents());
         pages.add(inventory);
         return inventory;
     }
@@ -81,6 +70,15 @@ public class PaginatedGui {
         return (index <= 0) ? null : pages.get(index - 1);
     }
 
+    public void insert(Inventory page, int index) {
+        InventoryHolder holder = page.getHolder();
+        InventoryHolder baseHolder = base.getHolder();
+        if (holder == null || !holder.equals(baseHolder)) {
+            throw new IllegalArgumentException("Page and base inventory must be of the same type");
+        }
+        pages.add(index, page);
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -91,7 +89,6 @@ public class PaginatedGui {
         private List<ItemStack> items = Collections.emptyList();
         private Couple<Integer, Integer> startEndSlots = new Couple<>(0, 0);
         private List<Integer> ignoredSlots = Collections.emptyList();
-        private Inventory secondBase;
 
         public Builder name(String name) {
             this.name = name;
@@ -123,13 +120,8 @@ public class PaginatedGui {
             return this;
         }
 
-        public Builder secondBase(Inventory secondBase) {
-            this.secondBase = secondBase;
-            return this;
-        }
-
         public PaginatedGui build() {
-            return new PaginatedGui(name, base, items, startEndSlots, ignoredSlots, secondBase);
+            return new PaginatedGui(name, base, items, startEndSlots, ignoredSlots);
         }
     }
 

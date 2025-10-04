@@ -76,19 +76,14 @@ public class SnapshotVault implements AbstractGuiItem {
             return;
         }
         Player player = (Player) event.getWhoClicked();
-        player.sendMessage("Not yet implemented");
         if (event.isLeftClick()) {
             // Open vault
             lazyVault().thenAccept(vault -> vault.open(player));
         } else if (event.isRightClick()) {
             lazyVault().thenAccept(vault -> {
-                try {
-                    GringottsPlayer gringottsPlayer = DataSource.getInstance().cachedGringottsPlayer(player.getUniqueId());
-                    EditVaultGui editVaultGui = GringottsGui.factory(() -> new EditVaultGui(vault, gringottsPlayer, player));
-                    editVaultGui.open(player);
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                }
+                GringottsPlayer gringottsPlayer = DataSource.getInstance().cachedGringottsPlayer(player.getUniqueId());
+                EditVaultGui editVaultGui = GringottsGui.factory(() -> new EditVaultGui(vault, gringottsPlayer, player));
+                editVaultGui.open(player);
             });
         }
     }

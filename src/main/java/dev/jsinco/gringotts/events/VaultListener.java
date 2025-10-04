@@ -29,16 +29,14 @@ public class VaultListener implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        InventoryHolder holder = event.getInventory().getHolder(false);
-        if (!(holder instanceof Vault vault)) {
-            return;
-        }
-        Player player = (Player) event.getWhoClicked();
-        Config.QuickReturn quickReturn = ConfigManager.instance().config().quickReturn();
-        if (event.getClickedInventory() == null && quickReturn.enabled() && event.getClick() == quickReturn.clickType()) {
-            GringottsPlayer gringottsPlayer = DataSource.getInstance().cachedGringottsPlayer(player.getUniqueId());
-            YourVaultsGui gui = GringottsGui.factory(() -> new YourVaultsGui(gringottsPlayer));
-            gui.open(player);
+        if (event.getInventory().getHolder(false) instanceof Vault) {
+            Player player = (Player) event.getWhoClicked();
+            Config.QuickReturn quickReturn = ConfigManager.instance().config().quickReturn();
+            if (event.getClickedInventory() == null && quickReturn.enabled() && event.getClick() == quickReturn.clickType()) {
+                GringottsPlayer gringottsPlayer = DataSource.getInstance().cachedGringottsPlayer(player.getUniqueId());
+                YourVaultsGui gui = GringottsGui.factory(() -> new YourVaultsGui(gringottsPlayer));
+                gui.open(player);
+            }
         }
     }
 }
