@@ -1,3 +1,3 @@
 SELECT material, quantity, last_update
-FROM warehouses
+FROM gringotts_warehouses
 WHERE owner = ?;

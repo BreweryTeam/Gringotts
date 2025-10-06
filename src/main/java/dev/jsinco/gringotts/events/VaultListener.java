@@ -1,6 +1,6 @@
 package dev.jsinco.gringotts.events;
 
-import dev.jsinco.gringotts.configuration.Config;
+import dev.jsinco.gringotts.configuration.files.Config;
 import dev.jsinco.gringotts.configuration.ConfigManager;
 import dev.jsinco.gringotts.gui.GringottsGui;
 import dev.jsinco.gringotts.gui.VaultOtherGui;
@@ -46,7 +46,7 @@ public class VaultListener implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        Config.QuickReturn quickReturn = ConfigManager.instance().config().quickReturn();
+        Config.QuickReturn quickReturn = ConfigManager.get(Config.class).quickReturn();
 
         if (event.getClickedInventory() != null) {
             vault.update(player);

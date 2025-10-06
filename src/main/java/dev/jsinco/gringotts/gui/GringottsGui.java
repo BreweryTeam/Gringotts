@@ -1,5 +1,6 @@
 package dev.jsinco.gringotts.gui;
 
+import dev.jsinco.gringotts.obj.GringottsInventory;
 import dev.jsinco.gringotts.gui.item.AbstractGuiItem;
 import dev.jsinco.gringotts.gui.item.AutoRegisterGuiItems;
 import dev.jsinco.gringotts.gui.item.IgnoreAutoRegister;
@@ -9,7 +10,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
 import java.lang.reflect.Field;
@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-public abstract class GringottsGui implements InventoryHolder {
+public abstract class GringottsGui implements GringottsInventory {
 
     @Getter
     protected final Inventory inventory;
@@ -47,7 +47,7 @@ public abstract class GringottsGui implements InventoryHolder {
         guiItems.add(item);
     }
 
-    public final void onPreInventoryClick(InventoryClickEvent event) {
+    public void onPreInventoryClick(InventoryClickEvent event) {
         validate();
         ItemStack clickedItem = event.getCurrentItem();
 

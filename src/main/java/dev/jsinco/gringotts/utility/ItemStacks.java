@@ -109,6 +109,8 @@ public final class ItemStacks {
         private ItemFlag[] itemFlags;
         private PlayerProfile playerProfile;
         private EditMeta editMeta;
+        private String headOwner;
+        private Couple<String, String>[] replacements;
 
         public ItemStackBuilder material(Material material) {
             this.material = material;
@@ -182,14 +184,32 @@ public final class ItemStacks {
             return this;
         }
 
+        public ItemStackBuilder headOwner(String headOwner) {
+            this.headOwner = headOwner;
+            return this;
+        }
+
         public ItemStackBuilder editMeta(EditMeta editMeta) {
             this.editMeta = editMeta;
+            return this;
+        }
+
+        @SuppressWarnings("unchecked")
+        public ItemStackBuilder  stringReplacements(Couple<String, Object>... replacements) {
+            this.replacements = Arrays.stream(replacements).map(it -> new Couple<>(it.a(), it.b().toString())).toArray(Couple[]::new);
             return this;
         }
 
         public ItemStack build() {
             ItemStack itemStack = ItemStack.of(material, amount);
             ItemMeta meta = itemStack.getItemMeta();
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS);
+
+            if (replacements != null) {
+                displayName = Util.replace(displayName, replacements);
+                lore = Util.replaceAll(lore, replacements);
+                headOwner = Util.replace(headOwner, replacements);
+            }
 
             if (displayName != null) {
                 Component c = Text.mmNoItalic(displayName).colorIfAbsent(colorIfAbsentDisplayName);
@@ -213,9 +233,16 @@ public final class ItemStacks {
                 skullMeta.setPlayerProfile(playerProfile);
             }
 
+            if (headOwner != null && meta instanceof SkullMeta skullMeta) {
+                skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(headOwner));
+            }
+
+
             if (editMeta != null) {
                 editMeta.editMeta(meta);
             }
+
+
 
             itemStack.setItemMeta(meta);
             return itemStack;

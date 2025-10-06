@@ -2,10 +2,15 @@ package dev.jsinco.gringotts.registry;
 
 import dev.jsinco.gringotts.commands.interfaces.SubCommand;
 import dev.jsinco.gringotts.commands.subcommands.ImportCommand;
+import dev.jsinco.gringotts.commands.subcommands.MaxCommand;
 import dev.jsinco.gringotts.commands.subcommands.VaultOtherCommand;
 import dev.jsinco.gringotts.commands.subcommands.VaultsCommand;
 import dev.jsinco.gringotts.commands.subcommands.WarehouseAdminCommand;
 import dev.jsinco.gringotts.commands.subcommands.WarehouseCommand;
+import dev.jsinco.gringotts.configuration.ConfigManager;
+import dev.jsinco.gringotts.configuration.OkaeriFile;
+import dev.jsinco.gringotts.configuration.files.Config;
+import dev.jsinco.gringotts.configuration.files.GuiConfig;
 import dev.jsinco.gringotts.importers.Importer;
 import dev.jsinco.gringotts.importers.PlayerVaultsImporter;
 
@@ -19,32 +24,48 @@ import java.util.Map;
 
 public class Registry<T extends RegistryItem> {
 
-    public static final Registry<SubCommand> SUB_COMMANDS = fromClasses(VaultsCommand.class, WarehouseCommand.class, ImportCommand.class, VaultOtherCommand.class, WarehouseAdminCommand.class);
+    public static final Registry<SubCommand> SUB_COMMANDS = fromClasses(VaultsCommand.class, WarehouseCommand.class, ImportCommand.class, VaultOtherCommand.class, WarehouseAdminCommand.class, MaxCommand.class);
     public static final Registry<Importer> IMPORTERS = fromClasses(PlayerVaultsImporter.class);
+    public static final Registry<OkaeriFile> CONFIGS = fromClassesWithCrafter(new ConfigManager.ConfigCrafter(), Config.class, GuiConfig.class);
 
-    private final Map<String, T> registry;
+    private final Map<String, T> map;
 
     public Registry(Collection<T> values) {
-        this.registry = new HashMap<>();
+        this.map = new HashMap<>();
         values.forEach(item -> {
             for (String name : item.names()) {
-                registry.put(name, item);
+                map.put(name, item);
             }
         });
     }
 
     public T get(String identifier) {
-        return registry.get(identifier);
+        return map.get(identifier);
     }
 
     public Collection<T> values() {
-        return registry.values();
+        return map.values();
     }
 
     public Collection<String> keySet() {
-        return registry.keySet();
+        return map.keySet();
     }
 
+    //@SuppressWarnings("unchecked")
+    @SafeVarargs
+    public static <E extends RegistryItem> Registry<E> fromClassesWithCrafter(RegistryCrafter crafter, Class<? extends E>... classes) {
+        List<E> eClasses = new ArrayList<>();
+        for (Class<?> clazz : classes) {
+            if (crafter instanceof RegistryCrafter.Extension<?> crafter1) {
+                eClasses.add((E) crafter1.craft(clazz));
+            } else if (crafter instanceof RegistryCrafter.NoExtension crafter2) {
+                eClasses.add((E) crafter2.craft(clazz));
+            } else {
+                throw new IllegalArgumentException("Unknown crafter type");
+            }
+        }
+        return new Registry<>(eClasses);
+    }
 
     @SafeVarargs
     public static <E extends RegistryItem> Registry<E> fromClasses(Class<? extends E>... classes) {
@@ -112,5 +133,6 @@ public class Registry<T extends RegistryItem> {
             }
             return new Registry<>(tClasses);
         }
+
     }
 }

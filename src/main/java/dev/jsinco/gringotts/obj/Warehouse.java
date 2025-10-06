@@ -1,13 +1,15 @@
 package dev.jsinco.gringotts.obj;
 
 import dev.jsinco.gringotts.configuration.ConfigManager;
-import dev.jsinco.gringotts.configuration.GuiConfig;
+import dev.jsinco.gringotts.configuration.files.GuiConfig;
 import dev.jsinco.gringotts.gui.item.GuiItem;
 import dev.jsinco.gringotts.storage.DataSource;
+import dev.jsinco.gringotts.utility.Couple;
 import dev.jsinco.gringotts.utility.Text;
 import dev.jsinco.gringotts.utility.Util;
 import lombok.Getter;
 import lombok.Setter;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -124,7 +126,7 @@ public class Warehouse implements CachedObject {
 
 
     public List<GuiItem> stockAsGuiItems(int truncate) {
-        GuiConfig.WarehouseGui.WarehouseItem cfg = ConfigManager.instance().guiConfig().warehouseGui().warehouseItem();
+        var cfg = ConfigManager.get(GuiConfig.class).warehouseGui().warehouseItem();
         List<GuiItem> items = new ArrayList<>();
         int i = 0;
         List<Stock> sortedStocks = warehouseMap.values().stream()
@@ -132,14 +134,16 @@ public class Warehouse implements CachedObject {
                 .toList();
         for (Stock stock : sortedStocks) {
             Material material = stock.getMaterial();
-            // TODO: Cleanup
+            @SuppressWarnings("unchecked")
             GuiItem guiItem = GuiItem.builder()
                     .itemStack(b -> b
-                            .material(material)
-                            .displayName(cfg.title().replace("{material}", Util.formatMaterialName(material.toString())))
-                            .lore(
-                                    cfg.lore().stream().map(l -> l.replace("{quantity}", String.valueOf(stock.getAmount()))).toList()
+                            .stringReplacements(
+                                    Couple.of("{quantity}", String.valueOf(stock.getAmount())),
+                                    Couple.of("{material}", Util.formatMaterialName(material.toString()))
                             )
+                            .material(material)
+                            .displayName(cfg.name())
+                            .lore(cfg.lore())
                     )
                     .action(e -> {
                         if (e.isCancelled()) {
@@ -195,11 +199,9 @@ public class Warehouse implements CachedObject {
                             }
                         }
 
-                        Util.editMeta(clickedItem, meta -> {
-                            meta.lore(
-                                    Text.mmlNoItalic(cfg.lore().stream().map(l -> l.replace("{quantity}", String.valueOf(stock.getAmount()))).toList())
-                            );
-                        });
+                        Util.editMeta(clickedItem, meta ->
+                                meta.lore(Text.mmlNoItalic(Util.replaceAll(cfg.lore(), "{quantity}", String.valueOf(stock.getAmount())), NamedTextColor.WHITE))
+                        );
                     }).build();
             items.add(guiItem);
             if (truncate > 0 && ++i >= truncate) {

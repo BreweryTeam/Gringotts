@@ -1,5 +1,8 @@
 package dev.jsinco.gringotts.gui;
 
+import dev.jsinco.gringotts.configuration.ConfigManager;
+import dev.jsinco.gringotts.configuration.files.Config;
+import dev.jsinco.gringotts.configuration.files.GuiConfig;
 import dev.jsinco.gringotts.events.ChatPromptInputListener.ChatInputCallback;
 import dev.jsinco.gringotts.gui.item.AutoRegisterGuiItems;
 import dev.jsinco.gringotts.gui.item.GuiItem;
@@ -7,12 +10,13 @@ import dev.jsinco.gringotts.gui.item.UncontainedGuiItem;
 import dev.jsinco.gringotts.obj.GringottsPlayer;
 import dev.jsinco.gringotts.obj.Vault;
 import dev.jsinco.gringotts.storage.DataSource;
+import dev.jsinco.gringotts.utility.Couple;
 import dev.jsinco.gringotts.utility.Executors;
 import dev.jsinco.gringotts.utility.Text;
 import dev.jsinco.gringotts.utility.Util;
 import io.papermc.paper.datacomponent.DataComponentTypes;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -21,23 +25,24 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
-import java.util.stream.Stream;
 
-// TODO: Config
-// TODO: Add cap to trust list
 @AutoRegisterGuiItems
 public class EditVaultGui extends GringottsGui {
+
+    private static final GuiConfig.EditVaultGui cfg = ConfigManager.get(GuiConfig.class).editVaultGui();
 
     private Vault vault;
     private GringottsPlayer gringottsPlayer;
     private Player p;
 
     private final GuiItem backButton = GuiItem.builder()
-            .index(() -> 0)
+            .index(() -> cfg.backButton().slot())
             .itemStack(b -> b
-                    .displayName("<red>Back")
-                    .material(Material.BARRIER)
+                    .displayName(cfg.backButton().name())
+                    .material(cfg.backButton().material())
+                    .lore(cfg.backButton().lore())
             )
             .action(e -> {
                 Player player = (Player) e.getWhoClicked();
@@ -45,12 +50,17 @@ public class EditVaultGui extends GringottsGui {
                 yourVaultsGui.open(player);
             })
             .build();
+    @SuppressWarnings("unchecked")
     private final GuiItem editNameButton = GuiItem.builder()
-            .index(() -> 12)
-            .itemStack(builder -> builder
-                    .displayName("Change Name")
-                    .material(Material.NAME_TAG)
-                    .lore("Current Name:", "<i>\"" + vault.getCustomName() + "\"")
+            .index(() -> cfg.editNameButton().slot())
+            .itemStack(b -> b
+                    .stringReplacements(
+                            Couple.of("{vaultName}", vault.getCustomName()),
+                            Couple.of("{id}", String.valueOf(vault.getId()))
+                    )
+                    .displayName(cfg.editNameButton().name())
+                    .material(cfg.editNameButton().material())
+                    .lore(cfg.editNameButton().lore())
             )
             .action(event -> {
                 ItemStack clickedItem = event.getCurrentItem();
@@ -67,7 +77,7 @@ public class EditVaultGui extends GringottsGui {
 
                             player.sendMessage("Vault name changed to: \"" + input + "\"");
                             Util.editMeta(clickedItem, meta -> {
-                                meta.lore(Text.mmlNoItalic("Current Name:", "<i>\"" + vault.getCustomName() + "\""));
+                                meta.lore(Text.mmlNoItalic(Util.replaceAll(cfg.editNameButton().lore(), "{vaultName}", vault.getCustomName()), NamedTextColor.WHITE));
                             });
                             open(player);
                         },
@@ -77,11 +87,11 @@ public class EditVaultGui extends GringottsGui {
             .build();
 
     private final UncontainedGuiItem editIconButton = UncontainedGuiItem.builder()
-            .index(() -> 13)
+            .index(() -> cfg.editIconButton().slot())
             .itemStack(b -> b
-                    .displayName("Change Icon")
-                    .material(vault.getIcon())
-                    .lore("Click to change the icon", "of this vault.")
+                    .displayName(cfg.editIconButton().name())
+                    .material(cfg.editIconButton().material())
+                    .lore(cfg.editIconButton().lore())
             )
             .action((event, self, isClicked) -> {
                 ItemStack clickedItem = event.getCurrentItem();
@@ -97,7 +107,7 @@ public class EditVaultGui extends GringottsGui {
 
                 if (isClicked) {
                     iconItem.setData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, !currentValue);
-                } else if (currentValue) {
+                } else if (currentValue && clickedInventory != event.getInventory()) {
                     vault.setIcon(clickedItem.getType());
                     DataSource.getInstance().saveVault(vault);
 
@@ -107,21 +117,21 @@ public class EditVaultGui extends GringottsGui {
             })
             .build();
 
+    @SuppressWarnings("unchecked")
     private final GuiItem editTrustedListButton = GuiItem.builder()
-            .index(() -> 14)
+            .index(() -> cfg.editTrustListButton().slot())
             .itemStack(b -> b
-                    .displayName("Edit Trust List")
-                    .material(Material.PLAYER_HEAD)
-                    .playerProfile(p.getPlayerProfile())
-                    .lore(
-                            Stream.concat(
-                                    Stream.of("Trusted Players:"),
-                                    vault.getTrustedPlayers().stream().map(id -> {
-                                        String name = Bukkit.getOfflinePlayer(id).getName();
-                                        return "- " + (name != null ? name : id.toString());
-                                    })
-                            ).toArray(String[]::new)
+                    .stringReplacements(
+                            Couple.of("{vaultName}", vault.getCustomName()),
+                            Couple.of("{id}", String.valueOf(vault.getId())),
+                            Couple.of("{name}", p.getName()),
+                            Couple.of("{trustedListSize}", trustListCap())
+                            //Couple.of("{trustedList}", trustedListString()),
                     )
+                    .displayName(cfg.editTrustListButton().name())
+                    .material(cfg.editTrustListButton().material())
+                    .headOwner(cfg.editTrustListButton().headOwner())
+                    .lore(Util.replaceStringWithList(cfg.editTrustListButton().lore(), "{trustedList}", trustedListString()))
             )
             .action(event -> {
                 ItemStack clickedItem = event.getCurrentItem();
@@ -144,24 +154,25 @@ public class EditVaultGui extends GringottsGui {
                             if (vault.isTrusted(offlinePlayer.getUniqueId())) {
                                 vault.removeTrusted(offlinePlayer.getUniqueId());
                                 player.sendMessage("'" + input + "' has been removed from your vault.");
-                            } else {
-                                vault.addTrusted(offlinePlayer.getUniqueId());
+                            } else if (vault.addTrusted(offlinePlayer.getUniqueId())){
                                 player.sendMessage("'" + input + "' has been added to your vault.");
+                            } else {
+                                player.sendMessage("Your trust list is at it's maximum capacity.");
                             }
 
                             DataSource.getInstance().saveVault(vault);
 
                             Util.editMeta(clickedItem, meta -> {
+                                meta.displayName(Text.mmNoItalic(cfg.editTrustListButton().name().replace("{trustedListSize}", trustListCap()), NamedTextColor.AQUA));
                                 meta.lore(Text.mmlNoItalic(
-                                        Stream.concat(
-                                                Stream.of("Trusted Players:"),
-                                                vault.getTrustedPlayers().stream().map(id -> {
-                                                    String name = Bukkit.getOfflinePlayer(id).getName();
-                                                    return "- " + (name != null ? name : id.toString());
-                                                })
-                                        ).toArray(String[]::new)
+                                        Util.replaceAll(
+                                                Util.replaceStringWithList(cfg.editTrustListButton().lore(), "{trustedList}", trustedListString()),
+                                                "{trustedListSize}", trustListCap()
+                                        ),
+                                        NamedTextColor.WHITE
                                 ));
                             });
+                            //event.getInventory().setItem(cfg.editTrustListButton().slot(), item);
                             open(player);
                         },
                         () -> open(player)
@@ -171,7 +182,7 @@ public class EditVaultGui extends GringottsGui {
 
 
     public EditVaultGui(Vault vault, GringottsPlayer gringottsPlayer, Player player) {
-        super("Editing Vault #" + vault.getId(), 27);
+        super(cfg.title().replace("{vaultName}", vault.getCustomName()).replace("{id}", String.valueOf(vault.getId())), cfg.size());
         this.vault = vault;
         this.gringottsPlayer = gringottsPlayer;
         this.p = player;
@@ -185,5 +196,17 @@ public class EditVaultGui extends GringottsGui {
     @Override
     public void open(Player player) {
         Executors.sync(() -> player.openInventory(this.getInventory()));
+    }
+
+    private String trustListCap() {
+        int max = ConfigManager.get(Config.class).vaultTrustCap();
+        return vault.getTrustedPlayers().size() + "/" + max;
+    }
+
+    private List<String> trustedListString() {
+        return vault.getTrustedPlayers().stream().map(id -> {
+            String name = Bukkit.getOfflinePlayer(id).getName();
+            return "- " + (name != null ? name : id.toString());
+        }).toList();
     }
 }

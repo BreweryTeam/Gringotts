@@ -1,10 +1,13 @@
 package dev.jsinco.gringotts.obj;
 
 import com.google.common.collect.ImmutableList;
+import dev.jsinco.gringotts.configuration.ConfigManager;
+import dev.jsinco.gringotts.configuration.files.GuiConfig;
 import dev.jsinco.gringotts.gui.EditVaultGui;
 import dev.jsinco.gringotts.gui.GringottsGui;
 import dev.jsinco.gringotts.gui.item.AbstractGuiItem;
 import dev.jsinco.gringotts.storage.DataSource;
+import dev.jsinco.gringotts.utility.Couple;
 import dev.jsinco.gringotts.utility.ItemStacks;
 import dev.jsinco.gringotts.utility.Util;
 import lombok.Getter;
@@ -14,13 +17,14 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-// A snapshot of a vault with reduced information, used for listing or quick access
+// A snapshot of a vault with reduced information
 public class SnapshotVault implements AbstractGuiItem {
+
+    private static final GuiConfig.YourVaultsGui.VaultItem cfg = ConfigManager.get(GuiConfig.class).yourVaultsGui().vaultItem();
 
     @Getter
     private final UUID owner;
@@ -74,19 +78,17 @@ public class SnapshotVault implements AbstractGuiItem {
         return player.getUniqueId() == this.owner || this.trustedPlayers.contains(player.getUniqueId()) || player.hasPermission("gringotts.viewothers");
     }
 
-
+    @SuppressWarnings("unchecked")
     @Override
     public ItemStack itemStack() {
         return ItemStacks.builder()
-                .displayName(customName)
-                .material(icon)
-                .lore(
-                        "Left-click to open",
-                        "this vault.",
-                        "",
-                        "Right-click to open",
-                        "your vault settings."
+                .stringReplacements(
+                        Couple.of("{vaultName}", customName),
+                        Couple.of("{id}", id)
                 )
+                .displayName(cfg.name())
+                .material(icon)
+                .lore(cfg.lore())
                 .build();
     }
 

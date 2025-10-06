@@ -1,7 +1,7 @@
 package dev.jsinco.gringotts.gui;
 
 import dev.jsinco.gringotts.configuration.ConfigManager;
-import dev.jsinco.gringotts.configuration.GuiConfig;
+import dev.jsinco.gringotts.configuration.files.GuiConfig;
 import dev.jsinco.gringotts.configuration.IntPair;
 import dev.jsinco.gringotts.gui.item.GuiItem;
 import dev.jsinco.gringotts.obj.GringottsPlayer;
@@ -24,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class VaultOtherGui extends GringottsGui implements PromisedInventory {
 
-    private static final GuiConfig.VaultOtherGui cfg = ConfigManager.instance().guiConfig().vaultOtherGui();
+    private static final GuiConfig.VaultOtherGui cfg = ConfigManager.get(GuiConfig.class).vaultOtherGui();
 
     private PaginatedGui paginatedGui;
 

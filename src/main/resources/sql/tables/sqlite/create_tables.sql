@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS vaults(
+CREATE TABLE IF NOT EXISTS gringotts_vaults(
     owner VARCHAR(36) NOT NULL,
     id INTEGER NOT NULL,
     inventory TEXT NOT NULL,
@@ -8,13 +8,13 @@ CREATE TABLE IF NOT EXISTS vaults(
     PRIMARY KEY (owner, id)
 );
 
-CREATE TABLE IF NOT EXISTS players(
+CREATE TABLE IF NOT EXISTS gringotts_players(
     uuid VARCHAR(36) NOT NULL PRIMARY KEY,
     max_vaults INTEGER NOT NULL,
     max_warehouse_stock INTEGER NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS warehouses(
+CREATE TABLE IF NOT EXISTS gringotts_warehouses(
     owner VARCHAR(36) NOT NULL,
     material VARCHAR(64) NOT NULL,
     quantity INTEGER NOT NULL,

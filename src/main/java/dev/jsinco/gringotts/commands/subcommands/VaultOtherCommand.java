@@ -60,8 +60,7 @@ public class VaultOtherCommand implements SubCommand {
         so we'll just return nothing if that's the case. */
         GringottsPlayer gringottsPlayer = dataSource.cachedGringottsPlayer(offlinePlayer.getUniqueId());
         if (gringottsPlayer == null) {
-
-            return List.of();
+            return Util.tryGetNextNumberArg(args.get(1));
         }
         // List of vault IDs the player has access to
         return IntStream.rangeClosed(1, gringottsPlayer.getCalculatedMaxVaults())

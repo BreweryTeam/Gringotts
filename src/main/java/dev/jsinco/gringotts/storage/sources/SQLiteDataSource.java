@@ -1,6 +1,8 @@
 package dev.jsinco.gringotts.storage.sources;
 
 import com.zaxxer.hikari.HikariConfig;
+import dev.jsinco.gringotts.configuration.ConfigManager;
+import dev.jsinco.gringotts.configuration.files.Config;
 import dev.jsinco.gringotts.obj.GringottsPlayer;
 import dev.jsinco.gringotts.obj.SnapshotVault;
 import dev.jsinco.gringotts.obj.Stock;
@@ -29,7 +31,8 @@ public class SQLiteDataSource extends DataSource {
 
     @Override
     public HikariConfig hikariConfig() throws IOException {
-        File file = DATA_FOLDER.resolve("gringotts.db").toFile();
+        String fileName = ConfigManager.get(Config.class).storage().database() + ".db";
+        File file = DATA_FOLDER.resolve(fileName).toFile();
         if (!file.exists() && !file.getParentFile().mkdirs() && !file.createNewFile()) {
             throw new IOException("Could not create file or dirs");
         }
@@ -123,7 +126,6 @@ public class SQLiteDataSource extends DataSource {
     @Override
     public CompletableFuture<@NotNull Warehouse> getWarehouse(UUID owner) {
         return Executors.supplyAsyncWithSQLException(() -> {
-
             try (Connection connection = this.connection()) {
 
                 PreparedStatement warehouseStatement = connection.prepareStatement(

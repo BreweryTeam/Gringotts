@@ -1,4 +1,4 @@
-INSERT INTO vaults(
+INSERT INTO gringotts_vaults(
     owner, id, inventory, custom_name, icon, trusted_players
 ) VALUES (?, ?, ?, ?, ?, ?)
     ON CONFLICT(owner, id) DO UPDATE SET

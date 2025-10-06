@@ -10,6 +10,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.IntStream;
+
 public class Util {
 
     public static final Gson GSON = new Gson();
@@ -27,6 +31,14 @@ public class Util {
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    public static <E extends Enum<E>> E getEnum(String value, Class<E> enumClass) {
+        try {
+            return Enum.valueOf(enumClass, value.toUpperCase());
+        } catch (IllegalArgumentException e) {
             return null;
         }
     }
@@ -102,5 +114,52 @@ public class Util {
             }
         }
         return amount;
+    }
+
+    public static List<String> tryGetNextNumberArg(String arg) {
+        int num = Util.getInteger(arg, -1);
+        return IntStream.range(0, 10)
+                .mapToObj(i -> num < 0 ? String.valueOf(i) : num + "" + i)
+                .toList();
+    }
+
+    @SafeVarargs
+    public static String replace(String string, Couple<String, String>... pairs) {
+        if (string == null) {
+            return null;
+        }
+        String newString = string;
+        for (Couple<String, String> pair : pairs) {
+            newString = newString.replace(pair.a(), pair.b());
+        }
+        return newString;
+    }
+
+    public static List<String> replaceAll(List<String> list, String charArray, String charArrayReplacement) {
+        return list.stream().map(s -> s.replace(charArray, charArrayReplacement)).toList();
+    }
+
+    public static List<String> replaceStringWithList(List<String> list, String charArray, List<String> charArrayReplacement) {
+        List<String> newList = new ArrayList<>(list);
+        for (int i = 0; i < newList.size(); i++) {
+            String s = newList.get(i);
+            if (s.contains(charArray)) {
+                newList.remove(i);
+                newList.addAll(i, charArrayReplacement);
+            }
+        }
+        return newList;
+    }
+
+    public static <T> List<String> replaceAll(List<String> list, Couple<String, T>... pairs) {
+        List<String> newList = new ArrayList<>();
+        for (String string : list) {
+            String newString = string;
+            for (Couple<String, T> pair : pairs) {
+                newString = newString.replace(pair.a(), String.valueOf(pair.b()));
+            }
+            newList.add(newString);
+        }
+        return newList;
     }
 }

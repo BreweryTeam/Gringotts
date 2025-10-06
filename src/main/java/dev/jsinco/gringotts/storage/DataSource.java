@@ -4,6 +4,8 @@ import com.google.common.base.Preconditions;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import dev.jsinco.gringotts.Gringotts;
+import dev.jsinco.gringotts.configuration.ConfigManager;
+import dev.jsinco.gringotts.configuration.files.Config;
 import dev.jsinco.gringotts.enums.Driver;
 import dev.jsinco.gringotts.obj.CachedObject;
 import dev.jsinco.gringotts.obj.GringottsPlayer;
@@ -74,11 +76,10 @@ public abstract class DataSource {
         Bukkit.getAsyncScheduler().runAtFixedRate(Gringotts.getInstance(),task -> {
             System.out.println(cachedObjects);
             for (CachedObject cachedObject : cachedObjects) {
-                Long expire = cachedObject.getExpire();
-                if (expire != null && expire < System.currentTimeMillis()) {
+                if (cachedObject.isExpired()) {
                     cachedObject.save(this);
                     cachedObjects.remove(cachedObject);
-                    Text.debug("Uncached " + cachedObject.getClass().getSimpleName() + ": " + cachedObject.getUuid());
+                    Text.debug("Uncached " + cachedObject.getClass().getSimpleName() + ": " + cachedObject.getUuid() + " because it was expired");
                 }
             }
         },0, 1, TimeUnit.MINUTES);
@@ -101,11 +102,15 @@ public abstract class DataSource {
         return FileUtil.readInternalResource("/sql/" + path);
     }
 
-    public void close() {
+    public void clearCache() {
         for (CachedObject cachedObject : cachedObjects) {
             cachedObject.save(this);
         }
         cachedObjects.clear();
+    }
+
+    public void close() {
+        clearCache();
         hikari.close();
     }
 
@@ -197,6 +202,11 @@ public abstract class DataSource {
         ).findFirst().orElse(null);
     }
 
+    public <T extends CachedObject> CompletableFuture<T> cacheObjectWithDefaultExpire(CompletableFuture<T> future) {
+        long expire = ConfigManager.get(Config.class).storage().defaultObjectCacheTime();
+        return cacheObject(future, expire);
+    }
+
     public <T extends CachedObject> CompletableFuture<T> cacheObject(CompletableFuture<T> future, long expire) {
         return future.thenCompose(obj -> {
             if (obj == null) {
@@ -243,6 +253,7 @@ public abstract class DataSource {
 
                         @SuppressWarnings("unchecked")
                         T alreadyCached = (T) cached;
+                        alreadyCached.setExpire(null); // remove expire time
                         Text.debug("Using cached " + obj.getClass().getSimpleName() + ": " + obj.getUuid());
                         return CompletableFuture.completedFuture(alreadyCached);
                     }

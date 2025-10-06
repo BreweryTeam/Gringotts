@@ -1,7 +1,7 @@
 package dev.jsinco.gringotts.gui;
 
 import dev.jsinco.gringotts.configuration.ConfigManager;
-import dev.jsinco.gringotts.configuration.GuiConfig;
+import dev.jsinco.gringotts.configuration.files.GuiConfig;
 import dev.jsinco.gringotts.configuration.IntPair;
 import dev.jsinco.gringotts.gui.item.GuiItem;
 import dev.jsinco.gringotts.obj.GringottsPlayer;
@@ -12,8 +12,6 @@ import dev.jsinco.gringotts.utility.Executors;
 import dev.jsinco.gringotts.utility.ItemStacks;
 import dev.jsinco.gringotts.utility.Text;
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -24,10 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-// TODO: Config
 public class YourVaultsGui extends GringottsGui implements PromisedInventory {
 
-    private static final GuiConfig.YourVaultsGui cfg = ConfigManager.instance().guiConfig().yourVaultsGui();
+    private static final GuiConfig.YourVaultsGui cfg = ConfigManager.get(GuiConfig.class).yourVaultsGui();
 
     private PaginatedGui paginatedGui;
     private GringottsPlayer gringottsPlayer;
@@ -36,9 +33,9 @@ public class YourVaultsGui extends GringottsGui implements PromisedInventory {
 
     private final GuiItem warehouseButton = GuiItem.builder()
             .itemStack(b -> b
-                    .displayName(cfg.warehouseQuickbar().title())
-                    .lore(cfg.warehouseQuickbar().lore())
+                    .displayName(cfg.warehouseQuickbar().name())
                     .material(cfg.warehouseQuickbar().material())
+                    .lore(cfg.warehouseQuickbar().lore())
             )
             .action(e -> {
                 Warehouse warehouse = DataSource.getInstance().cachedWarehouse(gringottsPlayer.getUuid());
@@ -48,7 +45,7 @@ public class YourVaultsGui extends GringottsGui implements PromisedInventory {
             .build();
     private final GuiItem previousPage = GuiItem.builder()
             .itemStack(b -> b
-                    .displayName(cfg.previousPage().title())
+                    .displayName(cfg.previousPage().name())
                     .material(cfg.previousPage().material())
                     .lore(cfg.previousPage().lore())
             )
@@ -65,7 +62,7 @@ public class YourVaultsGui extends GringottsGui implements PromisedInventory {
             .build();
     private final GuiItem nextPage = GuiItem.builder()
             .itemStack(b -> b
-                    .displayName(cfg.nextPage().title())
+                    .displayName(cfg.nextPage().name())
                     .material(cfg.nextPage().material())
                     .lore(cfg.nextPage().lore())
             )
@@ -106,7 +103,6 @@ public class YourVaultsGui extends GringottsGui implements PromisedInventory {
 
             List<ItemStack> itemStacks = new ArrayList<>();
 
-            // FIXME: I don't like this solution, I'm just stupid and lazy
             for (int i = 0; i <  gringottsPlayer.getCalculatedMaxVaults(); i++) {
                 final int finalI = i;
                 SnapshotVault snapshotVault = snapshotVaults.stream().filter(it -> it.getId() == finalI + 1).findFirst().orElse(null);

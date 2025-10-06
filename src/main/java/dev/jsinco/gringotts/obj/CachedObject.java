@@ -9,4 +9,8 @@ public interface CachedObject {
     Long getExpire();
     void setExpire(Long expire);
     void save(DataSource dataSource);
+    default boolean isExpired() {
+        Long expiration = this.getExpire();
+        return expiration != null && expiration < System.currentTimeMillis();
+    }
 }

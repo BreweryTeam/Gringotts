@@ -4,7 +4,8 @@ import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import dev.jsinco.gringotts.configuration.ConfigManager;
-import dev.jsinco.gringotts.configuration.GuiConfig;
+import dev.jsinco.gringotts.configuration.files.Config;
+import dev.jsinco.gringotts.configuration.files.GuiConfig;
 import dev.jsinco.gringotts.utility.Couple;
 import dev.jsinco.gringotts.utility.Executors;
 import dev.jsinco.gringotts.utility.Text;
@@ -15,7 +16,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,11 +29,11 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class Vault implements InventoryHolder {
+public class Vault implements GringottsInventory {
 
     private static final Gson GSON = Util.GSON;
     public static final Type TYPE_TOKEN = new TypeToken<List<UUID>>(){}.getType();
-    private static final GuiConfig cfg = ConfigManager.instance().guiConfig();
+    private static final GuiConfig cfg = ConfigManager.get(GuiConfig.class);
 
     private final UUID owner;
     private final int id;
@@ -115,10 +115,8 @@ public class Vault implements InventoryHolder {
         }
 
         Executors.runSync(() -> {
-            // TODO: fixup
             player.openInventory(this.inventory);
-            Inventory otherInv = otherPlayer.getOpenInventory().getTopInventory();
-            if (state == VaultOpenState.OPEN_BY_MOD && otherInv.getHolder(false) instanceof Vault otherVault) {
+            if (state == VaultOpenState.OPEN_BY_MOD && otherPlayer.getOpenInventory().getTopInventory().getHolder(false) instanceof Vault otherVault) {
                 otherVault.update(otherPlayer);
             }
         });
@@ -127,7 +125,7 @@ public class Vault implements InventoryHolder {
     public Couple<@NotNull VaultOpenState, @Nullable Player> getOpenState() {
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (this.equals(player.getOpenInventory().getTopInventory().getHolder(false))) {
-                if (player.hasPermission("gringotts.viewothers")) {
+                if (player.hasPermission("gringotts.viewother")) {
                     return Couple.of(VaultOpenState.OPEN_BY_MOD, player);
                 }
                 return Couple.of(VaultOpenState.OPEN, player);
@@ -150,15 +148,20 @@ public class Vault implements InventoryHolder {
     }
 
     public boolean canAccess(Player player) {
-        return player.getUniqueId() == this.owner || this.trustedPlayers.contains(player.getUniqueId()) || player.hasPermission("gringotts.viewothers");
+        return player.getUniqueId() == this.owner || this.trustedPlayers.contains(player.getUniqueId()) || player.hasPermission("gringotts.viewother");
     }
 
     public boolean isTrusted(UUID uuid) {
-        return trustedPlayers.contains(uuid);
+        return trustedPlayers.contains(uuid) || uuid == owner;
     }
 
-    public void addTrusted(UUID uuid) {
+    public boolean addTrusted(UUID uuid) {
+        int cap = ConfigManager.get(Config.class).vaultTrustCap();
+        if (trustedPlayers.size() >= cap) {
+            return false;
+        }
         trustedPlayers.add(uuid);
+        return true;
     }
 
     public void removeTrusted(UUID uuid) {

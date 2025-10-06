@@ -1,3 +1,3 @@
 DELETE
-FROM vaults
+FROM gringotts_vaults
 WHERE owner = ? AND id = ?;

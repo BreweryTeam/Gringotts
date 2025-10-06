@@ -8,9 +8,11 @@ import dev.jsinco.gringotts.events.ChatPromptInputListener;
 import dev.jsinco.gringotts.events.GuiListener;
 import dev.jsinco.gringotts.events.PlayerListener;
 import dev.jsinco.gringotts.events.VaultListener;
+import dev.jsinco.gringotts.obj.GringottsInventory;
 import dev.jsinco.gringotts.storage.DataSource;
 import lombok.Getter;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class Gringotts extends JavaPlugin {
@@ -27,7 +29,7 @@ public final class Gringotts extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        ConfigManager.instance();
+        //ConfigManager.instance();
         DataSource.createInstance();
 
         getServer().getPluginCommand("gringotts").setExecutor(new GringottsBaseCommand());
@@ -51,5 +53,12 @@ public final class Gringotts extends JavaPlugin {
         shutdown = true;
         DataSource dataSource = DataSource.getInstance();
         dataSource.close();
+
+        for (Player player : getServer().getOnlinePlayers()) {
+            Inventory inv = player.getOpenInventory().getTopInventory();
+            if (inv.getHolder(false) instanceof GringottsInventory) {
+                player.closeInventory();
+            }
+        }
     }
 }

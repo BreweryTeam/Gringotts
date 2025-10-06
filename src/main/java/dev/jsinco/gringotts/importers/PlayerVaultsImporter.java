@@ -1,6 +1,5 @@
 package dev.jsinco.gringotts.importers;
 
-import com.drtshock.playervaults.vaultmanagement.CardboardBoxSerialization;
 import dev.jsinco.gringotts.Gringotts;
 import dev.jsinco.gringotts.obj.Vault;
 import dev.jsinco.gringotts.storage.DataSource;
@@ -68,7 +67,7 @@ public class PlayerVaultsImporter implements FlatFileImporter {
                 .map(loadedFile::getString)
                 .map(base64 -> {
                     try {
-                        return CardboardBoxSerialization.fromStorage(base64, uuidAsString);
+                        return com.drtshock.playervaults.vaultmanagement.CardboardBoxSerialization.fromStorage(base64, uuidAsString);
                     } catch (Exception e) {
                         e.printStackTrace();
                         return null;

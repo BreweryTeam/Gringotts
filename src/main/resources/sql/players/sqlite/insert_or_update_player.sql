@@ -1,4 +1,4 @@
-INSERT INTO players(
+INSERT INTO gringotts_players(
     uuid, max_vaults, max_warehouse_stock
 ) VALUES (?, ?, ?)
     ON CONFLICT(uuid) DO UPDATE SET

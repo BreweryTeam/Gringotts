@@ -1,5 +1,6 @@
-package dev.jsinco.gringotts.configuration;
+package dev.jsinco.gringotts.configuration.serdes;
 
+import dev.jsinco.gringotts.configuration.IntPair;
 import dev.jsinco.gringotts.utility.Util;
 import eu.okaeri.configs.schema.GenericsPair;
 import eu.okaeri.configs.serdes.BidirectionalTransformer;

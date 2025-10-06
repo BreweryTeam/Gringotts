@@ -1,14 +1,15 @@
 package dev.jsinco.gringotts.gui;
 
-import dev.jsinco.gringotts.configuration.Config;
+import dev.jsinco.gringotts.configuration.files.Config;
 import dev.jsinco.gringotts.configuration.ConfigManager;
-import dev.jsinco.gringotts.configuration.GuiConfig;
+import dev.jsinco.gringotts.configuration.files.GuiConfig;
 import dev.jsinco.gringotts.configuration.IntPair;
 import dev.jsinco.gringotts.gui.item.GuiItem;
 import dev.jsinco.gringotts.gui.item.UncontainedGuiItem;
 import dev.jsinco.gringotts.obj.GringottsPlayer;
 import dev.jsinco.gringotts.obj.Warehouse;
 import dev.jsinco.gringotts.storage.DataSource;
+import dev.jsinco.gringotts.utility.Couple;
 import dev.jsinco.gringotts.utility.Executors;
 import dev.jsinco.gringotts.utility.ItemStacks;
 import dev.jsinco.gringotts.utility.Util;
@@ -27,7 +28,7 @@ import java.util.Objects;
 // FIXME: I hate this code.
 public class WarehouseGui extends GringottsGui {
 
-    private static final GuiConfig guiConfig = ConfigManager.instance().guiConfig();
+    private static final GuiConfig.WarehouseGui cfg = ConfigManager.get(GuiConfig.class).warehouseGui();
 
     private PaginatedGui paginatedGui;
 
@@ -38,10 +39,11 @@ public class WarehouseGui extends GringottsGui {
 
 
     private final GuiItem previousPage = GuiItem.builder()
-            .index(() -> guiConfig.warehouseGui().previousPage().slot())
+            .index(() -> cfg.previousPage().slot())
             .itemStack(b -> b
-                    .displayName(guiConfig.warehouseGui().previousPage().title())
-                    .material(guiConfig.warehouseGui().previousPage().material())
+                    .displayName(cfg.previousPage().title())
+                    .material(cfg.previousPage().material())
+                    .lore(cfg.previousPage().lore())
             )
             .action(e -> {
                 Player player = (Player) e.getWhoClicked();
@@ -55,10 +57,11 @@ public class WarehouseGui extends GringottsGui {
             })
             .build();
     private final GuiItem nextPage = GuiItem.builder()
-            .index(() -> guiConfig.warehouseGui().nextPage().slot())
+            .index(() -> cfg.nextPage().slot())
             .itemStack(b -> b
-                    .displayName(guiConfig.warehouseGui().nextPage().title())
-                    .material(guiConfig.warehouseGui().nextPage().material())
+                    .displayName(cfg.nextPage().title())
+                    .material(cfg.nextPage().material())
+                    .lore(cfg.nextPage().lore())
             )
             .action(e -> {
                 Player player = (Player) e.getWhoClicked();
@@ -72,11 +75,11 @@ public class WarehouseGui extends GringottsGui {
             })
             .build();
     private final UncontainedGuiItem managerButton = UncontainedGuiItem.builder()
-            .index(() -> guiConfig.warehouseGui().managerButton().slot())
+            .index(() -> cfg.managerButton().slot())
             .itemStack(b -> b
-                    .displayName(guiConfig.warehouseGui().managerButton().title())
-                    .material(guiConfig.warehouseGui().managerButton().material())
-                    .lore(guiConfig.warehouseGui().managerButton().lore())
+                    .displayName(cfg.managerButton().name())
+                    .material(cfg.managerButton().material())
+                    .lore(cfg.managerButton().lore())
             )
             .action((event, self, isClicked) -> {
                 Player player = (Player) event.getWhoClicked();
@@ -124,14 +127,32 @@ public class WarehouseGui extends GringottsGui {
             })
             .build();
 
+    @SuppressWarnings("unchecked")
+    private final GuiItem statusIcon = GuiItem.builder()
+            .index(() -> cfg.statusIcon().slot())
+            .itemStack(b -> b
+                    .stringReplacements(
+                            Couple.of("{name}", gringottsPlayer.name()),
+                            Couple.of("{stock}", warehouse.currentStockQuantity()),
+                            Couple.of("{maxStock}", gringottsPlayer.getCalculatedMaxWarehouseStock()),
+                            Couple.of("{stockPercent}", String.format("%.0f", warehouseUsagePercent()))
+                    )
+                    .displayName(cfg.statusIcon().name())
+                    .lore(cfg.statusIcon().lore())
+                    .material(cfg.statusIcon().material())
+                    .headOwner(cfg.statusIcon().headOwner())
+            )
+            .build();
+
     public WarehouseGui(Warehouse warehouse, GringottsPlayer gringottsPlayer) {
-        super(guiConfig.warehouseGui().title(), guiConfig.warehouseGui().size());
+        super(cfg.title(), cfg.size());
         this.gringottsPlayer = gringottsPlayer;
         this.warehouse = warehouse;
 
         addGuiItem(previousPage);
         addGuiItem(nextPage);
         addGuiItem(managerButton);
+        addGuiItem(statusIcon);
 
         List<ItemStack> itemStacks = new ArrayList<>();
         for (GuiItem guiItem : warehouse.stockAsGuiItems(-1)) {
@@ -139,8 +160,8 @@ public class WarehouseGui extends GringottsGui {
             addGuiItem(guiItem);
         }
 
-        IntPair slots = guiConfig.warehouseGui().warehouseItem().slots();
-        List<Integer> ignoredSlots = guiConfig.warehouseGui().warehouseItem().ignoredSlots();
+        IntPair slots = cfg.warehouseItem().slots();
+        List<Integer> ignoredSlots = cfg.warehouseItem().ignoredSlots();
 
         int i = 0;
         for (ItemStack itemStack : inventory.getContents()) {
@@ -151,7 +172,7 @@ public class WarehouseGui extends GringottsGui {
         }
 
         this.paginatedGui = PaginatedGui.builder()
-                .name(guiConfig.warehouseGui().title())
+                .name(cfg.title())
                 .items(itemStacks)
                 .startEndSlots(slots.a(), slots.b())
                 .ignoredSlots(ignoredSlots)
@@ -160,11 +181,23 @@ public class WarehouseGui extends GringottsGui {
     }
 
     @Override
-    public void onInventoryClick(InventoryClickEvent event) {
-        event.setCancelled(true);
-        // FIXME: Duplicated code
+    public void onPreInventoryClick(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
-        Config.QuickReturn quickReturn = ConfigManager.instance().config().quickReturn();
+        if (warehouse.isExpired()) {
+            player.sendMessage("This warehouse view has expired. (Object expired, try re-opening this GUI.)");
+            player.closeInventory();
+            return;
+        }
+        super.onPreInventoryClick(event);
+    }
+
+    @Override
+    public void onInventoryClick(InventoryClickEvent event) {
+        Player player = (Player) event.getWhoClicked();
+        Config.QuickReturn quickReturn = ConfigManager.get(Config.class).quickReturn();
+
+        event.setCancelled(true);
+
         if (event.getClickedInventory() == null && quickReturn.enabled() && event.getClick() == quickReturn.clickType()) {
             GringottsPlayer gringottsPlayer = DataSource.getInstance().cachedGringottsPlayer(player.getUniqueId());
             YourVaultsGui gui = GringottsGui.factory(() -> new YourVaultsGui(gringottsPlayer));
@@ -181,5 +214,13 @@ public class WarehouseGui extends GringottsGui {
     private void refresh(Player player) {
         WarehouseGui newGui = GringottsGui.factory(() -> new WarehouseGui(warehouse, gringottsPlayer));
         newGui.open(player);
+    }
+
+    private double warehouseUsagePercent() {
+        int dem = gringottsPlayer.getCalculatedMaxWarehouseStock();
+        if (dem == 0) {
+            return 0;
+        }
+        return ((double) warehouse.currentStockQuantity() / dem) * 100.0;
     }
 }

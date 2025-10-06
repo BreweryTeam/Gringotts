@@ -1,3 +1,3 @@
 SELECT *
-FROM vaults
+FROM gringotts_vaults
 WHERE owner = ?;

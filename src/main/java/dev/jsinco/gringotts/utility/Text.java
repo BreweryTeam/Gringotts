@@ -16,8 +16,16 @@ public class Text {
         return MiniMessage.miniMessage().deserialize(m);
     }
 
+    public static Component mm(String m, TextColor color) {
+        return mm(m).color(color);
+    }
+
     public static Component mmNoItalic(String m) {
         return mm(m).decoration(TextDecoration.ITALIC, false);
+    }
+
+    public static Component mmNoItalic(String m, TextColor color) {
+        return mm(m).decoration(TextDecoration.ITALIC, false).color(color);
     }
 
     public static List<Component> mmlNoItalic(String... ms) {

@@ -11,7 +11,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @Accessors(fluent = true)
-public class GuiArrowItem extends OkaeriConfig {
+public class ConfigGuiArrowItem extends OkaeriConfig {
     private String title;
     private List<String> lore;
     private int slot;

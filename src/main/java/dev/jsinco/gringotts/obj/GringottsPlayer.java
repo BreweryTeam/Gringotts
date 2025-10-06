@@ -1,6 +1,6 @@
 package dev.jsinco.gringotts.obj;
 
-import dev.jsinco.gringotts.configuration.Config;
+import dev.jsinco.gringotts.configuration.files.Config;
 import dev.jsinco.gringotts.configuration.ConfigManager;
 import dev.jsinco.gringotts.storage.DataSource;
 import lombok.Getter;
@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 @Setter
 public class GringottsPlayer implements CachedObject {
 
-    private static final Config cfg = ConfigManager.instance().config();
+    private static final Config cfg = ConfigManager.get(Config.class);
 
 
     private Long expire;
@@ -46,6 +46,10 @@ public class GringottsPlayer implements CachedObject {
 
     public OfflinePlayer offlinePlayer() {
         return Bukkit.getOfflinePlayer(uuid);
+    }
+
+    public String name() {
+        return offlinePlayer().getName();
     }
 
 
@@ -82,5 +86,15 @@ public class GringottsPlayer implements CachedObject {
     @Override
     public void save(DataSource dataSource) {
         dataSource.saveGringottsPlayer(this);
+    }
+
+    @Override
+    public String toString() {
+        return "GringottsPlayer{" +
+                "uuid=" + uuid +
+                ", expire=" + expire +
+                ", maxVaults=" + maxVaults +
+                ", maxWarehouseStock=" + maxWarehouseStock +
+                '}';
     }
 }

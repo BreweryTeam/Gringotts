@@ -7,10 +7,12 @@ commands:
     description: Main command for Gringotts
   playervaults:
     description: Alias for /gringotts vaults <index?>
-    aliases: [pv]
+    aliases: [pv, vault]
   warehouse:
     description: Alias for /gringotts warehouse
-    aliases: [es]
+    aliases: [es, wh]
 permissions:
-  gringotts.mod:
-    description:
+  gringotts.viewother:
+    children:
+      gringotts.command.vaultothers: true
+      gringotts.command.warehouseadmin: true

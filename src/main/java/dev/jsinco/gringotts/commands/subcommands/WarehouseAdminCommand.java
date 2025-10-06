@@ -23,8 +23,8 @@ public class WarehouseAdminCommand implements SubCommand {
         OfflinePlayer target = Bukkit.getOfflinePlayer(args.getFirst());
         DataSource dataSource = DataSource.getInstance();
 
-        CompletableFuture<GringottsPlayer> playerFuture = dataSource.cacheObject(dataSource.getGringottsPlayer(target.getUniqueId()), 180000L);
-        CompletableFuture<Warehouse> warehouseFuture = dataSource.cacheObject(dataSource.getWarehouse(target.getUniqueId()), 180000L);
+        CompletableFuture<GringottsPlayer> playerFuture = dataSource.cacheObjectWithDefaultExpire(dataSource.getGringottsPlayer(target.getUniqueId()));
+        CompletableFuture<Warehouse> warehouseFuture = dataSource.cacheObjectWithDefaultExpire(dataSource.getWarehouse(target.getUniqueId()));
 
         CompletableFuture.allOf(playerFuture, warehouseFuture).thenRunAsync(() -> {
             GringottsPlayer gringottsPlayer = playerFuture.join();

@@ -1,29 +1,33 @@
 package dev.jsinco.gringotts.obj;
 
+import dev.jsinco.gringotts.configuration.ConfigManager;
+import dev.jsinco.gringotts.configuration.files.GuiConfig;
+import dev.jsinco.gringotts.utility.Couple;
 import dev.jsinco.gringotts.utility.ItemStacks;
 import dev.jsinco.gringotts.utility.Util;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.UUID;
-
 public class OtherPlayerSnapshotVault extends SnapshotVault {
+
+    private static final GuiConfig.VaultOtherGui.VaultItem cfg = ConfigManager.get(GuiConfig.class).vaultOtherGui().vaultItem();
 
     public OtherPlayerSnapshotVault(SnapshotVault snapshotVault) {
         super(snapshotVault.getOwner(), snapshotVault.getId(), snapshotVault.getCustomName(), snapshotVault.getIcon(), snapshotVault.getTrustedPlayers());
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public ItemStack itemStack() {
         return ItemStacks.builder()
-                .displayName(getCustomName())
-                .material(getIcon())
-                .lore(
-                        "Left-click to open",
-                        "this vault."
+                .stringReplacements(
+                        Couple.of("{vaultName}", getCustomName()),
+                        Couple.of("{id}", getId())
                 )
+                .displayName(cfg.name())
+                .material(getIcon())
+                .lore(cfg.lore())
                 .build();
     }
 
