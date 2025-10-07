@@ -46,13 +46,14 @@ public class SQLiteDataSource extends DataSource {
     }
 
     @Override
-    public void createTables() {
-        Executors.runAsyncWithSQLException(() -> {
+    public CompletableFuture<Void> createTables() {
+        return Executors.supplyAsyncWithSQLException(() -> {
             try (Connection connection = this.connection()) {
                 for (String statement : this.getStatements("tables/sqlite/create_tables.sql")) {
                     connection.prepareStatement(statement).execute();
                 }
             }
+            return null;
         });
     }
 
@@ -89,8 +90,8 @@ public class SQLiteDataSource extends DataSource {
     }
 
     @Override
-    public void saveVault(Vault vault) {
-        Executors.runAsyncWithSQLException(() -> {
+    public CompletableFuture<Void> saveVault(Vault vault) {
+        return Executors.supplyAsyncWithSQLException(() -> {
             try (Connection connection = this.connection()) {
                 PreparedStatement statement = connection.prepareStatement(
                         this.getStatement("vaults/sqlite/insert_or_update_vault.sql")
@@ -104,12 +105,13 @@ public class SQLiteDataSource extends DataSource {
                 statement.executeUpdate();
                 Text.debug("Saved vault: " + vault.getOwner() + " #" + vault.getId());
             }
+            return null;
         });
     }
 
     @Override
-    public void deleteVault(UUID owner, int id) {
-        Executors.runAsyncWithSQLException(() -> {
+    public CompletableFuture<Void> deleteVault(UUID owner, int id) {
+        return Executors.supplyAsyncWithSQLException(() -> {
             try (Connection connection = this.connection()) {
                 PreparedStatement statement = connection.prepareStatement(
                         this.getStatement("vaults/delete_vault.sql")
@@ -119,6 +121,7 @@ public class SQLiteDataSource extends DataSource {
                 statement.executeUpdate();
                 Text.debug("Deleted vault: " + owner + " #" + id);
             }
+            return null;
         });
     }
 
@@ -142,8 +145,8 @@ public class SQLiteDataSource extends DataSource {
 
     // TODO: Redo this method
     @Override
-    public void saveWarehouse(Warehouse warehouse) {
-        Executors.runAsyncWithSQLException(() -> {
+    public CompletableFuture<Void> saveWarehouse(Warehouse warehouse) {
+        return Executors.supplyAsyncWithSQLException(() -> {
             try (Connection connection = this.connection()) {
                 UUID owner = warehouse.getOwner();
                 Map<Material, Stock> map = warehouse.stock();
@@ -188,6 +191,7 @@ public class SQLiteDataSource extends DataSource {
                     }
                 }
             }
+            return null;
         });
     }
 
@@ -207,8 +211,8 @@ public class SQLiteDataSource extends DataSource {
 
 
     @Override
-    public void saveGringottsPlayer(GringottsPlayer gringottsPlayer) {
-        Executors.runAsyncWithSQLException(() -> {
+    public CompletableFuture<Void> saveGringottsPlayer(GringottsPlayer gringottsPlayer) {
+        return Executors.supplyAsyncWithSQLException(() -> {
             try (Connection connection = this.connection()) {
                 PreparedStatement statement = connection.prepareStatement(
                         this.getStatement("players/sqlite/insert_or_update_player.sql")
@@ -216,9 +220,11 @@ public class SQLiteDataSource extends DataSource {
                 statement.setString(1, gringottsPlayer.getUuid().toString());
                 statement.setInt(2, gringottsPlayer.getMaxVaults());
                 statement.setInt(3, gringottsPlayer.getMaxWarehouseStock());
+                statement.setString(4, gringottsPlayer.getWarehouseMode().name());
                 statement.executeUpdate();
                 Text.debug("Saved gringotts player: " + gringottsPlayer.getUuid());
             }
+            return null;
         });
     }
 }

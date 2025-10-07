@@ -11,7 +11,8 @@ CREATE TABLE IF NOT EXISTS gringotts_vaults(
 CREATE TABLE IF NOT EXISTS gringotts_players(
     uuid VARCHAR(36) NOT NULL PRIMARY KEY,
     max_vaults INTEGER NOT NULL,
-    max_warehouse_stock INTEGER NOT NULL
+    max_warehouse_stock INTEGER NOT NULL,
+    warehouse_mode TEXT
 );
 
 CREATE TABLE IF NOT EXISTS gringotts_warehouses(

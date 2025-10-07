@@ -2,12 +2,14 @@ package dev.jsinco.gringotts.obj;
 
 import dev.jsinco.gringotts.configuration.files.Config;
 import dev.jsinco.gringotts.configuration.ConfigManager;
+import dev.jsinco.gringotts.enums.WarehouseMode;
 import dev.jsinco.gringotts.storage.DataSource;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
@@ -25,18 +27,21 @@ public class GringottsPlayer implements CachedObject {
     private final UUID uuid;
     private int maxVaults;
     private int maxWarehouseStock;
+    private WarehouseMode warehouseMode;
 
 
     public GringottsPlayer(UUID uuid) {
         this.uuid = uuid;
         this.maxVaults = 0;
         this.maxWarehouseStock = 0;
+        this.warehouseMode = WarehouseMode.NONE;
     }
 
-    public GringottsPlayer(UUID uuid, int maxVaults, int maxWarehouseStock) {
+    public GringottsPlayer(@NotNull UUID uuid, int maxVaults, int maxWarehouseStock, WarehouseMode warehouseMode) {
         this.uuid = uuid;
         this.maxVaults = maxVaults;
         this.maxWarehouseStock = maxWarehouseStock;
+        this.warehouseMode = warehouseMode == null ? WarehouseMode.NONE : warehouseMode;
     }
 
     @Nullable
@@ -56,12 +61,12 @@ public class GringottsPlayer implements CachedObject {
     public int getCalculatedMaxVaults() {
         int maxByPermission = getMaxByPermission("gringotts.maxvaults");
         // Whichever is greater, use that
-        return Math.max(Math.max(maxByPermission, maxVaults), cfg.defaultMaxVaults());
+        return Math.max(Math.max(maxByPermission, maxVaults), cfg.vaults().defaultMaxVaults());
     }
 
     public int getCalculatedMaxWarehouseStock() {
         int maxByPermission = getMaxByPermission("gringotts.maxstock");
-        return Math.max(Math.max(maxByPermission, maxWarehouseStock), cfg.defaultMaxStock());
+        return Math.max(Math.max(maxByPermission, maxWarehouseStock), cfg.warehouse().defaultMaxStock());
     }
 
     private int getMaxByPermission(String permissionPrefix) {

@@ -5,7 +5,7 @@ api-version: 1.21
 commands:
   gringotts:
     description: Main command for Gringotts
-  playervaults:
+  vaults:
     description: Alias for /gringotts vaults <index?>
     aliases: [pv, vault]
   warehouse:

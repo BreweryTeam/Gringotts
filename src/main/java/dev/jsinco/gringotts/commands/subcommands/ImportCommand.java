@@ -21,43 +21,48 @@ public class ImportCommand implements SubCommand {
         if (args.isEmpty()) {
             return false;
         }
-        String importerName = args.getFirst();
-        Importer importer = Registry.IMPORTERS.get(importerName);
+        try {
+            String importerName = args.getFirst();
+            Importer importer = Registry.IMPORTERS.get(importerName);
 
-        if (importer == null || !importer.canImport()) {
-            lng.entry(l -> l.command()._import().cannotImport(),
-                    sender,
+            if (importer == null || !importer.canImport()) {
+                lng.entry(l -> l.command()._import().cannotImport(),
+                        sender,
+                        Couple.of("{importer}", importerName)
+                );
+                return true;
+            }
+
+
+            lng.entry(l -> l.command()._import().startImport(),
+                    List.of(sender, CONSOLE),
                     Couple.of("{importer}", importerName)
             );
-            return true;
+            importer.importAll().thenAccept(results -> {
+                Map<UUID, Importer.Result> failed = results.entrySet().stream()
+                        .filter(e -> e.getValue() != Importer.Result.SUCCESS) // change method if different
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+                lng.entry(l -> l.command()._import().importComplete(),
+                        List.of(sender, CONSOLE),
+                        Couple.of("{amount}", results.size()),
+                        Couple.of("{failedAmount}", failed.size())
+                );
+
+                if (!failed.isEmpty()) {
+                    failed.forEach((uuid, r) -> {
+                        lng.entry(l -> l.command()._import().failedImport(),
+                                List.of(sender, CONSOLE),
+                                Couple.of("{uuid}", uuid),
+                                Couple.of("{result}", r)
+                        );
+                    });
+                }
+            });
+        } catch (Throwable e) {
+            e.printStackTrace();
+            return false;
         }
-
-
-        lng.entry(l -> l.command()._import().startImport(),
-                List.of(sender, CONSOLE),
-                Couple.of("{importer}", importerName)
-        );
-        importer.importAll().thenAccept(results -> {
-            Map<UUID, Importer.Result> failed = results.entrySet().stream()
-                    .filter(e -> e.getValue() != Importer.Result.SUCCESS) // change method if different
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-            lng.entry(l -> l.command()._import().importComplete(),
-                    List.of(sender, CONSOLE),
-                    Couple.of("{amount}", results.size()),
-                    Couple.of("{failedAmount}", failed.size())
-            );
-
-            if (!failed.isEmpty()) {
-                failed.forEach((uuid, r) -> {
-                    lng.entry(l -> l.command()._import().failedImport(),
-                            List.of(sender, CONSOLE),
-                            Couple.of("{uuid}", uuid),
-                            Couple.of("{result}", r)
-                    );
-                });
-            }
-        });
         return true;
     }
 

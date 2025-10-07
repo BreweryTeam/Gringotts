@@ -3,7 +3,6 @@ package dev.jsinco.gringotts.configuration;
 import dev.jsinco.gringotts.registry.RegistryItem;
 import eu.okaeri.configs.OkaeriConfig;
 
-import java.io.File;
 import java.nio.file.Path;
 
 import static dev.jsinco.gringotts.storage.DataSource.DATA_FOLDER;
@@ -21,7 +20,11 @@ public class OkaeriFile extends OkaeriConfig implements RegistryItem {
 
     private String dynamicFileName(OkaeriFileName annotation) {
         OkaeriFile config = ConfigManager.get(annotation.dynamicFileNameHolder());
-        return config.get(annotation.dynamicFileNameKey(), String.class);
+        String value = config.get(annotation.dynamicFileNameKey(), String.class);
+        if (value != null) {
+            return String.format(annotation.dynamicFileNameFormat(), value);
+        }
+        return null;
     }
 
     public void reload() {

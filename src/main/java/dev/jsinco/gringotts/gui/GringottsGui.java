@@ -99,6 +99,7 @@ public abstract class GringottsGui implements GringottsInventory {
 
 
 
+    // TODO: Remove
     public static <T extends GringottsGui> T factory(Supplier<T> supplier) {
         T instance = supplier.get();
         instance.constructedViaFactory = true;

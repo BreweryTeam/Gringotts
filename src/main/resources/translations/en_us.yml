@@ -4,9 +4,16 @@ warehouse:
   notEnoughMaterial: You don't have enough <aqua><b>{material}</b></aqua> to do this.
   notEnoughStock: Your warehouse is full!
   inventoryFull: Your inventory is full.
+  containerFull: This container is full.
   removedCompartment: Removed <aqua><b>{material}</b></aqua> from your warehouse.
   cannotRemoveCompartment: This compartments stock is not at 0, so it cannot be removed.
   addedCompartment: Added <aqua><b>{material}</b></aqua> to your warehouse.
+  changedMode: Changed warehouse mode to <aqua><b>{mode}</b></aqua>.
+  replenishedItem: '<yellow>Replenished <aqua><b>{amount}x {material}</b></aqua> into your inventory from your warehouse. <gray>(Stock: {stock})</gray>'
+  autoStoredItem: '<yellow>Stored <aqua><b>{amount}x {material}</b></aqua> into your warehouse. <gray>(Stock: {stock})</gray>'
+  depositedItem: '<yellow>Deposited <aqua><b>{amount}x {material}</b></aqua> into container. <gray>(Stock: {stock})</gray>'
+  blacklistedItem: You cannot deposit <aqua><b>{material}</b></aqua> into your warehouse.
+
 
 vaults:
   opening: Opening vault <aqua><b>{vaultName}</b></aqua>...
@@ -35,7 +42,7 @@ command:
     success: 'Set max {type} for {name} to {newMax} <gray>(Implicitly: {calculatedMax})</gray>'
   import:
     cannotImport: Cannot import vaults from {importer}. (Is it installed and/or enabled?)
-    startImport: Importing vaults from {importer}...
+    startImport: Importing vaults from {importer}... (This might take a while!)
     importComplete: Imported {amount} vaults with {failuresAmount} failures.
     failedImport: 'Failed: {uuid} -> {reason}'
   vaultOther:

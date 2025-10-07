@@ -13,6 +13,7 @@ import dev.jsinco.gringotts.obj.Vault;
 import dev.jsinco.gringotts.storage.DataSource;
 import dev.jsinco.gringotts.utility.Couple;
 import dev.jsinco.gringotts.utility.Executors;
+import dev.jsinco.gringotts.utility.ItemStacks;
 import dev.jsinco.gringotts.utility.Text;
 import dev.jsinco.gringotts.utility.Util;
 import io.papermc.paper.datacomponent.DataComponentTypes;
@@ -29,7 +30,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-@AutoRegisterGuiItems
 public class EditVaultGui extends GringottsGui {
 
     private static final GuiConfig.EditVaultGui cfg = ConfigManager.get(GuiConfig.class).editVaultGui();
@@ -188,6 +188,16 @@ public class EditVaultGui extends GringottsGui {
         this.vault = vault;
         this.gringottsPlayer = gringottsPlayer;
         this.p = player;
+
+        this.autoRegister(false);
+
+        if (cfg.borders()) {
+            for (int i = 0; i < this.inventory.getSize(); i++) {
+                if (this.inventory.getItem(i) == null) {
+                    this.inventory.setItem(i, ItemStacks.BORDER);
+                }
+            }
+        }
     }
 
     @Override
@@ -201,7 +211,7 @@ public class EditVaultGui extends GringottsGui {
     }
 
     private String trustListCap() {
-        int max = ConfigManager.get(Config.class).vaultTrustCap();
+        int max = ConfigManager.get(Config.class).vaults().trustCap();
         return vault.getTrustedPlayers().size() + "/" + max;
     }
 

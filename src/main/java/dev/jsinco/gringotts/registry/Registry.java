@@ -44,6 +44,13 @@ public class Registry<T extends RegistryItem> {
         return map.get(identifier);
     }
 
+    public T get(Class<T> clazz) {
+        return map.values().stream()
+                .filter(it -> it.getClass().equals(clazz))
+                .findFirst()
+                .orElse(null);
+    }
+
     public Collection<T> values() {
         return map.values();
     }

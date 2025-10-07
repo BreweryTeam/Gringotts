@@ -1,6 +1,7 @@
 package dev.jsinco.gringotts.obj;
 
 import dev.jsinco.gringotts.configuration.ConfigManager;
+import dev.jsinco.gringotts.configuration.files.Config;
 import dev.jsinco.gringotts.configuration.files.GuiConfig;
 import dev.jsinco.gringotts.configuration.files.Lang;
 import dev.jsinco.gringotts.gui.item.GuiItem;
@@ -26,7 +27,8 @@ import java.util.UUID;
 
 public class Warehouse implements CachedObject {
 
-    private static final GuiConfig.WarehouseGui.WarehouseItem cfg = ConfigManager.get(GuiConfig.class).warehouseGui().warehouseItem();
+    private static final GuiConfig.WarehouseGui.WarehouseItem guiCfg = ConfigManager.get(GuiConfig.class).warehouseGui().warehouseItem();
+    private static final Config.Warehouse cfg = ConfigManager.get(Config.class).warehouse();
     private static final Lang lng = ConfigManager.get(Lang.class);
 
     @Getter @Setter
@@ -47,6 +49,17 @@ public class Warehouse implements CachedObject {
     }
 
 
+    /**
+     * Stocks a specified amount of a given material in the warehouse, ensuring that
+     * the total stock quantity does not exceed the maximum warehouse stock capacity.
+     * If the material is already stocked, the amount is increased. Otherwise, a new stock entry
+     * is created for the material.
+     *
+     * @param material the material to be stocked. Must be a valid item.
+     * @param amt the amount of the material to be stocked. Adjusted if it exceeds the remaining capacity.
+     * @return the actual amount of the material that was stocked.
+     * @throws IllegalArgumentException if the provided material is not a valid item.
+     */
     public int stockItem(Material material, int amt) {
         GringottsPlayer gringottsPlayer = DataSource.getInstance().cachedGringottsPlayer(owner);
         int currentStockQuantity = currentStockQuantity();
@@ -59,7 +72,7 @@ public class Warehouse implements CachedObject {
         }
 
         Stock stock = warehouseMap.get(material);
-        if (stock != null) {
+        if (stock != null && amt > 0) {
             stock.increase(amt);
         } else {
             warehouseMap.put(material, new Stock(material, amt));
@@ -78,6 +91,10 @@ public class Warehouse implements CachedObject {
 
         stock.decrease(amt);
         return ItemStack.of(material, amt);
+    }
+
+    public boolean canStock(Material material) {
+        return !((cfg.blacklistSingleStackMaterials() && material.getMaxStackSize() == 1) || cfg.blacklistedMaterials().contains(material));
     }
 
     public boolean hasItem(Material material) {
@@ -112,8 +129,15 @@ public class Warehouse implements CachedObject {
         return false;
     }
 
-    public boolean contains(Material material) {
+    public boolean hasCompartment(Material material) {
         return warehouseMap.containsKey(material);
+    }
+
+    public boolean hasCompartment(ItemStack itemStack) {
+        if (itemStack.hasItemMeta()) {
+            return false;
+        }
+        return warehouseMap.containsKey(itemStack.getType());
     }
 
 
@@ -142,11 +166,11 @@ public class Warehouse implements CachedObject {
                     .itemStack(b -> b
                             .stringReplacements(
                                     Couple.of("{quantity}", String.valueOf(stock.getAmount())),
-                                    Couple.of("{material}", Util.formatMaterialName(material.toString()))
+                                    Couple.of("{material}", Util.formatEnumerator(material.toString()))
                             )
                             .material(material)
-                            .displayName(cfg.name())
-                            .lore(cfg.lore())
+                            .displayName(guiCfg.name())
+                            .lore(guiCfg.lore())
                     )
                     .action(e -> {
                         if (e.isCancelled()) {
@@ -161,7 +185,7 @@ public class Warehouse implements CachedObject {
                                 ItemStack item = destockItem(material, 1);
                                 if (item == null) {
                                     lng.entry(l -> l.warehouse().notEnoughMaterial(), player,
-                                            Couple.of("{material}", Util.formatMaterialName(material.toString()))
+                                            Couple.of("{material}", Util.formatEnumerator(material.toString()))
                                     );
                                 } else {
                                     inv.addItem(item);
@@ -171,7 +195,7 @@ public class Warehouse implements CachedObject {
                                 ItemStack item = destockItem(material, 64);
                                 if (item == null) {
                                     lng.entry(l -> l.warehouse().notEnoughMaterial(), player,
-                                            Couple.of("{material}", Util.formatMaterialName(material.toString()))
+                                            Couple.of("{material}", Util.formatEnumerator(material.toString()))
                                     );
                                 } else {
                                     inv.addItem(item);
@@ -189,7 +213,7 @@ public class Warehouse implements CachedObject {
                                     inv.addItem(item);
                                 } else {
                                     lng.entry(l -> l.warehouse().notEnoughMaterial(), player,
-                                            Couple.of("{material}", Util.formatMaterialName(material.toString()))
+                                            Couple.of("{material}", Util.formatEnumerator(material.toString()))
                                     );
                                 }
                             }
@@ -197,8 +221,13 @@ public class Warehouse implements CachedObject {
                                 int invAmt = Util.getMaterialAmount(inv, material);
                                 if (invAmt == 0) {
                                     lng.entry(l -> l.warehouse().notEnoughMaterial(), player,
-                                            Couple.of("{material}", Util.formatMaterialName(material.toString()))
+                                            Couple.of("{material}", Util.formatEnumerator(material.toString()))
                                     );
+                                    return;
+                                }
+
+                                if (!canStock(material)) {
+                                    lng.entry(l -> l.warehouse().blacklistedItem(), player, Couple.of("{material}", Util.formatEnumerator(material)));
                                     return;
                                 }
 
@@ -212,7 +241,7 @@ public class Warehouse implements CachedObject {
                         }
 
                         Util.editMeta(clickedItem, meta ->
-                                meta.lore(Text.mmlNoItalic(Util.replaceAll(cfg.lore(), "{quantity}", String.valueOf(stock.getAmount())), NamedTextColor.WHITE))
+                                meta.lore(Text.mmlNoItalic(Util.replaceAll(guiCfg.lore(), "{quantity}", String.valueOf(stock.getAmount())), NamedTextColor.WHITE))
                         );
                     }).build();
             items.add(guiItem);

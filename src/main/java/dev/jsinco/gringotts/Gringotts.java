@@ -1,13 +1,13 @@
 package dev.jsinco.gringotts;
 
 import dev.jsinco.gringotts.commands.GringottsBaseCommand;
-import dev.jsinco.gringotts.commands.PlayerVaultsBaseCommand;
+import dev.jsinco.gringotts.commands.VaultsBaseCommand;
 import dev.jsinco.gringotts.commands.WarehouseBaseCommand;
-import dev.jsinco.gringotts.configuration.ConfigManager;
 import dev.jsinco.gringotts.events.ChatPromptInputListener;
 import dev.jsinco.gringotts.events.GuiListener;
 import dev.jsinco.gringotts.events.PlayerListener;
 import dev.jsinco.gringotts.events.VaultListener;
+import dev.jsinco.gringotts.events.WarehouseListener;
 import dev.jsinco.gringotts.obj.GringottsInventory;
 import dev.jsinco.gringotts.storage.DataSource;
 import lombok.Getter;
@@ -33,11 +33,12 @@ public final class Gringotts extends JavaPlugin {
         DataSource.createInstance();
 
         getServer().getPluginCommand("gringotts").setExecutor(new GringottsBaseCommand());
-        getServer().getPluginCommand("playervaults").setExecutor(new PlayerVaultsBaseCommand());
+        getServer().getPluginCommand("vaults").setExecutor(new VaultsBaseCommand());
         getServer().getPluginCommand("warehouse").setExecutor(new WarehouseBaseCommand());
 
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
         getServer().getPluginManager().registerEvents(new VaultListener(), this);
+        getServer().getPluginManager().registerEvents(new WarehouseListener(), this);
         getServer().getPluginManager().registerEvents(new GuiListener(), this);
         getServer().getPluginManager().registerEvents(new ChatPromptInputListener(), this);
 

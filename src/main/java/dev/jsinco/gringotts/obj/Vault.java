@@ -34,7 +34,7 @@ public class Vault implements GringottsInventory {
 
     private static final Gson GSON = Util.GSON;
     public static final Type TYPE_TOKEN = new TypeToken<List<UUID>>(){}.getType();
-    private static final GuiConfig cfg = ConfigManager.get(GuiConfig.class);
+    private static final Config cfg = ConfigManager.get(Config.class);
 
     private final UUID owner;
     private final int id;
@@ -49,11 +49,11 @@ public class Vault implements GringottsInventory {
         Preconditions.checkArgument(id > 0, "Vault ID must be greater than 0");
         this.owner = owner;
         this.id = id;
-        this.customName = cfg.vaultGui().title().replace("{id}", String.valueOf(id));
+        this.customName = cfg.vaults().defaultName().replace("{id}", String.valueOf(id));
         this.icon = Material.CHEST;
         this.trustedPlayers = new ArrayList<>();
 
-        int size = cfg.vaultGui().size();
+        int size = cfg.vaults().size();
 
         this.inventory = Bukkit.createInventory(this, size, Text.mm(customName));
     }
@@ -62,13 +62,13 @@ public class Vault implements GringottsInventory {
         Preconditions.checkArgument(id > 0, "Vault ID must be greater than 0");
         this.owner = owner;
         this.id = id;
-        this.customName = cfg.vaultGui().title().replace("{id}", String.valueOf(id));
+        this.customName = cfg.vaults().defaultName().replace("{id}", String.valueOf(id));
         this.icon = Material.CHEST;
         this.trustedPlayers = new ArrayList<>();
 
 
         int count = items != null ? items.length : 9;
-        int size = Math.max(((count + 8) / 9) * 9, cfg.vaultGui().size());
+        int size = Math.max(((count + 8) / 9) * 9, cfg.vaults().size());
         this.inventory = Bukkit.createInventory(this, size, Text.mm(customName));
         if (items != null) {
             inventory.setContents(items);
@@ -90,7 +90,7 @@ public class Vault implements GringottsInventory {
         }
 
         int count = items != null ? items.length : 9;
-        int size = Math.max(((count + 8) / 9) * 9, cfg.vaultGui().size());
+        int size = Math.max(((count + 8) / 9) * 9, cfg.vaults().size());
         this.inventory = Bukkit.createInventory(this, size, Text.mm(customName));
         if (items != null) {
             inventory.setContents(items);
@@ -157,7 +157,7 @@ public class Vault implements GringottsInventory {
     }
 
     public boolean addTrusted(UUID uuid) {
-        int cap = ConfigManager.get(Config.class).vaultTrustCap();
+        int cap = cfg.vaults().trustCap();
         if (trustedPlayers.size() >= cap) {
             return false;
         }

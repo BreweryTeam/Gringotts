@@ -36,6 +36,9 @@ public class Util {
     }
 
     public static <E extends Enum<E>> E getEnum(String value, Class<E> enumClass) {
+        if (value == null) {
+            return null;
+        }
         try {
             return Enum.valueOf(enumClass, value.toUpperCase());
         } catch (IllegalArgumentException e) {
@@ -77,7 +80,11 @@ public class Util {
         return item.hasItemMeta() && item.getItemMeta().getPersistentDataContainer().has(key);
     }
 
-    public static String formatMaterialName(String s) {
+
+    public static String formatEnumerator(Enum<?> e) {
+        return formatEnumerator(e.name());
+    }
+    public static String formatEnumerator(String s) {
         String name = s.toLowerCase().replace("_", " ");
         name = name.substring(0, 1).toUpperCase() + name.substring(1);
 

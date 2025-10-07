@@ -157,7 +157,7 @@ public class GuiConfig extends OkaeriFile {
     public static class YourVaultsGui extends OkaeriConfig {
         private String title = "Your Vaults";
         private int size = 54;
-        private boolean borders = true; // TODO: Implement
+        private boolean borders = true;
 
         private VaultItem vaultItem = new VaultItem();
         private WarehouseQuickbar warehouseQuickbar = new WarehouseQuickbar();
@@ -178,6 +178,8 @@ public class GuiConfig extends OkaeriFile {
         @Getter
         @Accessors(fluent = true)
         public static class VaultItem extends OkaeriConfig {
+            // TODO: glow when full?
+            // TODO: % used of vault placeholder
             private String name = "<aqua>{vaultName}";
             private List<String> lore = List.of(
                     "",
@@ -241,8 +243,11 @@ public class GuiConfig extends OkaeriFile {
             private String name = "<aqua><b>Manage Warehouse";
             private List<String> lore = List.of(
                     "",
+                    "<gray>+ Mode: <yellow>{mode}</yellow>",
+                    "",
                     "<gray><dark_gray>[<gold>Left Click</gold>]</dark_gray> Add a compartment.",
-                    "<gray><dark_gray>[<gold>Right Click</gold>]</dark_gray> Remove a compartment."
+                    "<gray><dark_gray>[<gold>Right Click</gold>]</dark_gray> Remove a compartment.",
+                    "<gray><dark_gray>[<gold>Shift Left</gold>]</dark_gray> Cycle warehouse mode."
             );
             private Material material = Material.CHEST_MINECART;
             private int slot = 40;

@@ -31,7 +31,7 @@ public class Text {
     }
 
     public static Component mmNoItalic(String m, TextColor color) {
-        return mm(m).decoration(TextDecoration.ITALIC, false).color(color);
+        return mm(m).decoration(TextDecoration.ITALIC, false).colorIfAbsent(color);
     }
 
     public static List<Component> mmlNoItalic(String... ms) {
@@ -48,7 +48,7 @@ public class Text {
 
     public static List<Component> mmlNoItalic(List<String> ms, TextColor colorIfAbsent) {
         return ms.stream().map(
-                m -> mm(m).decoration(TextDecoration.ITALIC, false).color(colorIfAbsent)
+                m -> mm(m).decoration(TextDecoration.ITALIC, false).colorIfAbsent(colorIfAbsent)
         ).toList();
     }
 

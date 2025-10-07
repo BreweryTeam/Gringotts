@@ -16,7 +16,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 
-@OkaeriFileName(dynamicFileName = true, dynamicFileNameKey = "language", dynamicFileNamePrefix = "translations/")
+@OkaeriFileName(
+        dynamicFileName = true,
+        dynamicFileNameKey = "language",
+        dynamicFileNameFormat = "translations/%s.yml"
+)
 @Getter
 @Accessors(fluent = true)
 public class Lang extends OkaeriFile {
@@ -34,9 +38,15 @@ public class Lang extends OkaeriFile {
         private String notEnoughMaterial;
         private String notEnoughStock;
         private String inventoryFull;
+        private String containerFull;
         private String removedCompartment;
         private String cannotRemoveCompartment;
         private String addedCompartment;
+        private String changedMode;
+        private String replenishedItem;
+        private String autoStoredItem;
+        private String depositedItem;
+        private String blacklistedItem;
     }
 
     @Getter
@@ -132,6 +142,18 @@ public class Lang extends OkaeriFile {
         }
         return comp;
     }
+
+    @SafeVarargs
+    @Nullable
+    public final Component actionBarEntry(FunctionalLang functionalLang, CommandSender receiver, Couple<String, Object>... placeholders) {
+        Component comp = this.entry(functionalLang, placeholders);
+        if (comp != null) {
+            receiver.sendActionBar(comp);
+        }
+        return comp;
+    }
+
+
 
     public interface FunctionalLang {
         String get(Lang lang);

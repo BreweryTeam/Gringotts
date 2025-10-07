@@ -2,6 +2,8 @@ package dev.jsinco.gringotts.utility;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
+import dev.jsinco.gringotts.configuration.ConfigManager;
+import dev.jsinco.gringotts.configuration.files.GuiConfig;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.kyori.adventure.text.Component;
@@ -27,6 +29,7 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ItemStacks {
 
+    private static final GuiConfig.BorderItem cfg = ConfigManager.get(GuiConfig.class).borderItem();
     private static final UUID STATIC_UUID = UUID.fromString("ffd467ff-d884-4ace-8732-72e0d8e476f2");
     private static final Map<ItemStack, int[]> defaultItems = new HashMap<>();
     private static final ItemStack BACK_BUTTON = builder()
@@ -35,7 +38,7 @@ public final class ItemStacks {
             .lore("<gray>Go back to the previous menu")
             .colorIfAbsentLore(NamedTextColor.GRAY)
             .build();
-    public static final ItemStack BORDER = borderItem(Material.GRAY_STAINED_GLASS_PANE);
+    public static final ItemStack BORDER = builder().displayName(cfg.name()).material(cfg.material()).lore(cfg.lore()).build();
 
     static {
         defaultItems.put(borderItem(Material.GREEN_STAINED_GLASS_PANE), new int[]{0, 8, 45, 53});

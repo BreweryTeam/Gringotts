@@ -78,15 +78,16 @@ public class VaultOtherGui extends GringottsGui implements PromisedInventory {
         this.viewer = viewer;
         this.target = target;
 
-        this.addGuiItem(previousPage);
-        this.addGuiItem(nextPage);
+        this.autoRegister(false);
 
         IntPair slots = cfg.vaultItem().slots();
         List<Integer> ignoredSlots = cfg.vaultItem().ignoredSlots();
-        for (int i = 0; i < this.inventory.getSize(); i++) {
-            ItemStack itemStack = this.inventory.getItem(i);
-            if (itemStack != null || (slots.includes(i) && !ignoredSlots.contains(i))) continue;
-            this.inventory.setItem(i, ItemStacks.BORDER);
+        if (cfg.borders()) {
+            for (int i = 0; i < this.inventory.getSize(); i++) {
+                ItemStack itemStack = this.inventory.getItem(i);
+                if (itemStack != null || (slots.includes(i) && !ignoredSlots.contains(i))) continue;
+                this.inventory.setItem(i, ItemStacks.BORDER);
+            }
         }
     }
 

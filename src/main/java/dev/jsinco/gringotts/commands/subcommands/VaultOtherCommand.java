@@ -48,7 +48,11 @@ public class VaultOtherCommand implements SubCommand {
             }
 
             Executors.sync(() -> vault.open(player));
-            lng.entry(l -> l.vaults().opening(), player, Couple.of("{id}", vaultId));
+            lng.entry(l -> l.vaults().opening(),
+                    player,
+                    Couple.of("{id}", vaultId),
+                    Couple.of("{vaultName}", vault.getCustomName())
+            );
         });
         return true;
     }

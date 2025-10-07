@@ -10,16 +10,16 @@ import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public class PlayerVaultsImporter implements FlatFileImporter {
-
-    private final DataSource dataSource = DataSource.getInstance();
 
 
     @Override
@@ -60,10 +60,12 @@ public class PlayerVaultsImporter implements FlatFileImporter {
 
     @Override
     public CompletableFuture<Couple<UUID, Result>> importVaults(File file) {
+        DataSource dataSource = DataSource.getInstance();
         String uuidAsString = file.getName().replace(".yml", "");
         UUID owner = UUID.fromString(uuidAsString);
         YamlConfiguration loadedFile = YamlConfiguration.loadConfiguration(file);
-        List<ItemStack[]> inventories = loadedFile.getKeys(false).stream()
+        Result expectedResult;
+        List<ItemStack[]> rawInventories = loadedFile.getKeys(false).stream()
                 .map(loadedFile::getString)
                 .map(base64 -> {
                     try {
@@ -73,23 +75,33 @@ public class PlayerVaultsImporter implements FlatFileImporter {
                         return null;
                     }
                 })
-                .filter(inv -> inv != null && inv.length > 0)
                 .toList();
+        List<ItemStack[]> inventories = rawInventories.stream().filter(inv -> inv != null && inv.length > 0).toList();
+
+        if (rawInventories.stream().anyMatch(Objects::isNull)) {
+            expectedResult = Result.FAILED_TO_IMPORT_SOME_VAULTS;
+        } else {
+            expectedResult = Result.SUCCESS;
+        }
 
         if (inventories.isEmpty()) {
             return CompletableFuture.completedFuture(Couple.of(owner, Result.NO_VAULTS_IN_OTHER_PLUGIN));
         }
 
-        return dataSource.getVaults(owner).thenApply(existing -> {
+        return dataSource.getVaults(owner).thenCompose(existing -> {
             if (!existing.isEmpty()) {
-                return Couple.of(owner, Result.VAULTS_NOT_EMPTY);
+                return CompletableFuture.completedFuture(Couple.of(owner, Result.VAULTS_NOT_EMPTY));
             }
 
+            // Chain all saveVault() calls
+            CompletableFuture<Void> chain = CompletableFuture.completedFuture(null);
             int i = 1;
             for (ItemStack[] inv : inventories) {
-                dataSource.saveVault(new Vault(owner, i++, inv));
+                final int index = i++;
+                chain = chain.thenCompose(v -> dataSource.saveVault(new Vault(owner, index, inv)).thenApply(x -> null));
             }
-            return Couple.of(owner, Result.SUCCESS);
+
+            return chain.thenApply(v -> Couple.of(owner, expectedResult));
         });
     }
 

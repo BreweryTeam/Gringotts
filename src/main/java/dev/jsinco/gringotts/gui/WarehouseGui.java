@@ -5,6 +5,7 @@ import dev.jsinco.gringotts.configuration.ConfigManager;
 import dev.jsinco.gringotts.configuration.files.GuiConfig;
 import dev.jsinco.gringotts.configuration.IntPair;
 import dev.jsinco.gringotts.configuration.files.Lang;
+import dev.jsinco.gringotts.enums.WarehouseMode;
 import dev.jsinco.gringotts.gui.item.GuiItem;
 import dev.jsinco.gringotts.gui.item.UncontainedGuiItem;
 import dev.jsinco.gringotts.obj.GringottsPlayer;
@@ -76,14 +77,19 @@ public class WarehouseGui extends GringottsGui {
                 }
             })
             .build();
+    @SuppressWarnings("unchecked")
     private final UncontainedGuiItem managerButton = UncontainedGuiItem.builder()
             .index(() -> cfg.managerButton().slot())
             .itemStack(b -> b
+                    .stringReplacements(
+                            Couple.of("{mode}", Util.formatEnumerator(gringottsPlayer.getWarehouseMode()))
+                    )
                     .displayName(cfg.managerButton().name())
                     .material(cfg.managerButton().material())
                     .lore(cfg.managerButton().lore())
             )
             .action((event, self, isClicked) -> {
+                // TODO: Clean this up.
                 Player player = (Player) event.getWhoClicked();
                 ItemStack clickedItem = event.getCurrentItem();
                 Inventory clickedInventory = event.getClickedInventory();
@@ -94,6 +100,15 @@ public class WarehouseGui extends GringottsGui {
                         .filter(Objects::nonNull)
                         .filter(item -> Util.hasPersistentKey(item, self.key()))
                         .findFirst().orElse(null);
+
+
+                if (event.getClick() == ClickType.SHIFT_LEFT) {
+                    WarehouseMode mode = gringottsPlayer.getWarehouseMode();
+                    gringottsPlayer.setWarehouseMode(WarehouseMode.getNextMode(mode, player));
+                    event.getInventory().setItem(cfg.managerButton().slot(), self.guiItemStack());
+                    lng.entry(l -> l.warehouse().changedMode(), player, Couple.of("{mode}", Util.formatEnumerator(gringottsPlayer.getWarehouseMode())));
+                    return;
+                }
 
                 boolean currentValue = iconItem.getData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE) != null ? iconItem.getData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE) : false;
 
@@ -107,7 +122,7 @@ public class WarehouseGui extends GringottsGui {
 
                 switch (state) {
                     case LEFT -> {
-                        if (clickedInventory != event.getInventory() && !warehouse.contains(clickedItem.getType())) {
+                        if (clickedInventory != event.getInventory() && !warehouse.hasCompartment(clickedItem.getType())) {
                             warehouse.stockItem(clickedItem.getType(), 0);
                             refresh(player);
                         }
@@ -116,7 +131,7 @@ public class WarehouseGui extends GringottsGui {
                         if (clickedInventory == event.getInventory()) {
                             if (warehouse.removeItem(clickedItem.getType())) {
                                 lng.entry(l -> l.warehouse().removedCompartment(), player,
-                                        Couple.of("{material}", Util.formatMaterialName(clickedItem.getType().toString()))
+                                        Couple.of("{material}", Util.formatEnumerator(clickedItem.getType().toString()))
                                 );
                                 refresh(player);
                             } else {
@@ -153,10 +168,7 @@ public class WarehouseGui extends GringottsGui {
         this.gringottsPlayer = gringottsPlayer;
         this.warehouse = warehouse;
 
-        addGuiItem(previousPage);
-        addGuiItem(nextPage);
-        addGuiItem(managerButton);
-        addGuiItem(statusIcon);
+        this.autoRegister(false);
 
         List<ItemStack> itemStacks = new ArrayList<>();
         for (GuiItem guiItem : warehouse.stockAsGuiItems(-1)) {
@@ -167,12 +179,14 @@ public class WarehouseGui extends GringottsGui {
         IntPair slots = cfg.warehouseItem().slots();
         List<Integer> ignoredSlots = cfg.warehouseItem().ignoredSlots();
 
-        int i = 0;
-        for (ItemStack itemStack : inventory.getContents()) {
-            if (itemStack == null && (!slots.includes(i) || ignoredSlots.contains(i))) {
-                inventory.setItem(i, ItemStacks.BORDER);
+        if (cfg.borders()) {
+            int i = 0;
+            for (ItemStack itemStack : inventory.getContents()) {
+                if (itemStack == null && (!slots.includes(i) || ignoredSlots.contains(i))) {
+                    inventory.setItem(i, ItemStacks.BORDER);
+                }
+                i++;
             }
-            i++;
         }
 
         this.paginatedGui = PaginatedGui.builder()

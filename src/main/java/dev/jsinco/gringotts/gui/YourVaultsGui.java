@@ -85,9 +85,7 @@ public class YourVaultsGui extends GringottsGui implements PromisedInventory {
         super(cfg.title(), cfg.size());
         this.gringottsPlayer = gringottsPlayer;
         this.secondInv = Bukkit.createInventory(this, 54, Text.mm(cfg.title()));
-        this.addGuiItem(warehouseButton);
-        this.addGuiItem(previousPage);
-        this.addGuiItem(nextPage);
+        this.autoRegister(false);
 
         Warehouse warehouse = DataSource.getInstance().cachedWarehouse(gringottsPlayer.getUuid());
 
@@ -170,12 +168,14 @@ public class YourVaultsGui extends GringottsGui implements PromisedInventory {
         List<Integer> ignoredSlots = quickBar ? cfg.vaultItem().ignoredSlots() : cfg.vaultItem().altIgnoredSlots();
         List<Integer> ignoredWarehouseSlots = quickBar ? cfg.warehouseQuickbar().ignoredSlots() : null;
 
-        for (int i = 0; i < inv.getSize(); i++) {
-            ItemStack itemStack = inv.getItem(i);
-            if (itemStack != null || (slots.includes(i) && !ignoredSlots.contains(i))) continue;
-            else if (quickBar && (warehouseSlots.includes(i) || ignoredWarehouseSlots.contains(i))) continue;
+        if (cfg.borders()) {
+            for (int i = 0; i < inv.getSize(); i++) {
+                ItemStack itemStack = inv.getItem(i);
+                if (itemStack != null || (slots.includes(i) && !ignoredSlots.contains(i))) continue;
+                else if (quickBar && (warehouseSlots.includes(i) || ignoredWarehouseSlots.contains(i))) continue;
 
-            inv.setItem(i, ItemStacks.BORDER);
+                inv.setItem(i, ItemStacks.BORDER);
+            }
         }
         return quickBar;
     }

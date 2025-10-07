@@ -7,6 +7,7 @@ import dev.jsinco.gringotts.Gringotts;
 import dev.jsinco.gringotts.configuration.ConfigManager;
 import dev.jsinco.gringotts.configuration.files.Config;
 import dev.jsinco.gringotts.enums.Driver;
+import dev.jsinco.gringotts.enums.WarehouseMode;
 import dev.jsinco.gringotts.obj.CachedObject;
 import dev.jsinco.gringotts.obj.GringottsPlayer;
 import dev.jsinco.gringotts.obj.SnapshotVault;
@@ -15,6 +16,7 @@ import dev.jsinco.gringotts.obj.Vault;
 import dev.jsinco.gringotts.obj.Warehouse;
 import dev.jsinco.gringotts.utility.FileUtil;
 import dev.jsinco.gringotts.utility.Text;
+import dev.jsinco.gringotts.utility.Util;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -48,19 +50,19 @@ public abstract class DataSource {
     private final ConcurrentLinkedQueue<CachedObject> cachedObjects = new ConcurrentLinkedQueue<>();
 
     public abstract HikariConfig hikariConfig() throws IOException;
-    public abstract void createTables();
+    public abstract CompletableFuture<Void> createTables();
 
     public abstract CompletableFuture<Vault> getVault(UUID owner, int id);
     public abstract CompletableFuture<List<SnapshotVault>> getVaults(UUID owner);
-    public abstract void saveVault(Vault vault);
-    public abstract void deleteVault(UUID owner, int id);
+    public abstract CompletableFuture<Void> saveVault(Vault vault);
+    public abstract CompletableFuture<Void> deleteVault(UUID owner, int id);
 
 
     public abstract CompletableFuture<@NotNull Warehouse> getWarehouse(UUID owner);
-    public abstract void saveWarehouse(Warehouse warehouse);
+    public abstract CompletableFuture<Void> saveWarehouse(Warehouse warehouse);
 
     public abstract CompletableFuture<@NotNull GringottsPlayer> getGringottsPlayer(UUID uuid);
-    public abstract void saveGringottsPlayer(GringottsPlayer gringottsPlayer);
+    public abstract CompletableFuture<Void> saveGringottsPlayer(GringottsPlayer gringottsPlayer);
 
 
 
@@ -149,7 +151,8 @@ public abstract class DataSource {
         if (rs.next()) {
             int maxVaults = rs.getInt("max_vaults");
             int maxWarehouseStock = rs.getInt("max_warehouse_stock");
-            return new GringottsPlayer(uuid, maxVaults, maxWarehouseStock);
+            WarehouseMode warehouseMode = Util.getEnum(rs.getString("warehouse_mode"), WarehouseMode.class);
+            return new GringottsPlayer(uuid, maxVaults, maxWarehouseStock, warehouseMode);
         }
         return new GringottsPlayer(uuid);
     }

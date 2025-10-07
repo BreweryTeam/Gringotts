@@ -5,8 +5,6 @@ import dev.jsinco.gringotts.configuration.serdes.IntPairTransformer;
 import dev.jsinco.gringotts.registry.Registry;
 import dev.jsinco.gringotts.registry.RegistryCrafter;
 import dev.jsinco.gringotts.utility.FileUtil;
-import dev.jsinco.gringotts.utility.Text;
-import dev.jsinco.gringotts.utility.Util;
 import eu.okaeri.configs.OkaeriConfig;
 import eu.okaeri.configs.serdes.standard.StandardSerdes;
 import eu.okaeri.configs.yaml.bukkit.YamlBukkitConfigurer;
@@ -19,7 +17,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
 
 import static dev.jsinco.gringotts.storage.DataSource.DATA_FOLDER;
 
@@ -65,7 +62,11 @@ public class ConfigManager {
 
         private String dynamicFileName(OkaeriFileName annotation) {
             OkaeriFile config = craft(annotation.dynamicFileNameHolder());
-            return annotation.dynamicFileNamePrefix() + config.get(annotation.dynamicFileNameKey(), String.class);
+            String value = config.get(annotation.dynamicFileNameKey(), String.class);
+            if (value != null) {
+                return String.format(annotation.dynamicFileNameFormat(), value);
+            }
+            return null;
         }
 
         public static void createTranslationConfigs() {
