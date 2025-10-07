@@ -13,5 +13,6 @@ public @interface OkaeriFileName {
     String value() default "";
     boolean dynamicFileName() default false;
     String dynamicFileNameKey() default "";
+    String dynamicFileNamePrefix() default "";
     Class<? extends OkaeriFile> dynamicFileNameHolder() default Config.class;
 }

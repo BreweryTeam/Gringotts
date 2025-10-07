@@ -14,6 +14,8 @@ import org.bukkit.event.inventory.ClickType;
 @OkaeriFileName("config.yml")
 public class Config extends OkaeriFile {
 
+    private String language = "en_us.yml";
+
     @Comment({
             "The default amount of vaults players have.",
             "Players may have their vaults increased by using",

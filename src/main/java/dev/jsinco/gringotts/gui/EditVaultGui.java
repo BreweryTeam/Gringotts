@@ -3,6 +3,7 @@ package dev.jsinco.gringotts.gui;
 import dev.jsinco.gringotts.configuration.ConfigManager;
 import dev.jsinco.gringotts.configuration.files.Config;
 import dev.jsinco.gringotts.configuration.files.GuiConfig;
+import dev.jsinco.gringotts.configuration.files.Lang;
 import dev.jsinco.gringotts.events.ChatPromptInputListener.ChatInputCallback;
 import dev.jsinco.gringotts.gui.item.AutoRegisterGuiItems;
 import dev.jsinco.gringotts.gui.item.GuiItem;
@@ -32,6 +33,7 @@ import java.util.Objects;
 public class EditVaultGui extends GringottsGui {
 
     private static final GuiConfig.EditVaultGui cfg = ConfigManager.get(GuiConfig.class).editVaultGui();
+    private static final Lang lng = ConfigManager.get(Lang.class);
 
     private Vault vault;
     private GringottsPlayer gringottsPlayer;
@@ -146,18 +148,18 @@ public class EditVaultGui extends GringottsGui {
                             OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayerIfCached(input);
 
                             if (offlinePlayer == null) {
-                                player.sendMessage("'" + input + "' has never been on this server.");
+                                lng.entry(l -> l.vaults().playerNeverOnServer(), player, Couple.of("{name}", input));
                                 open(player);
                                 return;
                             }
 
                             if (vault.isTrusted(offlinePlayer.getUniqueId())) {
                                 vault.removeTrusted(offlinePlayer.getUniqueId());
-                                player.sendMessage("'" + input + "' has been removed from your vault.");
+                                lng.entry(l -> l.vaults().playerUntrusted(), player, Couple.of("{name}", input));
                             } else if (vault.addTrusted(offlinePlayer.getUniqueId())){
-                                player.sendMessage("'" + input + "' has been added to your vault.");
+                                lng.entry(l -> l.vaults().playerTrusted(), player, Couple.of("{name}", input));
                             } else {
-                                player.sendMessage("Your trust list is at it's maximum capacity.");
+                                lng.entry(l -> l.vaults().trustListMaxed(), player, Couple.of("{trustedListSize}", trustListCap()));
                             }
 
                             DataSource.getInstance().saveVault(vault);

@@ -1,0 +1,42 @@
+prefix: '<#b986f9><b>Gringotts</b></#b986f9> <dark_gray>»</dark_gray> '
+
+warehouse:
+  notEnoughMaterial: You don't have enough <aqua><b>{material}</b></aqua> to do this.
+  notEnoughStock: Your warehouse is full!
+  inventoryFull: Your inventory is full.
+  removedCompartment: Removed <aqua><b>{material}</b></aqua> from your warehouse.
+  cannotRemoveCompartment: This compartments stock is not at 0, so it cannot be removed.
+  addedCompartment: Added <aqua><b>{material}</b></aqua> to your warehouse.
+
+vaults:
+  opening: Opening vault <aqua><b>{vaultName}</b></aqua>...
+  nameChanged: Vault name changed to <aqua><b>{vaultName}</b></aqua>.
+  noAccess: You do not have access to this vault.
+  alreadyOpen: This vault is currently open by another player.
+  trustListMaxed: You have reached the maximum amount of players you can trust. ({trustedListSize})
+  playerNeverOnServer: '{name} has never joined this server.'
+  playerTrusted: '{name} has been added to your trust list.'
+  playerUntrusted: '{name} has been removed from your trust list.'
+  noVaultsFound: There are no vaults for {name}.
+  noVaultsAccessible: You do not have access to any vaults for {name}. Have they trusted you to any of them?
+
+gui:
+  firstPage: You are on the first page.
+  lastPage: You are on the last page.
+  viewExpired: This gui view has expired. (Object expired, try re-opening this GUI.)
+  promptInputTimeOut: Your prompt input timed out.
+
+command:
+  base:
+    playerOnly: This command can only be executed by a player.
+    noPermission: You do not have permission to execute this command.
+  max:
+    invalidType: Invalid type, must be either 'vaults' or 'stock'.
+    success: 'Set max {type} for {name} to {newMax} <gray>(Implicitly: {calculatedMax})</gray>'
+  import:
+    cannotImport: Cannot import vaults from {importer}. (Is it installed and/or enabled?)
+    startImport: Importing vaults from {importer}...
+    importComplete: Imported {amount} vaults with {failuresAmount} failures.
+    failedImport: 'Failed: {uuid} -> {reason}'
+  vaultOther:
+    noVaultFound: Vault {id} does not exist for {name}.

@@ -3,11 +3,13 @@ package dev.jsinco.gringotts.gui;
 import dev.jsinco.gringotts.configuration.ConfigManager;
 import dev.jsinco.gringotts.configuration.files.GuiConfig;
 import dev.jsinco.gringotts.configuration.IntPair;
+import dev.jsinco.gringotts.configuration.files.Lang;
 import dev.jsinco.gringotts.gui.item.GuiItem;
 import dev.jsinco.gringotts.obj.GringottsPlayer;
 import dev.jsinco.gringotts.obj.OtherPlayerSnapshotVault;
 import dev.jsinco.gringotts.obj.SnapshotVault;
 import dev.jsinco.gringotts.storage.DataSource;
+import dev.jsinco.gringotts.utility.Couple;
 import dev.jsinco.gringotts.utility.Executors;
 import dev.jsinco.gringotts.utility.ItemStacks;
 import org.bukkit.OfflinePlayer;
@@ -25,6 +27,7 @@ import java.util.concurrent.CompletableFuture;
 public class VaultOtherGui extends GringottsGui implements PromisedInventory {
 
     private static final GuiConfig.VaultOtherGui cfg = ConfigManager.get(GuiConfig.class).vaultOtherGui();
+    private static final Lang lng = ConfigManager.get(Lang.class);
 
     private PaginatedGui paginatedGui;
 
@@ -45,7 +48,7 @@ public class VaultOtherGui extends GringottsGui implements PromisedInventory {
                 if (inv != null) {
                     player.openInventory(inv);
                 } else {
-                    player.sendMessage("You are on the first page.");
+                    lng.entry(l -> l.gui().firstPage(), player);
                 }
             })
             .build();
@@ -63,7 +66,7 @@ public class VaultOtherGui extends GringottsGui implements PromisedInventory {
                 if (inv != null) {
                     player.openInventory(inv);
                 } else {
-                    player.sendMessage("You are on the last page.");
+                    lng.entry(l -> l.gui().lastPage(), player);
                 }
             })
             .build();
@@ -96,6 +99,11 @@ public class VaultOtherGui extends GringottsGui implements PromisedInventory {
     public CompletableFuture<@Nullable Inventory> promiseInventory() {
         DataSource dataSource = DataSource.getInstance();
         return dataSource.getVaults(target.getUniqueId()).thenCompose(unfilteredSnapshotVaults -> {
+            if (unfilteredSnapshotVaults.isEmpty()) {
+                lng.entry(l -> l.vaults().noVaultsFound(), viewer, Couple.of("{name}", targetName()));
+                return CompletableFuture.completedFuture(null);
+            }
+
             List<OtherPlayerSnapshotVault> snapshotVaults = unfilteredSnapshotVaults.stream()
                     .filter(it -> it.canAccess(viewer))
                     .map(OtherPlayerSnapshotVault::new)
@@ -103,6 +111,7 @@ public class VaultOtherGui extends GringottsGui implements PromisedInventory {
                     .toList();
 
             if (snapshotVaults.isEmpty()) {
+                lng.entry(l -> l.vaults().noVaultsAccessible(), viewer, Couple.of("{name}", targetName()));
                 return CompletableFuture.completedFuture(null);
             }
 

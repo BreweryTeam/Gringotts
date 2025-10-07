@@ -3,6 +3,7 @@ package dev.jsinco.gringotts.commands.subcommands;
 import dev.jsinco.gringotts.Gringotts;
 import dev.jsinco.gringotts.commands.interfaces.SubCommand;
 import dev.jsinco.gringotts.storage.DataSource;
+import dev.jsinco.gringotts.utility.Couple;
 import dev.jsinco.gringotts.utility.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -24,17 +25,32 @@ public class MaxCommand implements SubCommand {
         if (num >= 0 && operation != null) {
             DataSource dataSource = DataSource.getInstance();
             dataSource.cacheObjectWithDefaultExpire(dataSource.getGringottsPlayer(target.getUniqueId())).thenAccept(gringottsPlayer -> {
-                int newMax = operation.apply(num, gringottsPlayer.getMaxVaults());
+                int oldMax;
+                int newMax;
+                int calculatedMax;
 
                 if (type.equalsIgnoreCase("vaults")) {
+                    oldMax = gringottsPlayer.getMaxVaults();
+                    newMax = operation.apply(oldMax, num);
+                    calculatedMax = gringottsPlayer.getCalculatedMaxVaults();
                     gringottsPlayer.setMaxVaults(newMax);
                 } else if (type.equalsIgnoreCase("stock")) {
+                    oldMax = gringottsPlayer.getMaxWarehouseStock();
+                    newMax = operation.apply(oldMax, num);
+                    calculatedMax = gringottsPlayer.getCalculatedMaxWarehouseStock();
                     gringottsPlayer.setMaxWarehouseStock(newMax);
                 } else {
-                    sender.sendMessage("Invalid type, must be either vaults or stock");
+                    lng.entry(l -> l.command().max().invalidType(), sender);
                     return;
                 }
-                sender.sendMessage("Set max " + type + " for " + target.getName() + " to " + newMax + " (Implicitly: " + gringottsPlayer.getCalculatedMaxVaults() + ")");
+                lng.entry(l -> l.command().max().success(),
+                        sender,
+                        Couple.of("{type}", type),
+                        Couple.of("{name}", target.getName()),
+                        Couple.of("{oldMax}", oldMax),
+                        Couple.of("{newMax}", newMax),
+                        Couple.of("{calculatedMax}", calculatedMax)
+                );
             });
             return true;
         }

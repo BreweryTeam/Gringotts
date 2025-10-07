@@ -2,6 +2,7 @@ package dev.jsinco.gringotts.obj;
 
 import dev.jsinco.gringotts.configuration.ConfigManager;
 import dev.jsinco.gringotts.configuration.files.GuiConfig;
+import dev.jsinco.gringotts.configuration.files.Lang;
 import dev.jsinco.gringotts.gui.item.GuiItem;
 import dev.jsinco.gringotts.storage.DataSource;
 import dev.jsinco.gringotts.utility.Couple;
@@ -24,6 +25,9 @@ import java.util.Map;
 import java.util.UUID;
 
 public class Warehouse implements CachedObject {
+
+    private static final GuiConfig.WarehouseGui.WarehouseItem cfg = ConfigManager.get(GuiConfig.class).warehouseGui().warehouseItem();
+    private static final Lang lng = ConfigManager.get(Lang.class);
 
     @Getter @Setter
     private Long expire;
@@ -126,7 +130,6 @@ public class Warehouse implements CachedObject {
 
 
     public List<GuiItem> stockAsGuiItems(int truncate) {
-        var cfg = ConfigManager.get(GuiConfig.class).warehouseGui().warehouseItem();
         List<GuiItem> items = new ArrayList<>();
         int i = 0;
         List<Stock> sortedStocks = warehouseMap.values().stream()
@@ -152,12 +155,14 @@ public class Warehouse implements CachedObject {
                         Player player = (Player) e.getWhoClicked();
                         PlayerInventory inv = player.getInventory();
                         ItemStack clickedItem = e.getCurrentItem();
-
+                        // TODO: Material overflow out of inventory
                         switch (e.getClick()) {
                             case LEFT -> {
                                 ItemStack item = destockItem(material, 1);
                                 if (item == null) {
-                                    player.sendMessage("You do not have 1 of " + material + ".");
+                                    lng.entry(l -> l.warehouse().notEnoughMaterial(), player,
+                                            Couple.of("{material}", Util.formatMaterialName(material.toString()))
+                                    );
                                 } else {
                                     inv.addItem(item);
                                 }
@@ -165,7 +170,9 @@ public class Warehouse implements CachedObject {
                             case RIGHT -> {
                                 ItemStack item = destockItem(material, 64);
                                 if (item == null) {
-                                    player.sendMessage("You do not have 64 of " + material + ".");
+                                    lng.entry(l -> l.warehouse().notEnoughMaterial(), player,
+                                            Couple.of("{material}", Util.formatMaterialName(material.toString()))
+                                    );
                                 } else {
                                     inv.addItem(item);
                                 }
@@ -173,7 +180,7 @@ public class Warehouse implements CachedObject {
                             case SHIFT_LEFT -> {
                                 int invAmt = Util.getAmountInvCanHold(inv, material);
                                 if (invAmt == 0) {
-                                    player.sendMessage("Your inventory is full.");
+                                    lng.entry(l -> l.warehouse().inventoryFull(), player);
                                     return;
                                 }
 
@@ -181,20 +188,25 @@ public class Warehouse implements CachedObject {
                                 if (item != null) {
                                     inv.addItem(item);
                                 } else {
-                                    player.sendMessage("You do not have any" + material + ".");
+                                    lng.entry(l -> l.warehouse().notEnoughMaterial(), player,
+                                            Couple.of("{material}", Util.formatMaterialName(material.toString()))
+                                    );
                                 }
                             }
                             case SHIFT_RIGHT -> {
                                 int invAmt = Util.getMaterialAmount(inv, material);
                                 if (invAmt == 0) {
-                                    player.sendMessage("You have none of this material.");
+                                    lng.entry(l -> l.warehouse().notEnoughMaterial(), player,
+                                            Couple.of("{material}", Util.formatMaterialName(material.toString()))
+                                    );
                                     return;
                                 }
+
                                 int diff = stockItem(material, invAmt);
                                 if (diff > 0) {
                                     inv.removeItem(new ItemStack(material, diff));
                                 } else {
-                                    player.sendMessage("You're out of storage in your warehouse!");
+                                    lng.entry(l -> l.warehouse().notEnoughStock(), player);
                                 }
                             }
                         }

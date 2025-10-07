@@ -7,6 +7,7 @@ import dev.jsinco.gringotts.gui.YourVaultsGui;
 import dev.jsinco.gringotts.obj.GringottsPlayer;
 import dev.jsinco.gringotts.obj.Vault;
 import dev.jsinco.gringotts.storage.DataSource;
+import dev.jsinco.gringotts.utility.Couple;
 import dev.jsinco.gringotts.utility.Executors;
 import dev.jsinco.gringotts.utility.Util;
 import org.bukkit.command.CommandSender;
@@ -34,16 +35,17 @@ public class VaultsCommand implements SubCommand {
         int vaultId = Util.getInteger(args.getFirst(), 1);
 
         if (gringottsPlayer.getCalculatedMaxVaults() < vaultId) {
-            player.sendMessage("You do not have access to vault " + vaultId + ".");
+            lng.entry(l -> l.vaults().noAccess(), player, Couple.of("{id}", vaultId));
             return true;
         }
 
         dataSource.getVault(player.getUniqueId(), vaultId).thenAccept(qVault -> {
             Vault vault = Objects.requireNonNullElseGet(qVault, () -> new Vault(player.getUniqueId(), vaultId));
-            Executors.sync(() -> {
-                vault.open(player);
-            });
-            player.sendMessage("Opening vault #" + vaultId + "...");
+            Executors.sync(() -> vault.open(player));
+            lng.entry(l -> l.vaults().opening(), player,
+                    Couple.of("{id}", vaultId),
+                    Couple.of("{vaultName}", vault.getCustomName())
+            );
         });
 
         return true;

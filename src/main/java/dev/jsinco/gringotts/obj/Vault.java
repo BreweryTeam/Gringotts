@@ -6,6 +6,7 @@ import com.google.gson.reflect.TypeToken;
 import dev.jsinco.gringotts.configuration.ConfigManager;
 import dev.jsinco.gringotts.configuration.files.Config;
 import dev.jsinco.gringotts.configuration.files.GuiConfig;
+import dev.jsinco.gringotts.configuration.files.Lang;
 import dev.jsinco.gringotts.utility.Couple;
 import dev.jsinco.gringotts.utility.Executors;
 import dev.jsinco.gringotts.utility.Text;
@@ -110,7 +111,7 @@ public class Vault implements GringottsInventory {
         var state = couple.a();
         var otherPlayer = couple.b();
         if (state == VaultOpenState.OPEN) {
-            player.sendMessage("This vault is currently open by another player.");
+            ConfigManager.get(Lang.class).entry(l -> l.vaults().alreadyOpen(), player);
             return;
         }
 

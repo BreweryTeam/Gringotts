@@ -3,6 +3,7 @@ package dev.jsinco.gringotts.gui;
 import dev.jsinco.gringotts.configuration.ConfigManager;
 import dev.jsinco.gringotts.configuration.files.GuiConfig;
 import dev.jsinco.gringotts.configuration.IntPair;
+import dev.jsinco.gringotts.configuration.files.Lang;
 import dev.jsinco.gringotts.gui.item.GuiItem;
 import dev.jsinco.gringotts.obj.GringottsPlayer;
 import dev.jsinco.gringotts.obj.SnapshotVault;
@@ -25,6 +26,7 @@ import java.util.concurrent.CompletableFuture;
 public class YourVaultsGui extends GringottsGui implements PromisedInventory {
 
     private static final GuiConfig.YourVaultsGui cfg = ConfigManager.get(GuiConfig.class).yourVaultsGui();
+    private static final Lang lng = ConfigManager.get(Lang.class);
 
     private PaginatedGui paginatedGui;
     private GringottsPlayer gringottsPlayer;
@@ -56,7 +58,7 @@ public class YourVaultsGui extends GringottsGui implements PromisedInventory {
                 if (inv != null) {
                     player.openInventory(inv);
                 } else {
-                    player.sendMessage("You are on the first page.");
+                    lng.entry(l -> l.gui().firstPage(), player);
                 }
             })
             .build();
@@ -73,7 +75,7 @@ public class YourVaultsGui extends GringottsGui implements PromisedInventory {
                 if (inv != null) {
                     player.openInventory(inv);
                 } else {
-                    player.sendMessage("You are on the last page.");
+                    lng.entry(l -> l.gui().lastPage(), player);
                 }
             })
             .build();

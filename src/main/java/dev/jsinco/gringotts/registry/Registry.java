@@ -11,6 +11,7 @@ import dev.jsinco.gringotts.configuration.ConfigManager;
 import dev.jsinco.gringotts.configuration.OkaeriFile;
 import dev.jsinco.gringotts.configuration.files.Config;
 import dev.jsinco.gringotts.configuration.files.GuiConfig;
+import dev.jsinco.gringotts.configuration.files.Lang;
 import dev.jsinco.gringotts.importers.Importer;
 import dev.jsinco.gringotts.importers.PlayerVaultsImporter;
 
@@ -26,7 +27,7 @@ public class Registry<T extends RegistryItem> {
 
     public static final Registry<SubCommand> SUB_COMMANDS = fromClasses(VaultsCommand.class, WarehouseCommand.class, ImportCommand.class, VaultOtherCommand.class, WarehouseAdminCommand.class, MaxCommand.class);
     public static final Registry<Importer> IMPORTERS = fromClasses(PlayerVaultsImporter.class);
-    public static final Registry<OkaeriFile> CONFIGS = fromClassesWithCrafter(new ConfigManager.ConfigCrafter(), Config.class, GuiConfig.class);
+    public static final Registry<OkaeriFile> CONFIGS = fromClassesWithCrafter(new ConfigManager.ConfigCrafter(), Config.class, GuiConfig.class, Lang.class);
 
     private final Map<String, T> map;
 

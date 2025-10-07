@@ -1,5 +1,8 @@
 package dev.jsinco.gringotts.events;
 
+import dev.jsinco.gringotts.configuration.ConfigManager;
+import dev.jsinco.gringotts.configuration.files.Lang;
+import dev.jsinco.gringotts.utility.Text;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -58,7 +61,7 @@ public class ChatPromptInputListener implements Listener {
                 player.showTitle(title);
             }
             if (msg != null) {
-                player.sendMessage(msg);
+                Text.msg(player, msg);
             }
             ChatInputCallback chatInputCallback = new ChatInputCallback(player.getUniqueId(), System.currentTimeMillis(), handler, cancelled);
             queuedChatPrompts.add(chatInputCallback);
@@ -74,7 +77,7 @@ public class ChatPromptInputListener implements Listener {
             boolean bool = System.currentTimeMillis() - timestamp >= TIMEOUT;
             Player player = player();
             if (bool && player != null) {
-                player.sendMessage("Your prompt input timed out.");
+                ConfigManager.get(Lang.class).entry(l -> l.gui().promptInputTimeOut(), player);
                 if (cancelled != null) cancelled.run();
             }
             return bool;

@@ -1,13 +1,25 @@
 package dev.jsinco.gringotts.configuration;
 
+import dev.jsinco.gringotts.Gringotts;
 import dev.jsinco.gringotts.configuration.serdes.IntPairTransformer;
 import dev.jsinco.gringotts.registry.Registry;
 import dev.jsinco.gringotts.registry.RegistryCrafter;
+import dev.jsinco.gringotts.utility.FileUtil;
+import dev.jsinco.gringotts.utility.Text;
+import dev.jsinco.gringotts.utility.Util;
 import eu.okaeri.configs.OkaeriConfig;
 import eu.okaeri.configs.serdes.standard.StandardSerdes;
 import eu.okaeri.configs.yaml.bukkit.YamlBukkitConfigurer;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 
 import static dev.jsinco.gringotts.storage.DataSource.DATA_FOLDER;
 
@@ -16,6 +28,7 @@ import static dev.jsinco.gringotts.storage.DataSource.DATA_FOLDER;
 public class ConfigManager {
 
     public static <T extends OkaeriFile> T get(Class<T> clazz) {
+        System.out.println(Registry.CONFIGS);
         return Registry.CONFIGS.values().stream()
                 .filter(it -> it.getClass().equals(clazz))
                 .map(it -> (T) it)
@@ -24,6 +37,10 @@ public class ConfigManager {
     }
 
     public static class ConfigCrafter implements RegistryCrafter.Extension<OkaeriConfig> {
+        static {
+            createTranslationConfigs();
+        }
+
         @Override
         public <T extends OkaeriConfig> T craft(Class<?> clazz) {
             OkaeriFileName annotation = clazz.getAnnotation(OkaeriFileName.class);
@@ -47,14 +64,36 @@ public class ConfigManager {
         }
 
         private String dynamicFileName(OkaeriFileName annotation) {
-            OkaeriFile config = ConfigManager.get(annotation.dynamicFileNameHolder());
-            return config.get(annotation.dynamicFileNameKey(), String.class);
+            OkaeriFile config = craft(annotation.dynamicFileNameHolder());
+            return annotation.dynamicFileNamePrefix() + config.get(annotation.dynamicFileNameKey(), String.class);
+        }
+
+        public static void createTranslationConfigs() {
+            Path targetDir = DATA_FOLDER.resolve("translations");
+            File[] internalLangs = FileUtil.listInternalFiles("/translations");
+
+            try {
+                if (!Files.exists(targetDir)) {
+                    Files.createDirectories(targetDir);
+                }
+
+                for (File file : internalLangs) {
+                    Path targetFile = targetDir.resolve(file.getName());
+                    if (Files.exists(targetFile)) continue;
+
+                    try (InputStream in = Gringotts.class.getResourceAsStream("/translations/" + file.getName())) {
+                        if (in == null) {
+                            //Text.debug("Could not find internal translation: " + file.getName());
+                            continue;
+                        }
+                        Files.copy(in, targetFile, StandardCopyOption.REPLACE_EXISTING);
+                        //Text.debug("Copied translation: " + file.getName());
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    public static class Translations {
-        public void createTranslationConfigs() {
-
-        }
-    }
 }

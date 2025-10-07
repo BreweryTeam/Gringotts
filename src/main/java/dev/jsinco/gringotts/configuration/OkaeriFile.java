@@ -3,18 +3,37 @@ package dev.jsinco.gringotts.configuration;
 import dev.jsinco.gringotts.registry.RegistryItem;
 import eu.okaeri.configs.OkaeriConfig;
 
+import java.io.File;
+import java.nio.file.Path;
+
+import static dev.jsinco.gringotts.storage.DataSource.DATA_FOLDER;
+
 public class OkaeriFile extends OkaeriConfig implements RegistryItem {
 
-    public String getFileName() {
-        OkaeriFileName fileName = getClass().getAnnotation(OkaeriFileName.class);
-        if (fileName == null) {
+    public String getFileName(boolean dynamicFileName) {
+        OkaeriFileName annotation = getClass().getAnnotation(OkaeriFileName.class);
+        if (annotation == null) {
             throw new IllegalStateException("OkaeriFile must be annotated with @OkaeriFileName");
         }
-        return fileName.value();
+
+        return annotation.dynamicFileName() && dynamicFileName ? dynamicFileName(annotation) : annotation.value();
+    }
+
+    private String dynamicFileName(OkaeriFileName annotation) {
+        OkaeriFile config = ConfigManager.get(annotation.dynamicFileNameHolder());
+        return config.get(annotation.dynamicFileNameKey(), String.class);
+    }
+
+    public void reload() {
+        Path bindFile = DATA_FOLDER.resolve(this.getFileName(true));
+        if (!this.getBindFile().equals(bindFile)) {
+            this.setBindFile(bindFile);
+        }
+        this.load(true);
     }
 
     @Override
     public String name() {
-        return getFileName();
+        return getFileName(false);
     }
 }

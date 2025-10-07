@@ -6,6 +6,7 @@ import dev.jsinco.gringotts.gui.GringottsGui;
 import dev.jsinco.gringotts.gui.VaultOtherGui;
 import dev.jsinco.gringotts.obj.GringottsPlayer;
 import dev.jsinco.gringotts.storage.DataSource;
+import dev.jsinco.gringotts.utility.Couple;
 import dev.jsinco.gringotts.utility.Executors;
 import dev.jsinco.gringotts.utility.Util;
 import org.bukkit.Bukkit;
@@ -35,15 +36,19 @@ public class VaultOtherCommand implements SubCommand {
 
         dataSource.getVault(target.getUniqueId(), vaultId).thenAccept(vault -> {
             if (vault == null) {
-                player.sendMessage("Vault " + vaultId + " does not exist for " + target.getName() + ".");
+                lng.entry(l -> l.command().vaultOther().noVaultFound(),
+                        player,
+                        Couple.of("{id}", vaultId),
+                        Couple.of("{name}", target.getName())
+                );
                 return;
             } else if (!vault.canAccess(player)) {
-                player.sendMessage("You do not have access to vault " + vaultId + " for " + target.getName() + ".");
+                lng.entry(l -> l.vaults().noAccess(), player, Couple.of("{id}", vaultId));
                 return;
             }
 
             Executors.sync(() -> vault.open(player));
-            player.sendMessage("Opening vault #" + vaultId + " for " + target.getName() + "...");
+            lng.entry(l -> l.vaults().opening(), player, Couple.of("{id}", vaultId));
         });
         return true;
     }

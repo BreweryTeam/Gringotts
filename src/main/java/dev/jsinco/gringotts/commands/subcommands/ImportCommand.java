@@ -4,8 +4,7 @@ import dev.jsinco.gringotts.Gringotts;
 import dev.jsinco.gringotts.commands.interfaces.SubCommand;
 import dev.jsinco.gringotts.importers.Importer;
 import dev.jsinco.gringotts.registry.Registry;
-import dev.jsinco.gringotts.utility.Text;
-import org.bukkit.Bukkit;
+import dev.jsinco.gringotts.utility.Couple;
 import org.bukkit.command.CommandSender;
 
 import java.util.List;
@@ -13,7 +12,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static dev.jsinco.gringotts.utility.Text.CONSOLE;
+
 public class ImportCommand implements SubCommand {
+
     @Override
     public boolean execute(Gringotts plugin, CommandSender sender, String label, List<String> args) {
         if (args.isEmpty()) {
@@ -23,29 +25,39 @@ public class ImportCommand implements SubCommand {
         Importer importer = Registry.IMPORTERS.get(importerName);
 
         if (importer == null || !importer.canImport()) {
-            sender.sendMessage("Cannot import vaults from " + importerName + ". (Is it installed and/or enabled?)");
+            lng.entry(l -> l.command()._import().cannotImport(),
+                    sender,
+                    Couple.of("{importer}", importerName)
+            );
             return true;
         }
 
 
-        sender.sendMessage("Importing vaults from " + importerName + "...");
+        lng.entry(l -> l.command()._import().startImport(),
+                List.of(sender, CONSOLE),
+                Couple.of("{importer}", importerName)
+        );
         importer.importAll().thenAccept(results -> {
             Map<UUID, Importer.Result> failed = results.entrySet().stream()
                     .filter(e -> e.getValue() != Importer.Result.SUCCESS) // change method if different
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-            Text.debug("Imported " + results.size() + " vaults with " + failed.size() + " failures.");
-            sender.sendMessage("Imported " + results.size() + " vaults with " + failed.size() + " failures.");
+            lng.entry(l -> l.command()._import().importComplete(),
+                    List.of(sender, CONSOLE),
+                    Couple.of("{amount}", results.size()),
+                    Couple.of("{failedAmount}", failed.size())
+            );
 
             if (!failed.isEmpty()) {
                 failed.forEach((uuid, r) -> {
-                    Text.debug("Failed: " + uuid + " -> " + r);
-                    sender.sendMessage("Failed: " + uuid + " -> " + r);
+                    lng.entry(l -> l.command()._import().failedImport(),
+                            List.of(sender, CONSOLE),
+                            Couple.of("{uuid}", uuid),
+                            Couple.of("{result}", r)
+                    );
                 });
             }
         });
-
-
         return true;
     }
 

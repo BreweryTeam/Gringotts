@@ -124,13 +124,13 @@ public class Util {
     }
 
     @SafeVarargs
-    public static String replace(String string, Couple<String, String>... pairs) {
+    public static String replace(String string, Couple<String, Object>... pairs) {
         if (string == null) {
             return null;
         }
         String newString = string;
-        for (Couple<String, String> pair : pairs) {
-            newString = newString.replace(pair.a(), pair.b());
+        for (Couple<String, Object> pair : pairs) {
+            newString = newString.replace(pair.a(), String.valueOf(pair.b()));
         }
         return newString;
     }

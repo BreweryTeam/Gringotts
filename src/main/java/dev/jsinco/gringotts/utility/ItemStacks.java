@@ -110,7 +110,7 @@ public final class ItemStacks {
         private PlayerProfile playerProfile;
         private EditMeta editMeta;
         private String headOwner;
-        private Couple<String, String>[] replacements;
+        private Couple<String, Object>[] replacements;
 
         public ItemStackBuilder material(Material material) {
             this.material = material;
@@ -196,7 +196,7 @@ public final class ItemStacks {
 
         @SuppressWarnings("unchecked")
         public ItemStackBuilder  stringReplacements(Couple<String, Object>... replacements) {
-            this.replacements = Arrays.stream(replacements).map(it -> new Couple<>(it.a(), it.b().toString())).toArray(Couple[]::new);
+            this.replacements = replacements;
             return this;
         }
 

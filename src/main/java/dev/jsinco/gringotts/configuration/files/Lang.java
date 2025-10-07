@@ -2,12 +2,143 @@ package dev.jsinco.gringotts.configuration.files;
 
 import dev.jsinco.gringotts.configuration.OkaeriFile;
 import dev.jsinco.gringotts.configuration.OkaeriFileName;
+import dev.jsinco.gringotts.utility.Couple;
+import dev.jsinco.gringotts.utility.Text;
+import dev.jsinco.gringotts.utility.Util;
 import eu.okaeri.configs.OkaeriConfig;
+import eu.okaeri.configs.annotation.CustomKey;
+import lombok.Getter;
+import lombok.experimental.Accessors;
+import net.kyori.adventure.text.Component;
+import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.Nullable;
 
-@OkaeriFileName(dynamicFileName = true, dynamicFileNameKey = "lang")
+import java.util.List;
+
+
+@OkaeriFileName(dynamicFileName = true, dynamicFileNameKey = "language", dynamicFileNamePrefix = "translations/")
+@Getter
+@Accessors(fluent = true)
 public class Lang extends OkaeriFile {
 
-    public static class Warehouse extends OkaeriConfig {
+    private String prefix;
 
+    private Warehouse warehouse = new Warehouse();
+    private Vaults vaults = new Vaults();
+    private Gui gui = new Gui();
+    private Command command = new Command();
+
+    @Getter
+    @Accessors(fluent = true)
+    public static class Warehouse extends OkaeriConfig {
+        private String notEnoughMaterial;
+        private String notEnoughStock;
+        private String inventoryFull;
+        private String removedCompartment;
+        private String cannotRemoveCompartment;
+        private String addedCompartment;
+    }
+
+    @Getter
+    @Accessors(fluent = true)
+    public static class Vaults extends OkaeriConfig {
+        private String opening;
+        private String nameChanged;
+        private String noAccess;
+        private String alreadyOpen;
+        private String trustListMaxed;
+        private String playerNeverOnServer;
+        private String playerTrusted;
+        private String playerUntrusted;
+        private String noVaultsFound;
+        private String noVaultsAccessible;
+    }
+
+    @Getter
+    @Accessors(fluent = true)
+    public static class Gui extends OkaeriConfig {
+        private String firstPage;
+        private String lastPage;
+        private String viewExpired;
+        private String promptInputTimeOut;
+    }
+
+    @Getter
+    @Accessors(fluent = true)
+    public static class Command extends OkaeriConfig {
+
+        private Base base = new Base();
+        private Max max = new Max();
+        @CustomKey("import")
+        private Import _import = new Import();
+        private VaultOther vaultOther = new VaultOther();
+
+        @Getter
+        @Accessors(fluent = true)
+        public static class Base extends OkaeriConfig {
+            private String playerOnly;
+            private String noPermission;
+        }
+        @Getter
+        @Accessors(fluent = true)
+        public static class Max extends OkaeriConfig {
+            private String invalidType;
+            private String success;
+        }
+        @Getter
+        @Accessors(fluent = true)
+        public static class Import extends OkaeriConfig {
+            private String cannotImport;
+            private String startImport;
+            private String importComplete;
+            private String failedImport;
+        }
+        @Getter
+        @Accessors(fluent = true)
+        public static class VaultOther extends OkaeriConfig {
+            private String noVaultFound;
+        }
+    }
+
+
+
+    @SafeVarargs
+    @Nullable
+    public final Component entry(FunctionalLang functionalLang, Couple<String, Object>... placeholders) {
+        String entry = functionalLang.get(this);
+        if (entry == null || entry.isEmpty()) {
+            return null;
+        }
+
+        return Text.mm(this.prefix + Util.replace(entry, placeholders));
+    }
+
+    @SafeVarargs
+    @Nullable
+    public final Component entry(FunctionalLang functionalLang, CommandSender receiver, Couple<String, Object>... placeholders) {
+        Component comp = this.entry(functionalLang, placeholders);
+        if (comp != null) {
+            receiver.sendMessage(comp);
+        }
+        return comp;
+    }
+
+    @SafeVarargs
+    @Nullable
+    public final Component entry(FunctionalLang functionalLang, List<CommandSender> receivers, Couple<String, Object>... placeholders) {
+        Component comp = this.entry(functionalLang, placeholders);
+        if (comp != null) {
+            receivers.forEach(receiver -> receiver.sendMessage(comp));
+        }
+        return comp;
+    }
+
+    public interface FunctionalLang {
+        String get(Lang lang);
+    }
+
+    @Override
+    public String name() {
+        return "lang.yml";
     }
 }

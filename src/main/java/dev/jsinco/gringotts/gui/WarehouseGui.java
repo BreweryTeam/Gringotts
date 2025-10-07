@@ -4,6 +4,7 @@ import dev.jsinco.gringotts.configuration.files.Config;
 import dev.jsinco.gringotts.configuration.ConfigManager;
 import dev.jsinco.gringotts.configuration.files.GuiConfig;
 import dev.jsinco.gringotts.configuration.IntPair;
+import dev.jsinco.gringotts.configuration.files.Lang;
 import dev.jsinco.gringotts.gui.item.GuiItem;
 import dev.jsinco.gringotts.gui.item.UncontainedGuiItem;
 import dev.jsinco.gringotts.obj.GringottsPlayer;
@@ -29,6 +30,7 @@ import java.util.Objects;
 public class WarehouseGui extends GringottsGui {
 
     private static final GuiConfig.WarehouseGui cfg = ConfigManager.get(GuiConfig.class).warehouseGui();
+    private static final Lang lng = ConfigManager.get(Lang.class);
 
     private PaginatedGui paginatedGui;
 
@@ -52,7 +54,7 @@ public class WarehouseGui extends GringottsGui {
                 if (inv != null) {
                     player.openInventory(inv);
                 } else {
-                    player.sendMessage("You are on the first page.");
+                    lng.entry(l -> l.gui().firstPage(), player);
                 }
             })
             .build();
@@ -70,7 +72,7 @@ public class WarehouseGui extends GringottsGui {
                 if (inv != null) {
                     player.openInventory(inv);
                 } else {
-                    player.sendMessage("You are on the last page.");
+                    lng.entry(l -> l.gui().lastPage(), player);
                 }
             })
             .build();
@@ -113,10 +115,12 @@ public class WarehouseGui extends GringottsGui {
                     case RIGHT -> {
                         if (clickedInventory == event.getInventory()) {
                             if (warehouse.removeItem(clickedItem.getType())) {
-                                player.sendMessage("Removed " + clickedItem.getType() + " from the warehouse.");
+                                lng.entry(l -> l.warehouse().removedCompartment(), player,
+                                        Couple.of("{material}", Util.formatMaterialName(clickedItem.getType().toString()))
+                                );
                                 refresh(player);
                             } else {
-                                player.sendMessage("This item's stock is not at 0, so it cannot be removed.");
+                                lng.entry(l -> l.warehouse().cannotRemoveCompartment(), player);
                             }
                         }
                     }
@@ -184,7 +188,7 @@ public class WarehouseGui extends GringottsGui {
     public void onPreInventoryClick(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
         if (warehouse.isExpired()) {
-            player.sendMessage("This warehouse view has expired. (Object expired, try re-opening this GUI.)");
+            lng.entry(l -> l.gui().viewExpired(), player);
             player.closeInventory();
             return;
         }
