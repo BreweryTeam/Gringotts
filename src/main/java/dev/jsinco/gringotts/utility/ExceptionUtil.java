@@ -30,9 +30,6 @@ public final class ExceptionUtil {
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("An unexpected error occurred", e);
         }
     }
 }

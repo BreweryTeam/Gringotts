@@ -25,7 +25,6 @@ import static dev.jsinco.gringotts.storage.DataSource.DATA_FOLDER;
 public class ConfigManager {
 
     public static <T extends OkaeriFile> T get(Class<T> clazz) {
-        System.out.println(Registry.CONFIGS);
         return Registry.CONFIGS.values().stream()
                 .filter(it -> it.getClass().equals(clazz))
                 .map(it -> (T) it)

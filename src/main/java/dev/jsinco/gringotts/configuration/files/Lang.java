@@ -114,19 +114,19 @@ public class Lang extends OkaeriFile {
 
     @SafeVarargs
     @Nullable
-    public final Component entry(FunctionalLang functionalLang, Couple<String, Object>... placeholders) {
+    public final Component entry(FunctionalLang functionalLang, boolean prefix, Couple<String, Object>... placeholders) {
         String entry = functionalLang.get(this);
         if (entry == null || entry.isEmpty()) {
             return null;
         }
 
-        return Text.mm(this.prefix + Util.replace(entry, placeholders));
+        return Text.mm((prefix ? this.prefix : "") + Util.replace(entry, placeholders));
     }
 
     @SafeVarargs
     @Nullable
     public final Component entry(FunctionalLang functionalLang, CommandSender receiver, Couple<String, Object>... placeholders) {
-        Component comp = this.entry(functionalLang, placeholders);
+        Component comp = this.entry(functionalLang, true, placeholders);
         if (comp != null) {
             receiver.sendMessage(comp);
         }
@@ -136,7 +136,7 @@ public class Lang extends OkaeriFile {
     @SafeVarargs
     @Nullable
     public final Component entry(FunctionalLang functionalLang, List<CommandSender> receivers, Couple<String, Object>... placeholders) {
-        Component comp = this.entry(functionalLang, placeholders);
+        Component comp = this.entry(functionalLang, true, placeholders);
         if (comp != null) {
             receivers.forEach(receiver -> receiver.sendMessage(comp));
         }
@@ -146,7 +146,7 @@ public class Lang extends OkaeriFile {
     @SafeVarargs
     @Nullable
     public final Component actionBarEntry(FunctionalLang functionalLang, CommandSender receiver, Couple<String, Object>... placeholders) {
-        Component comp = this.entry(functionalLang, placeholders);
+        Component comp = this.entry(functionalLang, false, placeholders);
         if (comp != null) {
             receiver.sendActionBar(comp);
         }

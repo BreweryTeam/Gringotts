@@ -14,6 +14,7 @@ import dev.jsinco.gringotts.obj.SnapshotVault;
 import dev.jsinco.gringotts.obj.Stock;
 import dev.jsinco.gringotts.obj.Vault;
 import dev.jsinco.gringotts.obj.Warehouse;
+import dev.jsinco.gringotts.utility.Executors;
 import dev.jsinco.gringotts.utility.FileUtil;
 import dev.jsinco.gringotts.utility.Text;
 import dev.jsinco.gringotts.utility.Util;
@@ -35,11 +36,14 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public abstract class DataSource {
 
     public static final Path DATA_FOLDER = Gringotts.getInstance().getDataPath();
+
+    protected final ExecutorService singleThread = Executors.newSingleThreadExecutor();
 
     @Getter
     private static DataSource instance;
@@ -92,7 +96,7 @@ public abstract class DataSource {
     }
 
     public String[] getStatements(String path) {
-        String[] statements = FileUtil.readInternalResource("/sql/" + path).split(";");
+        String[] statements = FileUtil.readInternalResource("sql/" + path).split(";");
         // re-append the semicolon to each statement
         for (int i = 0; i < statements.length; i++) {
             statements[i] = statements[i].trim() + ";";
@@ -101,19 +105,34 @@ public abstract class DataSource {
     }
 
     public String getStatement(String path) {
-        return FileUtil.readInternalResource("/sql/" + path);
+        return FileUtil.readInternalResource("sql/" + path);
     }
 
-    public void clearCache() {
+    public CompletableFuture<Void> clearCache() {
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+
         for (CachedObject cachedObject : cachedObjects) {
-            cachedObject.save(this);
+            // Assuming save() returns a CompletableFuture<Void>
+            futures.add(cachedObject.save(this));
         }
+
         cachedObjects.clear();
+
+        // Combine all save futures into one that completes when all are done
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }
 
-    public void close() {
-        clearCache();
-        hikari.close();
+    public CompletableFuture<Void> closeAsync() {
+        // Wait for all saves to complete, then close hikari
+        return clearCache()
+                .exceptionally(ex -> {
+                    ex.printStackTrace();
+                    return null;
+                })
+                .thenRun(() -> {
+                    hikari.close();
+                    singleThread.shutdown();
+                });
     }
 
     @Nullable

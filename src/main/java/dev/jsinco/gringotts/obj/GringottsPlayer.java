@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 
 @Getter
@@ -89,8 +90,8 @@ public class GringottsPlayer implements CachedObject {
 
 
     @Override
-    public void save(DataSource dataSource) {
-        dataSource.saveGringottsPlayer(this);
+    public CompletableFuture<Void> save(DataSource dataSource) {
+        return dataSource.saveGringottsPlayer(this);
     }
 
     @Override

@@ -102,7 +102,7 @@ public class WarehouseGui extends GringottsGui {
                         .findFirst().orElse(null);
 
 
-                if (event.getClick() == ClickType.SHIFT_LEFT) {
+                if (event.getClick() == ClickType.SHIFT_LEFT && isClicked) {
                     WarehouseMode mode = gringottsPlayer.getWarehouseMode();
                     gringottsPlayer.setWarehouseMode(WarehouseMode.getNextMode(mode, player));
                     event.getInventory().setItem(cfg.managerButton().slot(), self.guiItemStack());
@@ -147,7 +147,7 @@ public class WarehouseGui extends GringottsGui {
             .build();
 
     @SuppressWarnings("unchecked")
-    private final GuiItem statusIcon = GuiItem.builder()
+    private final UncontainedGuiItem statusIcon = UncontainedGuiItem.builder()
             .index(() -> cfg.statusIcon().slot())
             .itemStack(b -> b
                     .stringReplacements(
@@ -161,6 +161,13 @@ public class WarehouseGui extends GringottsGui {
                     .material(cfg.statusIcon().material())
                     .headOwner(cfg.statusIcon().headOwner())
             )
+            .action((event, self, isClicked) -> {
+                ItemStack clickedItem = event.getCurrentItem();
+                Inventory inv = event.getInventory();
+                if (event.getClickedInventory() == inv && !ItemStacks.BORDER.isSimilar(clickedItem)) {
+                    Executors.delayedSync(1, () -> inv.setItem(cfg.statusIcon().slot(), self.guiItemStack()));
+                }
+            })
             .build();
 
     public WarehouseGui(Warehouse warehouse, GringottsPlayer gringottsPlayer) {
@@ -203,6 +210,7 @@ public class WarehouseGui extends GringottsGui {
         Player player = (Player) event.getWhoClicked();
         if (warehouse.isExpired()) {
             lng.entry(l -> l.gui().viewExpired(), player);
+            event.setCancelled(true);
             player.closeInventory();
             return;
         }

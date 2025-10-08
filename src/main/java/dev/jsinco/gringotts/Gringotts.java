@@ -10,11 +10,13 @@ import dev.jsinco.gringotts.events.VaultListener;
 import dev.jsinco.gringotts.events.WarehouseListener;
 import dev.jsinco.gringotts.obj.GringottsInventory;
 import dev.jsinco.gringotts.storage.DataSource;
+import dev.jsinco.gringotts.utility.FileUtil;
 import lombok.Getter;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.java.JavaPlugin;
 
+// FIXME: Warehouse compartment amount rolling over once past max stock.
 public final class Gringotts extends JavaPlugin {
 
     @Getter
@@ -25,6 +27,7 @@ public final class Gringotts extends JavaPlugin {
     @Override
     public void onLoad() {
         instance = this;
+        FileUtil.initialize(this.getClassLoader());
     }
 
     @Override
@@ -53,7 +56,7 @@ public final class Gringotts extends JavaPlugin {
     public void onDisable() {
         shutdown = true;
         DataSource dataSource = DataSource.getInstance();
-        dataSource.close();
+
 
         for (Player player : getServer().getOnlinePlayers()) {
             Inventory inv = player.getOpenInventory().getTopInventory();
@@ -61,5 +64,7 @@ public final class Gringotts extends JavaPlugin {
                 player.closeInventory();
             }
         }
+
+        dataSource.closeAsync();
     }
 }

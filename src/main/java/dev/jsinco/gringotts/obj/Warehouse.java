@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class Warehouse implements CachedObject {
 
@@ -148,8 +149,8 @@ public class Warehouse implements CachedObject {
 
 
     @Override
-    public void save(DataSource dataSource) {
-        dataSource.saveWarehouse(this);
+    public CompletableFuture<Void> save(DataSource dataSource) {
+        return dataSource.saveWarehouse(this);
     }
 
 

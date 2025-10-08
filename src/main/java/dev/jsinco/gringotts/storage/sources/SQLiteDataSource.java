@@ -21,6 +21,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -54,7 +55,7 @@ public class SQLiteDataSource extends DataSource {
                 }
             }
             return null;
-        });
+        }, singleThread);
     }
 
     @Override
@@ -72,7 +73,7 @@ public class SQLiteDataSource extends DataSource {
                 e.printStackTrace();
                 return null;
             }
-        });
+        }, singleThread);
     }
 
     @Override
@@ -86,7 +87,7 @@ public class SQLiteDataSource extends DataSource {
                 ResultSet resultSet = statement.executeQuery();
                 return this.mapSnapshotVaults(resultSet, owner);
             }
-        });
+        }, singleThread);
     }
 
     @Override
@@ -106,7 +107,7 @@ public class SQLiteDataSource extends DataSource {
                 Text.debug("Saved vault: " + vault.getOwner() + " #" + vault.getId());
             }
             return null;
-        });
+        }, singleThread);
     }
 
     @Override
@@ -122,7 +123,7 @@ public class SQLiteDataSource extends DataSource {
                 Text.debug("Deleted vault: " + owner + " #" + id);
             }
             return null;
-        });
+        }, singleThread);
     }
 
 
@@ -140,7 +141,7 @@ public class SQLiteDataSource extends DataSource {
                 ResultSet resultSet = warehouseStatement.executeQuery();
                 return this.mapWarehouse(resultSet, owner);
             }
-        });
+        }, singleThread);
     }
 
     // TODO: Redo this method
@@ -192,7 +193,7 @@ public class SQLiteDataSource extends DataSource {
                 }
             }
             return null;
-        });
+        }, singleThread);
     }
 
     @Override
@@ -206,7 +207,7 @@ public class SQLiteDataSource extends DataSource {
                 ResultSet resultSet = statement.executeQuery();
                 return this.mapGringottsPlayer(resultSet, uuid);
             }
-        });
+        }, singleThread);
     }
 
 
@@ -225,6 +226,6 @@ public class SQLiteDataSource extends DataSource {
                 Text.debug("Saved gringotts player: " + gringottsPlayer.getUuid());
             }
             return null;
-        });
+        }, singleThread);
     }
 }

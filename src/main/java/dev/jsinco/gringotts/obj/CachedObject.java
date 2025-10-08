@@ -1,16 +1,25 @@
 package dev.jsinco.gringotts.obj;
 
 import dev.jsinco.gringotts.storage.DataSource;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public interface CachedObject {
+
     UUID getUuid();
+
+    @Nullable
     Long getExpire();
-    void setExpire(Long expire);
-    void save(DataSource dataSource);
+
+    void setExpire(@Nullable Long expire);
+
+    CompletableFuture<Void> save(DataSource dataSource);
+
     default boolean isExpired() {
         Long expiration = this.getExpire();
         return expiration != null && expiration < System.currentTimeMillis();
     }
+
 }

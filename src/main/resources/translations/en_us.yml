@@ -43,7 +43,7 @@ command:
   import:
     cannotImport: Cannot import vaults from {importer}. (Is it installed and/or enabled?)
     startImport: Importing vaults from {importer}... (This might take a while!)
-    importComplete: Imported {amount} vaults with {failuresAmount} failures.
-    failedImport: 'Failed: {uuid} -> {reason}'
+    importComplete: Imported {amount} vaults with {failedAmount} failures.
+    failedImport: 'Failed: {uuid} -> {result}'
   vaultOther:
     noVaultFound: Vault {id} does not exist for {name}.

@@ -1,5 +1,7 @@
 package dev.jsinco.gringotts.utility;
 
+import dev.jsinco.gringotts.Gringotts;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,13 +18,33 @@ import java.util.jar.JarFile;
 public final class FileUtil {
 
 
+    private static ClassLoader pluginClassLoader;
+
+    // Call this once during plugin initialization
+    public static void initialize(ClassLoader classLoader) {
+        pluginClassLoader = classLoader;
+    }
+
     public static String readInternalResource(String path) {
-        try (InputStream inputStream = FileUtil.class.getResourceAsStream(path)) {
+        //ClassLoader loader = pluginClassLoader != null ? pluginClassLoader : FileUtil.class.getClassLoader();
+        ClassLoader loader = Gringotts.class.getClassLoader();
+        try (InputStream inputStream = loader.getResourceAsStream(path)) {
+            if (inputStream == null) {
+                throw new IllegalArgumentException("Resource not found: " + path + " (using classloader: " + loader + ")");
+            }
             return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to read resource: " + path, e);
         }
     }
+
+//    public static String readInternalResource(String path) {
+//        try (InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(path)) {
+//            return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
     public static File[] listInternalFiles(String path) {
         try {

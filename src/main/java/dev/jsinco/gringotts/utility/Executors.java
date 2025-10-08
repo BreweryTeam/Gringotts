@@ -7,6 +7,10 @@ import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -47,10 +51,25 @@ public final class Executors {
     // CompletableFuture
 
     public static <U> CompletableFuture<U> supplyAsyncWithSQLException(ExceptionUtil.ThrowingSQLExceptionWithReturn<U> supplier) {
-        return CompletableFuture.supplyAsync(() -> ExceptionUtil.runWithSQLExceptionHandling(supplier)).exceptionally(throwable -> {
-            throwable.printStackTrace();
-            return null;
-        });
+        if (!Gringotts.isShutdown()) {
+            return CompletableFuture.supplyAsync(() -> ExceptionUtil.runWithSQLExceptionHandling(supplier)).exceptionally(throwable -> {
+                throwable.printStackTrace();
+                return null;
+            });
+        } else {
+            return CompletableFuture.completedFuture(ExceptionUtil.runWithSQLExceptionHandling(supplier));
+        }
+    }
+
+    public static <U> CompletableFuture<U> supplyAsyncWithSQLException(ExceptionUtil.ThrowingSQLExceptionWithReturn<U> supplier, Executor executor) {
+        if (!Gringotts.isShutdown()) {
+            return CompletableFuture.supplyAsync(() -> ExceptionUtil.runWithSQLExceptionHandling(supplier), executor).exceptionally(throwable -> {
+                throwable.printStackTrace();
+                return null;
+            });
+        } else {
+            return CompletableFuture.completedFuture(ExceptionUtil.runWithSQLExceptionHandling(supplier));
+        }
     }
 
     // Synchronous
@@ -70,4 +89,21 @@ public final class Executors {
             sync(runnable);
         }
     }
+
+    public static ExecutorService newSingleThreadExecutor() {
+        return new ThreadPoolExecutor(
+                1,
+                1,
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>(),
+                runnable -> {
+                    Thread thread = new Thread(runnable);
+                    //thread.setName("SQLite-SingleThread");
+                    thread.setDaemon(true);
+                    thread.setContextClassLoader(Gringotts.class.getClassLoader()); // even tried setting the classloader
+                    return thread;
+                }
+        );
+    }
+
 }

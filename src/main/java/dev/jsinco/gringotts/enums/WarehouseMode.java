@@ -8,12 +8,14 @@ import dev.jsinco.gringotts.obj.Warehouse;
 import dev.jsinco.gringotts.storage.DataSource;
 import dev.jsinco.gringotts.utility.Couple;
 import dev.jsinco.gringotts.utility.Util;
+import io.papermc.paper.block.TileStateInventoryHolder;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerAttemptPickupItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -66,7 +68,8 @@ public enum WarehouseMode {
         Block clickedBlock = event.getClickedBlock();
         ItemStack itemInHand = event.getItem();
         Player player = event.getPlayer();
-        if (itemInHand == null || !event.getAction().isLeftClick() || !(clickedBlock instanceof Container container)) {
+
+        if (itemInHand == null || clickedBlock == null || !warehouse.hasCompartment(itemInHand) || !player.isSneaking() || !(clickedBlock.getState(false) instanceof TileStateInventoryHolder container)) {
             return;
         }
         Material material = itemInHand.getType();
@@ -82,10 +85,11 @@ public enum WarehouseMode {
 
         ItemStack item = warehouse.destockItem(material, invAmt);
         if (item != null) {
+            int amt = item.getAmount();
             inv.addItem(item);
             lang.actionBarEntry(l -> l.warehouse().depositedItem(), player,
                     Couple.of("{material}", Util.formatEnumerator(material)),
-                    Couple.of("{amount}", item.getAmount()),
+                    Couple.of("{amount}", amt),
                     Couple.of("{stock}", warehouse.getQuantity(material))
             );
         } else {
