@@ -9,8 +9,8 @@ An expansive 'playervaults' style plugin that incorporates a warehouse for mass 
 
 Beta builds can be found on Modrinth and Hangar:
 
-- https://modrinth.com/mod/gringotts
-- https://hangar.papermc.io/BreweryTeam/Gringotts
+- https://modrinth.com/plugin/gringotts
+- https://hangar.papermc.io/BreweryTeam/Gringotts-Vaults
 
 ## Quick overview of features if you're familiar with Vault plugins:
 
