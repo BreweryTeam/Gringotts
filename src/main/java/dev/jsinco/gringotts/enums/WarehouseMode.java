@@ -68,6 +68,7 @@ public enum WarehouseMode {
         );
     }),
 
+    // TODO: Figure out how to integrate this with protection plugins.
     // Allows players to click on a container to deposit items from their warehouse into it depending on the material they are holding.
     CLICK_TO_DEPOSIT(PlayerInteractEvent.class, (event, gringottsPlayer, warehouse) -> {
         Block clickedBlock = event.getClickedBlock();

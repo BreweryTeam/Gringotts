@@ -162,7 +162,12 @@ public class Config extends OkaeriFile {
                 "To use a specific mode, a player must have the",
                 "permission 'gringotts.warehouse.mode.<mode> (e.g. gringotts.warehouse.mode.auto_store)",
                 " ",
-                "* Options: AUTO_STORE, CLICK_TO_DEPOSIT, AUTO_REPLENISH"
+                "* AUTO_STORE: If a player has a compartment for the item they are picking up",
+                "it will automatically be placed into the player's warehouse",
+                "* CLICK_TO_DEPOSIT: Players can shift click any container to deposit items from their warehouse.",
+                "the items they're depositing depends on the material they are holding in their hand.",
+                "* AUTO_REPLENISH: Automatically replenish blocks and consumables when they're running low with",
+                "stock from the player's warehouse."
         })
         private List<WarehouseMode> enabledModes = List.of(
                 WarehouseMode.AUTO_STORE,
