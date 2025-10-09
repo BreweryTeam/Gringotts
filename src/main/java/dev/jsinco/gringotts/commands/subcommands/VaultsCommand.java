@@ -24,10 +24,10 @@ public class VaultsCommand implements SubCommand {
     public boolean execute(Gringotts plugin, CommandSender sender, String label, List<String> args) {
         Player player = (Player) sender;
         DataSource dataSource = DataSource.getInstance();
-        GringottsPlayer gringottsPlayer = dataSource.cachedGringottsPlayer(player.getUniqueId());
+        GringottsPlayer gringottsPlayer = dataSource.cachedObject(player.getUniqueId(), GringottsPlayer.class);
 
         if (args.isEmpty()) {
-            YourVaultsGui yourVaultsGui = GringottsGui.factory(() -> new YourVaultsGui(gringottsPlayer));
+            YourVaultsGui yourVaultsGui = new YourVaultsGui(gringottsPlayer);
             yourVaultsGui.open(player);
             return true;
         }
@@ -47,7 +47,6 @@ public class VaultsCommand implements SubCommand {
                     Couple.of("{vaultName}", vault.getCustomName())
             );
         });
-
         return true;
     }
 
@@ -55,7 +54,7 @@ public class VaultsCommand implements SubCommand {
     public List<String> tabComplete(Gringotts plugin, CommandSender sender, String label, List<String> args) {
         Player player = (Player) sender;
         DataSource dataSource = DataSource.getInstance();
-        GringottsPlayer gringottsPlayer = dataSource.cachedGringottsPlayer(player.getUniqueId());
+        GringottsPlayer gringottsPlayer = dataSource.cachedObject(player.getUniqueId(), GringottsPlayer.class);
         // List of vault IDs the player has access to
         return IntStream.rangeClosed(1, gringottsPlayer.getCalculatedMaxVaults())
                 .mapToObj(String::valueOf)

@@ -61,13 +61,14 @@ public class GringottsPlayer implements CachedObject {
 
     public int getCalculatedMaxVaults() {
         int maxByPermission = getMaxByPermission("gringotts.maxvaults");
-        // Whichever is greater, use that
-        return Math.max(Math.max(maxByPermission, maxVaults), cfg.vaults().defaultMaxVaults());
+
+        return Math.max(maxByPermission + maxVaults, cfg.vaults().defaultMaxVaults());
     }
 
     public int getCalculatedMaxWarehouseStock() {
         int maxByPermission = getMaxByPermission("gringotts.maxstock");
-        return Math.max(Math.max(maxByPermission, maxWarehouseStock), cfg.warehouse().defaultMaxStock());
+
+        return Math.max(maxByPermission + maxWarehouseStock, cfg.warehouse().defaultMaxStock());
     }
 
     private int getMaxByPermission(String permissionPrefix) {

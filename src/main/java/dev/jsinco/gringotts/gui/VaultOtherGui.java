@@ -118,7 +118,7 @@ public class VaultOtherGui extends GringottsGui implements PromisedInventory {
 
             CompletableFuture<GringottsPlayer> playerFuture;
 
-            GringottsPlayer cached = dataSource.cachedGringottsPlayer(target.getUniqueId());
+            GringottsPlayer cached = dataSource.cachedObject(target.getUniqueId(), GringottsPlayer.class);
             playerFuture = cached != null ? CompletableFuture.completedFuture(cached) : dataSource.getGringottsPlayer(target.getUniqueId());
 
             return playerFuture.thenApply(targetGringottsPlayer -> {
@@ -148,8 +148,6 @@ public class VaultOtherGui extends GringottsGui implements PromisedInventory {
         promiseInventory().thenAccept(inventory -> {
             if (inventory != null) {
                 Executors.sync(() -> player.openInventory(inventory));
-            } else {
-                player.sendMessage("You do not have access to any vaults for " + targetName() + ". (Have they trusted you to any of them?)");
             }
         });
     }

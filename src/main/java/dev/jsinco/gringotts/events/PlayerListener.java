@@ -22,6 +22,7 @@ public class PlayerListener implements Listener {
         dataSource.cacheObject(dataSource.getWarehouse(player.getUniqueId()));
     }
 
+    @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         Text.debug("Uncaching player data for " + player.getName());

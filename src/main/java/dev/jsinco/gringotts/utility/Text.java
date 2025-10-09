@@ -1,8 +1,11 @@
 package dev.jsinco.gringotts.utility;
 
+import dev.jsinco.gringotts.Gringotts;
 import dev.jsinco.gringotts.configuration.ConfigManager;
+import dev.jsinco.gringotts.configuration.files.Config;
 import dev.jsinco.gringotts.configuration.files.Lang;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -12,6 +15,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 
 import java.util.List;
+import java.util.logging.Level;
 import java.util.stream.Stream;
 
 public class Text {
@@ -61,6 +65,29 @@ public class Text {
     }
 
     public static void debug(String msg) {
-        Bukkit.getConsoleSender().sendMessage(mm("GRINGOTTS: " + msg));
+        boolean verboseLogging = ConfigManager.get(Config.class).verboseLogging();
+        debug(msg, verboseLogging);
+    }
+
+    public static void debug(String msg, boolean verbose) {
+        if (verbose) {
+            Bukkit.getConsoleSender().sendMessage(mm("[Gringotts] " + msg));
+        }
+    }
+
+    public static void log(String msg) {
+        Bukkit.getConsoleSender().sendMessage(mm("[Gringotts] " + msg));
+    }
+
+    public static void warn(String msg) {
+        Bukkit.getConsoleSender().sendMessage(mm("[Gringotts] " + msg, NamedTextColor.YELLOW));
+    }
+
+    public static void error(String msg) {
+        Bukkit.getConsoleSender().sendMessage(mm("[Gringotts] " + msg, NamedTextColor.RED));
+    }
+
+    public static void error(String msg, Throwable t) {
+        Gringotts.getInstance().getLogger().log(Level.SEVERE, msg, t);
     }
 }

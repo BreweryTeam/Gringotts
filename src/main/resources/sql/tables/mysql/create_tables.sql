@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS gringotts_vaults(
     owner VARCHAR(36) NOT NULL,
     id INTEGER NOT NULL,
-    inventory TEXT NOT NULL,
+    inventory MEDIUMTEXT NOT NULL,
     custom_name TEXT,
     icon TEXT,
     trusted_players TEXT,

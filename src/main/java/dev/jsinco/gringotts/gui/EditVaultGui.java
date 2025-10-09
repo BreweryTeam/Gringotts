@@ -5,7 +5,6 @@ import dev.jsinco.gringotts.configuration.files.Config;
 import dev.jsinco.gringotts.configuration.files.GuiConfig;
 import dev.jsinco.gringotts.configuration.files.Lang;
 import dev.jsinco.gringotts.events.ChatPromptInputListener.ChatInputCallback;
-import dev.jsinco.gringotts.gui.item.AutoRegisterGuiItems;
 import dev.jsinco.gringotts.gui.item.GuiItem;
 import dev.jsinco.gringotts.gui.item.UncontainedGuiItem;
 import dev.jsinco.gringotts.obj.GringottsPlayer;
@@ -48,7 +47,7 @@ public class EditVaultGui extends GringottsGui {
             )
             .action(e -> {
                 Player player = (Player) e.getWhoClicked();
-                YourVaultsGui yourVaultsGui = GringottsGui.factory(() -> new YourVaultsGui(gringottsPlayer));
+                YourVaultsGui yourVaultsGui = new YourVaultsGui(gringottsPlayer);
                 yourVaultsGui.open(player);
             })
             .build();
@@ -77,7 +76,7 @@ public class EditVaultGui extends GringottsGui {
                             vault.setCustomName(input);
                             DataSource.getInstance().saveVault(vault);
 
-                            player.sendMessage("Vault name changed to: \"" + input + "\"");
+                            lng.entry(l -> l.vaults().nameChanged(), player, Couple.of("{vaultName}", vault.getCustomName()));
                             Util.editMeta(clickedItem, meta -> {
                                 meta.lore(Text.mmlNoItalic(Util.replaceAll(cfg.editNameButton().lore(), "{vaultName}", vault.getCustomName()), NamedTextColor.WHITE));
                             });

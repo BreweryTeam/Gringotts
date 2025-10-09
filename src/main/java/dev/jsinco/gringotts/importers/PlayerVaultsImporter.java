@@ -5,6 +5,7 @@ import dev.jsinco.gringotts.obj.Vault;
 import dev.jsinco.gringotts.storage.DataSource;
 import dev.jsinco.gringotts.utility.ClassUtil;
 import dev.jsinco.gringotts.utility.Couple;
+import dev.jsinco.gringotts.utility.Text;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 
@@ -97,7 +98,10 @@ public class PlayerVaultsImporter implements FlatFileImporter {
             int i = 1;
             for (ItemStack[] inv : inventories) {
                 final int index = i++;
-                chain = chain.thenCompose(v -> dataSource.saveVault(new Vault(owner, index, inv)).thenApply(x -> null));
+                chain = chain.thenCompose(v -> dataSource.saveVault(new Vault(owner, index, inv)).thenApply(x -> {
+                    Text.log("Imported vault #" + index + " for " + owner);
+                    return null;
+                }));
             }
 
             return chain.thenApply(v -> Couple.of(owner, expectedResult));

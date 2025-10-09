@@ -42,6 +42,8 @@ public class Lang extends OkaeriFile {
         private String removedCompartment;
         private String cannotRemoveCompartment;
         private String addedCompartment;
+        private String compartmentAlreadyExists;
+        private String compartmentDoesNotExist;
         private String changedMode;
         private String replenishedItem;
         private String autoStoredItem;
@@ -62,6 +64,8 @@ public class Lang extends OkaeriFile {
         private String playerUntrusted;
         private String noVaultsFound;
         private String noVaultsAccessible;
+        private String noVaultFound;
+        private String vaultDeleted;
     }
 
     @Getter
@@ -77,15 +81,18 @@ public class Lang extends OkaeriFile {
     @Accessors(fluent = true)
     public static class Command extends OkaeriConfig {
 
+        private String help;
         private Base base = new Base();
         private Max max = new Max();
         @CustomKey("import")
         private Import _import = new Import();
         private VaultOther vaultOther = new VaultOther();
+        private Reload reload = new Reload();
 
         @Getter
         @Accessors(fluent = true)
         public static class Base extends OkaeriConfig {
+            private String unknownCommand;
             private String playerOnly;
             private String noPermission;
         }
@@ -107,6 +114,13 @@ public class Lang extends OkaeriFile {
         @Accessors(fluent = true)
         public static class VaultOther extends OkaeriConfig {
             private String noVaultFound;
+        }
+        @Getter
+        @Accessors(fluent = true)
+        public static class Reload extends OkaeriConfig {
+            private String success;
+            private String failed;
+            private String newDatabaseDriverSet;
         }
     }
 

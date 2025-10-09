@@ -8,6 +8,8 @@ warehouse:
   removedCompartment: Removed <aqua><b>{material}</b></aqua> from your warehouse.
   cannotRemoveCompartment: This compartments stock is not at 0, so it cannot be removed.
   addedCompartment: Added <aqua><b>{material}</b></aqua> to your warehouse.
+  compartmentAlreadyExists: There is already a compartment with this material in your warehouse.
+  compartmentDoesNotExist: There is no compartment with this material in your warehouse.
   changedMode: Changed warehouse mode to <aqua><b>{mode}</b></aqua>.
   replenishedItem: '<yellow>Replenished <aqua><b>{amount}x {material}</b></aqua> into your inventory from your warehouse. <gray>(Stock: {stock})</gray>'
   autoStoredItem: '<yellow>Stored <aqua><b>{amount}x {material}</b></aqua> into your warehouse. <gray>(Stock: {stock})</gray>'
@@ -26,6 +28,8 @@ vaults:
   playerUntrusted: '{name} has been removed from your trust list.'
   noVaultsFound: There are no vaults for {name}.
   noVaultsAccessible: You do not have access to any vaults for {name}. Have they trusted you to any of them?
+  noVaultFound: '<aqua><b>Vault #{id}</b></aqua> does not exist.'
+  vaultDeleted: '<aqua><b>Vault #{id}</b></aqua> has been deleted.'
 
 gui:
   firstPage: You are on the first page.
@@ -34,7 +38,22 @@ gui:
   promptInputTimeOut: Your prompt input timed out.
 
 command:
+  help: |
+    
+    <gold>---- <b>Gringotts</b> <gray>v{version}</gray> ----</gold>
+    <aqua>{description}</aqua>
+    <gray>---- <b>Commands</b> ----</gray>
+    <green>/gringotts help - <gray>Show this help message.
+    <green>/gringotts import <importer> - <gray>Import vaults from another plugin.
+    <green>/gringotts max <vaults|stock> <add|set|remove> <name> <newMax> - <gray>Adjust vault or stock caps dynamically.
+    <green>/gringotts reload - <gray>Reload configuration files.
+    <green>/gringotts vaultadmin <delete|open> <name> <index?> - <gray>Manage other players vaults.
+    <green>/gringotts vaultother <name> <index?> - <gray>Open a vault(s) you're trusted to view.
+    <green>/gringotts vaults <index?> - <gray>Open a vault(s) you own.
+    <green>/gringotts warehouseadmin <name> - <gray>Manage the warehouse of another player.
+    <green>/gringotts warehouse - <gray>Open your warehouse.
   base:
+    unknownCommand: Unknown command. Type <aqua>/gringotts help</aqua> for a list of commands.
     playerOnly: This command can only be executed by a player.
     noPermission: You do not have permission to execute this command.
   max:
@@ -43,7 +62,11 @@ command:
   import:
     cannotImport: Cannot import vaults from {importer}. (Is it installed and/or enabled?)
     startImport: Importing vaults from {importer}... (This might take a while!)
-    importComplete: Imported {amount} vaults with {failedAmount} failures.
+    importComplete: Imported vaults from {amount} players with {failedAmount} failures.
     failedImport: 'Failed: {uuid} -> {result}'
   vaultOther:
     noVaultFound: Vault {id} does not exist for {name}.
+  reload:
+    success: Successfully reloaded configuration files.
+    failed: Failed to reload one or more configuration files. Check console for stacktrace.
+    newDatabaseDriverSet: The database driver in the configuration file has been changed. Gringotts will now reload from <red>{driver}</red> using the new driver. Please be aware that Gringotts provides no methods for transferring data between databases.

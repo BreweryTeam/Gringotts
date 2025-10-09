@@ -22,6 +22,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -31,12 +32,18 @@ import java.util.stream.Collectors;
 public class SQLiteDataSource extends DataSource {
 
     @Override
-    public HikariConfig hikariConfig() throws IOException {
+    public HikariConfig hikariConfig() {
         String fileName = ConfigManager.get(Config.class).storage().database() + ".db";
         File file = DATA_FOLDER.resolve(fileName).toFile();
-        if (!file.exists() && !file.getParentFile().mkdirs() && !file.createNewFile()) {
-            throw new IOException("Could not create file or dirs");
+        try {
+            file.getParentFile().mkdirs();
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Could not create file or dirs", e);
         }
+
 
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setPoolName("GringottsSQLite");
@@ -69,9 +76,6 @@ public class SQLiteDataSource extends DataSource {
                 statement.setInt(2, id);
                 ResultSet resultSet = statement.executeQuery();
                 return this.mapVault(resultSet, owner, id);
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return null;
             }
         }, singleThread);
     }
@@ -111,7 +115,7 @@ public class SQLiteDataSource extends DataSource {
     }
 
     @Override
-    public CompletableFuture<Void> deleteVault(UUID owner, int id) {
+    public CompletableFuture<Boolean> deleteVault(UUID owner, int id) {
         return Executors.supplyAsyncWithSQLException(() -> {
             try (Connection connection = this.connection()) {
                 PreparedStatement statement = connection.prepareStatement(
@@ -119,10 +123,12 @@ public class SQLiteDataSource extends DataSource {
                 );
                 statement.setString(1, owner.toString());
                 statement.setInt(2, id);
-                statement.executeUpdate();
-                Text.debug("Deleted vault: " + owner + " #" + id);
+                int rowsAffected = statement.executeUpdate();
+
+
+                Text.debug("Attempted to delete vault: " + owner + " #" + id);
+                return rowsAffected > 0;
             }
-            return null;
         }, singleThread);
     }
 
@@ -144,7 +150,6 @@ public class SQLiteDataSource extends DataSource {
         }, singleThread);
     }
 
-    // TODO: Redo this method
     @Override
     public CompletableFuture<Void> saveWarehouse(Warehouse warehouse) {
         return Executors.supplyAsyncWithSQLException(() -> {
@@ -152,43 +157,42 @@ public class SQLiteDataSource extends DataSource {
                 UUID owner = warehouse.getOwner();
                 Map<Material, Stock> map = warehouse.stock();
 
-                for (String sql : this.getStatements("warehouses/sqlite/insert_or_update_warehouse.sql")) {
-                    if (sql.trim().startsWith("INSERT")) {
-                        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-                            for (Map.Entry<Material, Stock> entry : map.entrySet()) {
-                                ps.setString(1, owner.toString());
-                                ps.setString(2, entry.getKey().name());
-                                ps.setInt(3, entry.getValue().getAmount());
-                                ps.setLong(4, entry.getValue().getLastUpdate());
-                                ps.addBatch();
-                            }
-                            ps.executeBatch();
-                        }
+                // Execute INSERT/UPDATE
+                try (PreparedStatement ps = connection.prepareStatement(
+                        this.getStatement("warehouses/sqlite/insert_or_update_warehouse.sql")
+                )) {
+                    for (Map.Entry<Material, Stock> entry : map.entrySet()) {
+                        ps.setString(1, owner.toString());
+                        ps.setString(2, entry.getKey().name());
+                        ps.setInt(3, entry.getValue().getAmount());
+                        ps.setLong(4, entry.getValue().getLastUpdate());
+                        ps.addBatch();
                     }
-                    else if (sql.trim().startsWith("DELETE")) {
-                        if (!map.isEmpty()) {
-                            // Build placeholders dynamically
-                            String placeholders = map.keySet().stream()
-                                    .map(m -> "?")
-                                    .collect(Collectors.joining(", "));
+                    ps.executeBatch();
+                }
 
-                            String purgeSql = sql.replace("(?, ?, ?, ...)", "(" + placeholders + ")");
+                // Execute DELETE for removed items
+                if (map.isEmpty()) {
+                    // If map is empty, delete all rows for this owner
+                    try (PreparedStatement ps = connection.prepareStatement(
+                            this.getStatement("warehouses/delete_all_warehouse.sql")
+                    )) {
+                        ps.setString(1, owner.toString());
+                        ps.executeUpdate();
+                    }
+                } else {
+                    // Delete rows where material is NOT IN the current map
+                    String placeholders = String.join(", ", Collections.nCopies(map.size(), "?"));
+                    String deleteSql = this.getStatement("warehouses/delete_stale_warehouse.sql")
+                            .replace("(?)", "(" + placeholders + ")");
 
-                            try (PreparedStatement ps = connection.prepareStatement(purgeSql)) {
-                                ps.setString(1, owner.toString());
-                                int i = 2;
-                                for (Material m : map.keySet()) {
-                                    ps.setString(i++, m.name());
-                                }
-                                ps.executeUpdate();
-                            }
-                        } else {
-                            try (PreparedStatement ps = connection.prepareStatement(
-                                    "DELETE FROM warehouses WHERE owner = ?")) {
-                                ps.setString(1, owner.toString());
-                                ps.executeUpdate();
-                            }
+                    try (PreparedStatement ps = connection.prepareStatement(deleteSql)) {
+                        ps.setString(1, owner.toString());
+                        int i = 2;
+                        for (Material m : map.keySet()) {
+                            ps.setString(i++, m.name());
                         }
+                        ps.executeUpdate();
                     }
                 }
             }

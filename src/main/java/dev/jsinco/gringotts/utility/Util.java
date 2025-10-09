@@ -137,7 +137,13 @@ public class Util {
         }
         String newString = string;
         for (Couple<String, Object> pair : pairs) {
-            newString = newString.replace(pair.a(), String.valueOf(pair.b()));
+            if (pair.b() instanceof Integer integer) {
+                newString = newString.replace(pair.a(), String.format("%,d", integer));
+            } else if(pair.b() instanceof Double doubleValue) {
+                newString = newString.replace(pair.a(), String.format("%,.2f", doubleValue));
+            } else {
+                newString = newString.replace(pair.a(), String.valueOf(pair.b()));
+            }
         }
         return newString;
     }
@@ -158,15 +164,24 @@ public class Util {
         return newList;
     }
 
-    public static <T> List<String> replaceAll(List<String> list, Couple<String, T>... pairs) {
+    public static List<String> replaceAll(List<String> list, Couple<String, Object>... pairs) {
         List<String> newList = new ArrayList<>();
         for (String string : list) {
-            String newString = string;
-            for (Couple<String, T> pair : pairs) {
-                newString = newString.replace(pair.a(), String.valueOf(pair.b()));
-            }
+            String newString = replace(string, pairs);
             newList.add(newString);
         }
+        return newList;
+    }
+
+    public static <T> List<T> plusList(List<T> list, T... items) {
+        List<T> newList = new ArrayList<>(list);
+        newList.addAll(List.of(items));
+        return newList;
+    }
+    public static <T> List<T> plusFirstIndex(List<T> list, T... items) {
+        List<T> newList = new ArrayList<>(items.length + list.size());
+        newList.addAll(List.of(items));
+        newList.addAll(list);
         return newList;
     }
 }

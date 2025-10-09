@@ -22,9 +22,12 @@ public class PaginatedGui {
     private final List<Inventory> pages = new ArrayList<>();
 
 
-    public PaginatedGui(String name, Inventory base, List<ItemStack> items, Couple<Integer, Integer> startEndSlots, List<Integer> ignoredSlots) {
+    public PaginatedGui(String name, Inventory base, List<ItemStack> items, Couple<Integer, Integer> startEndSlots, List<Integer> ignoredSlots, boolean buildIfEmpty) {
         this.name = name;
         this.base = base;
+        if (items.isEmpty() && !buildIfEmpty) {
+            return;
+        }
         Inventory currentPage = newPage();
         int currentItem = 0;
         int currentSlot = startEndSlots.getFirst();
@@ -89,6 +92,7 @@ public class PaginatedGui {
         private List<ItemStack> items = Collections.emptyList();
         private Couple<Integer, Integer> startEndSlots = new Couple<>(0, 0);
         private List<Integer> ignoredSlots = Collections.emptyList();
+        private boolean buildIfEmpty = true;
 
         public Builder name(String name) {
             this.name = name;
@@ -120,8 +124,13 @@ public class PaginatedGui {
             return this;
         }
 
+        public Builder buildIfEmpty(boolean buildIfEmpty) {
+            this.buildIfEmpty = buildIfEmpty;
+            return this;
+        }
+
         public PaginatedGui build() {
-            return new PaginatedGui(name, base, items, startEndSlots, ignoredSlots);
+            return new PaginatedGui(name, base, items, startEndSlots, ignoredSlots, buildIfEmpty);
         }
     }
 

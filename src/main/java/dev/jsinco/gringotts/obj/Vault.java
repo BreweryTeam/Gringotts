@@ -126,7 +126,7 @@ public class Vault implements GringottsInventory {
     public Couple<@NotNull VaultOpenState, @Nullable Player> getOpenState() {
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (this.equals(player.getOpenInventory().getTopInventory().getHolder(false))) {
-                if (player.hasPermission("gringotts.viewother")) {
+                if (player.hasPermission("gringotts.mod")) {
                     return Couple.of(VaultOpenState.OPEN_BY_MOD, player);
                 }
                 return Couple.of(VaultOpenState.OPEN, player);
@@ -149,7 +149,7 @@ public class Vault implements GringottsInventory {
     }
 
     public boolean canAccess(Player player) {
-        return player.getUniqueId() == this.owner || this.trustedPlayers.contains(player.getUniqueId()) || player.hasPermission("gringotts.viewother");
+        return player.getUniqueId() == this.owner || this.trustedPlayers.contains(player.getUniqueId()) || player.hasPermission("gringotts.mod");
     }
 
     public boolean isTrusted(UUID uuid) {

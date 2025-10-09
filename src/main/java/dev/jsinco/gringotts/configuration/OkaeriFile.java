@@ -27,6 +27,11 @@ public class OkaeriFile extends OkaeriConfig implements RegistryItem {
         return null;
     }
 
+    public boolean isDynamicFileName() {
+        OkaeriFileName annotation = getClass().getAnnotation(OkaeriFileName.class);
+        return annotation != null && annotation.dynamicFileName();
+    }
+
     public void reload() {
         Path bindFile = DATA_FOLDER.resolve(this.getFileName(true));
         if (!this.getBindFile().equals(bindFile)) {

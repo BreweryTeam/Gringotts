@@ -28,6 +28,12 @@ public class Config extends OkaeriFile {
     })
     private String language = "en_us";
 
+    @Comment("What subcommand should the base command default to?")
+    private String baseCommandBehavior = "vaults";
+
+    @Comment("Toggles debug messages.")
+    private boolean verboseLogging = false;
+
 
     @Comment({
             "Quick return allows players to click outside of their",
@@ -55,7 +61,7 @@ public class Config extends OkaeriFile {
         @Comment({
                 "How long Gringotts should keep cacheable objects in",
                 "memory before saving them back to disk. The default value",
-                "is fine for most people."
+                "is fine for most servers."
         })
         private long defaultObjectCacheTime = 1200000;
         @Comment({
@@ -80,6 +86,8 @@ public class Config extends OkaeriFile {
         private String username = "root";
 
         private String password = "password";
+
+        private String jdbcFlags = "?useSSL=false&verifyServerCertificate=false&useUnicode=true&characterEncoding=utf-8";
     }
 
     private Vaults vaults = new Vaults();
@@ -131,12 +139,12 @@ public class Config extends OkaeriFile {
         @Comment({
                 "Automatically blacklist items that have a stack <= 1."
         })
-        private boolean blacklistSingleStackMaterials = true; // TODO: Implement
+        private boolean blacklistSingleStackMaterials = true;
         @Comment({
                 "Manually prevent items from being stored in warehouses.",
                 "Supports regex."
         })
-        private List<String> blacklistedMaterials = List.of(); // TODO: Implement
+        private List<String> blacklistedMaterials = List.of();
         public List<Material> blacklistedMaterials() {
             Material[] materials = Material.values();
             List<Pattern> patterns = blacklistedMaterials.stream().map(Pattern::compile).toList();

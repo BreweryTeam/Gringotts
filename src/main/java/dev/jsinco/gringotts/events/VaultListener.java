@@ -55,12 +55,12 @@ public class VaultListener implements Listener {
             return;
         }
 
-        GringottsPlayer gringottsPlayer = DataSource.getInstance().cachedGringottsPlayer(player.getUniqueId());
+        GringottsPlayer gringottsPlayer = DataSource.getInstance().cachedObject(player.getUniqueId(), GringottsPlayer.class);
         GringottsGui gui;
         if (!vault.getOwner().equals(player.getUniqueId())) {
-            gui = GringottsGui.factory(() -> new VaultOtherGui(player, Bukkit.getOfflinePlayer(vault.getOwner())));
+            gui = new VaultOtherGui(player, Bukkit.getOfflinePlayer(vault.getOwner()));
         } else {
-            gui = GringottsGui.factory(() -> new YourVaultsGui(gringottsPlayer));
+            gui = new YourVaultsGui(gringottsPlayer);
         }
         gui.open(player);
     }

@@ -7,6 +7,7 @@ import dev.jsinco.gringotts.Gringotts;
 import dev.jsinco.gringotts.configuration.ConfigManager;
 import dev.jsinco.gringotts.configuration.files.Config;
 import dev.jsinco.gringotts.enums.Driver;
+import dev.jsinco.gringotts.enums.TriState;
 import dev.jsinco.gringotts.enums.WarehouseMode;
 import dev.jsinco.gringotts.obj.CachedObject;
 import dev.jsinco.gringotts.obj.GringottsPlayer;
@@ -18,21 +19,21 @@ import dev.jsinco.gringotts.utility.Executors;
 import dev.jsinco.gringotts.utility.FileUtil;
 import dev.jsinco.gringotts.utility.Text;
 import dev.jsinco.gringotts.utility.Util;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -47,19 +48,19 @@ public abstract class DataSource {
 
     @Getter
     private static DataSource instance;
-
     @Getter
     private final HikariDataSource hikari;
+    private ScheduledTask cacheTask;
 
     private final ConcurrentLinkedQueue<CachedObject> cachedObjects = new ConcurrentLinkedQueue<>();
 
-    public abstract HikariConfig hikariConfig() throws IOException;
+    public abstract HikariConfig hikariConfig();
     public abstract CompletableFuture<Void> createTables();
 
     public abstract CompletableFuture<Vault> getVault(UUID owner, int id);
     public abstract CompletableFuture<List<SnapshotVault>> getVaults(UUID owner);
     public abstract CompletableFuture<Void> saveVault(Vault vault);
-    public abstract CompletableFuture<Void> deleteVault(UUID owner, int id);
+    public abstract CompletableFuture<Boolean> deleteVault(UUID owner, int id);
 
 
     public abstract CompletableFuture<@NotNull Warehouse> getWarehouse(UUID owner);
@@ -72,27 +73,26 @@ public abstract class DataSource {
 
 
     public DataSource() {
-        try {
-            this.hikari = new HikariDataSource(hikariConfig());
-            createTables();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to initialize DataSource", e);
-        }
-
-        Bukkit.getAsyncScheduler().runAtFixedRate(Gringotts.getInstance(),task -> {
-            System.out.println(cachedObjects);
-            for (CachedObject cachedObject : cachedObjects) {
-                if (cachedObject.isExpired()) {
-                    cachedObject.save(this);
-                    cachedObjects.remove(cachedObject);
-                    Text.debug("Uncached " + cachedObject.getClass().getSimpleName() + ": " + cachedObject.getUuid() + " because it was expired");
-                }
-            }
-        },0, 1, TimeUnit.MINUTES);
+        this.hikari = new HikariDataSource(this.hikariConfig());
     }
 
     public Connection connection() throws SQLException {
         return hikari.getConnection();
+    }
+
+    public CompletableFuture<Void> setup() {
+        return this.createTables().thenRun(() -> this.cacheTask = Executors.runRepeatingAsync(1, TimeUnit.MINUTES, task -> {
+            Text.debug("Cached Objects: " + cachedObjects.size());
+            for (CachedObject cachedObject : cachedObjects) {
+                cachedObject.save(this);
+                Text.debug("Saved CachedObject " + cachedObject.getClass().getSimpleName() + ": " + cachedObject.getUuid());
+
+                if (cachedObject.isExpired()) {
+                    cachedObjects.remove(cachedObject);
+                    Text.debug("Uncached " + cachedObject.getClass().getSimpleName() + ": " + cachedObject.getUuid() + " because it was expired");
+                }
+            }
+        }));
     }
 
     public String[] getStatements(String path) {
@@ -130,9 +130,23 @@ public abstract class DataSource {
                     return null;
                 })
                 .thenRun(() -> {
+                    cacheTask.cancel();
                     hikari.close();
                     singleThread.shutdown();
                 });
+    }
+
+    public TriState isClosed() {
+        boolean hikariClosed = hikari.isClosed();
+        boolean singleThreadClosed = singleThread.isShutdown();
+        boolean cacheTaskClosed = cacheTask.isCancelled();
+        if (hikariClosed && singleThreadClosed && cacheTaskClosed) {
+            return TriState.TRUE;
+        } else if (hikariClosed || singleThreadClosed || cacheTaskClosed) {
+            return TriState.ALTERNATIVE_STATE;
+        } else {
+            return TriState.FALSE;
+        }
     }
 
     @Nullable
@@ -177,7 +191,7 @@ public abstract class DataSource {
     }
 
     public Warehouse mapWarehouse(ResultSet rs, UUID uuid) throws SQLException {
-        Map<Material, Stock> warehouseMap = new HashMap<>();
+        EnumMap<Material, Stock> warehouseMap = new EnumMap<>(Material.class);
 
         while (rs.next()) {
             String mstring = rs.getString("material");
@@ -192,25 +206,9 @@ public abstract class DataSource {
             warehouseMap.put(material, new Stock(material, quantity, lastUpdate));
         }
 
-        // TODO: Figure out a way to have default stock
-//        if (warehouseMap.isEmpty()) {
-//            warehouseMap.put(Material.APPLE, 0);
-//            warehouseMap.put(Material.COAL, 0);
-//            warehouseMap.put(Material.DIAMOND, 0);
-//        }
         return new Warehouse(uuid, warehouseMap);
     }
 
-
-
-
-    public static void createInstance() {
-        if (instance != null) {
-            throw new IllegalStateException("DataSourceManager instance already created.");
-        }
-        Driver driver = Driver.SQLITE;
-        instance = driver.getSupplier().get();
-    }
 
     @Nullable
     @SuppressWarnings("unchecked")
@@ -302,12 +300,32 @@ public abstract class DataSource {
         }
     }
 
-    // TODO: Remove
-    public Warehouse cachedWarehouse(UUID uuid) {
-        return cachedObject(uuid, Warehouse.class);
+    @Override
+    public String toString() {
+        return "DataSource{" +
+                "singleThread=" + singleThread +
+                ", hikari=" + hikari +
+                ", cacheTask=" + cacheTask +
+                ", cachedObjects=" + cachedObjects +
+                '}';
     }
 
-    public GringottsPlayer cachedGringottsPlayer(UUID uuid) {
-        return cachedObject(uuid, GringottsPlayer.class);
+    public static void createInstance() {
+        createInstance(ConfigManager.get(Config.class).storage().driver());
+    }
+
+    public static void createInstance(Driver driver) {
+        TriState closed = instance != null ? instance.isClosed() : TriState.TRUE;
+        if (closed != TriState.TRUE) {
+            throw new IllegalStateException(closed == TriState.ALTERNATIVE_STATE ? "DataSource is not properly closed." : "DataSource is not closed.");
+        }
+
+        instance = driver.getSupplier().get(); // Set a new instance
+        instance.setup().whenComplete((unused, throwable) -> {
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                instance.cacheObject(instance.getGringottsPlayer(player.getUniqueId()));
+                instance.cacheObject(instance.getWarehouse(player.getUniqueId()));
+            }
+        });
     }
 }

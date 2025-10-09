@@ -32,13 +32,15 @@ public class MaxCommand implements SubCommand {
                 if (type.equalsIgnoreCase("vaults")) {
                     oldMax = gringottsPlayer.getMaxVaults();
                     newMax = operation.apply(oldMax, num);
-                    calculatedMax = gringottsPlayer.getCalculatedMaxVaults();
+
                     gringottsPlayer.setMaxVaults(newMax);
+                    calculatedMax = gringottsPlayer.getCalculatedMaxVaults();
                 } else if (type.equalsIgnoreCase("stock")) {
                     oldMax = gringottsPlayer.getMaxWarehouseStock();
                     newMax = operation.apply(oldMax, num);
-                    calculatedMax = gringottsPlayer.getCalculatedMaxWarehouseStock();
+
                     gringottsPlayer.setMaxWarehouseStock(newMax);
+                    calculatedMax = gringottsPlayer.getCalculatedMaxWarehouseStock();
                 } else {
                     lng.entry(l -> l.command().max().invalidType(), sender);
                     return;

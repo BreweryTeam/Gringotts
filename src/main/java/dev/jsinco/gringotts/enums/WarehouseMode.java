@@ -7,15 +7,14 @@ import dev.jsinco.gringotts.obj.GringottsPlayer;
 import dev.jsinco.gringotts.obj.Warehouse;
 import dev.jsinco.gringotts.storage.DataSource;
 import dev.jsinco.gringotts.utility.Couple;
+import dev.jsinco.gringotts.utility.Executors;
 import dev.jsinco.gringotts.utility.Util;
 import io.papermc.paper.block.TileStateInventoryHolder;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.Container;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerAttemptPickupItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -41,16 +40,24 @@ public enum WarehouseMode {
         Lang lang = ConfigManager.get(Lang.class);
         int deposited = warehouse.stockItem(material, itemStack.getAmount());
         int remainder = itemStack.getAmount() - deposited;
-        if (deposited < 0) {
+
+        if (deposited < 1) {
             return;
         }
 
-        if (remainder == 0) {
+        physicalItem.setCanMobPickup(false);
+        physicalItem.setCanPlayerPickup(false);
+        event.setCancelled(true);
+        event.setFlyAtPlayer(true);
+
+        Executors.delayedSync(1, () -> {
             physicalItem.remove();
-        } else {
-            itemStack.setAmount(remainder);
-            physicalItem.setItemStack(itemStack);
-        }
+            if (remainder > 0) {
+                itemStack.setAmount(remainder);
+                physicalItem.getWorld().dropItem(physicalItem.getLocation(), itemStack);
+            }
+        });
+
 
         lang.actionBarEntry(l -> l.warehouse().autoStoredItem(),
                 event.getPlayer(),
@@ -59,8 +66,6 @@ public enum WarehouseMode {
                 Couple.of("{remainder}", remainder),
                 Couple.of("{stock}", warehouse.getQuantity(material))
         );
-        event.setCancelled(true);
-        event.setFlyAtPlayer(true);
     }),
 
     // Allows players to click on a container to deposit items from their warehouse into it depending on the material they are holding.
@@ -161,12 +166,11 @@ public enum WarehouseMode {
         } else if (!player.hasPermission(this.getPermission())) {
             WarehouseMode newMode = getNextMode(this, player);
             gringottsPlayer.setWarehouseMode(newMode);
-            // TODO: Lang
             return;
         }
 
         DataSource dataSource = DataSource.getInstance();
-        Warehouse warehouse = dataSource.cachedWarehouse(gringottsPlayer.getUuid());
+        Warehouse warehouse = dataSource.cachedObject(gringottsPlayer.getUuid(), Warehouse.class);
 
         if (warehouse == null) {
             throw new IllegalStateException("Warehouse is not cached.");
@@ -200,7 +204,7 @@ public enum WarehouseMode {
         List<WarehouseMode> modes = getEnabledModes();
         int index = modes.indexOf(mode);
         if (index == -1) {
-            index = 0; // Mode must have been disabled.
+            return NONE; // Mode must have been disabled.
         }
         return modes.get((index + 1) % modes.size());
     }

@@ -1,6 +1,10 @@
 package dev.jsinco.gringotts.commands;
 
 import dev.jsinco.gringotts.Gringotts;
+import dev.jsinco.gringotts.commands.subcommands.HelpCommand;
+import dev.jsinco.gringotts.configuration.ConfigManager;
+import dev.jsinco.gringotts.configuration.files.Config;
+import dev.jsinco.gringotts.configuration.files.Lang;
 import dev.jsinco.gringotts.registry.Registry;
 import dev.jsinco.gringotts.commands.interfaces.SubCommand;
 import org.bukkit.command.Command;
@@ -17,23 +21,27 @@ public class GringottsBaseCommand implements TabExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
-        if (args.length == 0) {
-            // TODO: Help command
-            sender.sendMessage("Available commands: " + String.join(", ", Registry.SUB_COMMANDS.keySet()));
-            return true;
+        if (args.length == 0 && sender.hasPermission("gringotts.command.base")) {
+            String baseCommandBehavior = ConfigManager.get(Config.class).baseCommandBehavior();
+            SubCommand subCommand = Registry.SUB_COMMANDS.get(baseCommandBehavior);
+            if (subCommand == null) {
+                subCommand = Registry.SUB_COMMANDS.get(HelpCommand.class);
+            }
+            return subCommand.execute(Gringotts.getInstance(), sender, label, new ArrayList<>());
         }
 
         String subCommandName = args[0].toLowerCase();
         SubCommand subCommand = Registry.SUB_COMMANDS.get(subCommandName);
+        Lang lang = ConfigManager.get(Lang.class);
 
         if (subCommand == null) {
-            sender.sendMessage("Unknown command: " + subCommandName);
+            lang.entry(l -> l.command().base().unknownCommand(), sender);
             return true;
         } else if (subCommand.playerOnly() && !(sender instanceof Player)) {
-            sender.sendMessage("This command can only be executed by a player.");
+            lang.entry(l -> l.command().base().playerOnly(), sender);
             return true;
         } else if (subCommand.permission() != null && !sender.hasPermission(subCommand.permission())) {
-            sender.sendMessage("You do not have permission to use this command.");
+            lang.entry(l -> l.command().base().noPermission(), sender);
             return true;
         }
 

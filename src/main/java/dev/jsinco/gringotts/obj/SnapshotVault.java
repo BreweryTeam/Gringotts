@@ -75,7 +75,7 @@ public class SnapshotVault implements AbstractGuiItem {
     }
 
     public boolean canAccess(Player player) {
-        return player.getUniqueId() == this.owner || this.trustedPlayers.contains(player.getUniqueId()) || player.hasPermission("gringotts.viewothers");
+        return player.getUniqueId() == this.owner || this.trustedPlayers.contains(player.getUniqueId()) || player.hasPermission("gringotts.mod");
     }
 
     @SuppressWarnings("unchecked")
@@ -113,8 +113,8 @@ public class SnapshotVault implements AbstractGuiItem {
             lazyVault().thenAccept(vault -> vault.open(player));
         } else if (event.isRightClick()) {
             lazyVault().thenAccept(vault -> {
-                GringottsPlayer gringottsPlayer = DataSource.getInstance().cachedGringottsPlayer(player.getUniqueId());
-                EditVaultGui editVaultGui = GringottsGui.factory(() -> new EditVaultGui(vault, gringottsPlayer, player));
+                GringottsPlayer gringottsPlayer = DataSource.getInstance().cachedObject(player.getUniqueId(), GringottsPlayer.class);
+                EditVaultGui editVaultGui = new EditVaultGui(vault, gringottsPlayer, player);
                 editVaultGui.open(player);
             });
         }

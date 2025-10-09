@@ -1,18 +1,55 @@
 main: dev.jsinco.gringotts.Gringotts
 name: Gringotts
-version: 1.0.0
+version: '${version}'
 api-version: 1.21
+author: Jsinco
+description: An expansive 'playervaults' style plugin that incorporates a warehouse for mass item storage.
+website: github.com/BreweryTeam/Gringotts
 commands:
   gringotts:
     description: Main command for Gringotts
   vaults:
     description: Alias for /gringotts vaults <index?>
-    aliases: [pv, vault]
+    aliases: [pv, vault, vaults, chest]
   warehouse:
     description: Alias for /gringotts warehouse
     aliases: [es, wh]
 permissions:
-  gringotts.viewother:
+  gringotts.*:
+    description: A permission node for Gringotts intended for admins.
+    default: op
     children:
-      gringotts.command.vaultothers: true
+      gringotts.admin: true
+  gringotts.admin:
+    description: A permission node for Gringotts intended for admins.
+    default: op
+    children:
+      gringotts.command.*: true
+      gringotts.mod: true
+  gringotts.mod:
+    description: A permission node for Gringotts intended for staff members. Also allows a player to open a vault at the same time as another player.
+    default: op
+    children:
+      gringotts.command.vaultadmin: true
       gringotts.command.warehouseadmin: true
+  gringotts.default:
+    description: A permission node for Gringotts intended for players.
+    default: true
+    children:
+      gringotts.command.base: true
+      gringotts.command.help: true
+      gringotts.command.vaults: true
+      gringotts.command.vaultother: true
+      gringotts.command.warehouse: true
+  gringotts.command.*:
+    children:
+      gringotts.command.base: true
+      gringotts.command.help: true
+      gringotts.command.import: true
+      gringotts.command.max: true
+      gringotts.command.reload: true
+      gringotts.command.vaultadmin: true
+      gringotts.command.vaultother: true
+      gringotts.command.vaults: true
+      gringotts.command.warehouseadmin: true
+      gringotts.command.warehouse: true

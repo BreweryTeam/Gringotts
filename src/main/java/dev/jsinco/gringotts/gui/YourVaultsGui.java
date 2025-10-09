@@ -40,8 +40,8 @@ public class YourVaultsGui extends GringottsGui implements PromisedInventory {
                     .lore(cfg.warehouseQuickbar().lore())
             )
             .action(e -> {
-                Warehouse warehouse = DataSource.getInstance().cachedWarehouse(gringottsPlayer.getUuid());
-                WarehouseGui warehouseGui = GringottsGui.factory(() -> new WarehouseGui(warehouse, gringottsPlayer));
+                Warehouse warehouse = DataSource.getInstance().cachedObject(gringottsPlayer.getUuid(), Warehouse.class);
+                WarehouseGui warehouseGui = new WarehouseGui(warehouse, gringottsPlayer);
                 warehouseGui.open((Player) e.getWhoClicked());
             })
             .build();
@@ -87,7 +87,7 @@ public class YourVaultsGui extends GringottsGui implements PromisedInventory {
         this.secondInv = Bukkit.createInventory(this, 54, Text.mm(cfg.title()));
         this.autoRegister(false);
 
-        Warehouse warehouse = DataSource.getInstance().cachedWarehouse(gringottsPlayer.getUuid());
+        Warehouse warehouse = DataSource.getInstance().cachedObject(gringottsPlayer.getUuid(), Warehouse.class);
 
         this.withQuickbar = this.assemble(this.inventory, warehouse);
         this.assemble(this.secondInv, null);
@@ -131,6 +131,7 @@ public class YourVaultsGui extends GringottsGui implements PromisedInventory {
                     .startEndSlots(paginatedSlots.a(), paginatedSlots.b())
                     .ignoredSlots(cfg.vaultItem().altIgnoredSlots())
                     .base(this.secondInv)
+                    .buildIfEmpty(false)
                     .build();
             this.paginatedGui.insert(this.inventory, 0);
 

@@ -5,6 +5,7 @@ import dev.jsinco.gringotts.configuration.ConfigManager;
 import dev.jsinco.gringotts.configuration.files.GuiConfig;
 import dev.jsinco.gringotts.configuration.IntPair;
 import dev.jsinco.gringotts.configuration.files.Lang;
+import dev.jsinco.gringotts.enums.TriState;
 import dev.jsinco.gringotts.enums.WarehouseMode;
 import dev.jsinco.gringotts.gui.item.GuiItem;
 import dev.jsinco.gringotts.gui.item.UncontainedGuiItem;
@@ -16,6 +17,7 @@ import dev.jsinco.gringotts.utility.Executors;
 import dev.jsinco.gringotts.utility.ItemStacks;
 import dev.jsinco.gringotts.utility.Util;
 import io.papermc.paper.datacomponent.DataComponentTypes;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -27,7 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-// FIXME: I hate this code.
+
 public class WarehouseGui extends GringottsGui {
 
     private static final GuiConfig.WarehouseGui cfg = ConfigManager.get(GuiConfig.class).warehouseGui();
@@ -120,23 +122,33 @@ public class WarehouseGui extends GringottsGui {
                     return;
                 }
 
+                Material material = clickedItem.getType();
                 switch (state) {
                     case LEFT -> {
-                        if (clickedInventory != event.getInventory() && !warehouse.hasCompartment(clickedItem.getType())) {
-                            warehouse.stockItem(clickedItem.getType(), 0);
+                        if (!warehouse.canStock(material)) {
+                            lng.entry(l -> l.warehouse().blacklistedItem(), player, Couple.of("{material}", Util.formatEnumerator(material)));
+                        } else if (clickedInventory != event.getInventory() && !warehouse.hasCompartment(material)) {
+                            warehouse.stockItem(material, 0);
                             refresh(player);
+                        } else {
+                            lng.entry(l -> l.warehouse().compartmentAlreadyExists(), player,
+                                    Couple.of("{material}", Util.formatEnumerator(material)));
                         }
                     }
                     case RIGHT -> {
-                        if (clickedInventory == event.getInventory()) {
-                            if (warehouse.removeItem(clickedItem.getType())) {
-                                lng.entry(l -> l.warehouse().removedCompartment(), player,
-                                        Couple.of("{material}", Util.formatEnumerator(clickedItem.getType().toString()))
-                                );
-                                refresh(player);
-                            } else {
-                                lng.entry(l -> l.warehouse().cannotRemoveCompartment(), player);
-                            }
+                        if (clickedInventory != event.getInventory()) {
+                            break;
+                        }
+                        TriState triState = warehouse.removeItem(material);
+                        if (triState == TriState.TRUE) {
+                            lng.entry(l -> l.warehouse().removedCompartment(), player,
+                                    Couple.of("{material}", Util.formatEnumerator(material))
+                            );
+                            refresh(player);
+                        } else if (triState == TriState.FALSE) {
+                            lng.entry(l -> l.warehouse().cannotRemoveCompartment(), player);
+                        } else {
+                            lng.entry(l -> l.warehouse().compartmentDoesNotExist(), player);
                         }
                     }
                 }
@@ -154,7 +166,7 @@ public class WarehouseGui extends GringottsGui {
                             Couple.of("{name}", gringottsPlayer.name()),
                             Couple.of("{stock}", warehouse.currentStockQuantity()),
                             Couple.of("{maxStock}", gringottsPlayer.getCalculatedMaxWarehouseStock()),
-                            Couple.of("{stockPercent}", String.format("%.0f", warehouseUsagePercent()))
+                            Couple.of("{stockPercent}", warehouseUsagePercent())
                     )
                     .displayName(cfg.statusIcon().name())
                     .lore(cfg.statusIcon().lore())
@@ -225,8 +237,8 @@ public class WarehouseGui extends GringottsGui {
         event.setCancelled(true);
 
         if (event.getClickedInventory() == null && quickReturn.enabled() && event.getClick() == quickReturn.clickType()) {
-            GringottsPlayer gringottsPlayer = DataSource.getInstance().cachedGringottsPlayer(player.getUniqueId());
-            YourVaultsGui gui = GringottsGui.factory(() -> new YourVaultsGui(gringottsPlayer));
+            GringottsPlayer gringottsPlayer = DataSource.getInstance().cachedObject(player.getUniqueId(), GringottsPlayer.class);
+            YourVaultsGui gui = new YourVaultsGui(gringottsPlayer);
             gui.open(player);
         }
     }
@@ -238,7 +250,7 @@ public class WarehouseGui extends GringottsGui {
     }
 
     private void refresh(Player player) {
-        WarehouseGui newGui = GringottsGui.factory(() -> new WarehouseGui(warehouse, gringottsPlayer));
+        WarehouseGui newGui = new WarehouseGui(warehouse, gringottsPlayer);
         newGui.open(player);
     }
 

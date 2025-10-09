@@ -9,7 +9,6 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
@@ -17,13 +16,6 @@ import java.util.jar.JarFile;
 
 public final class FileUtil {
 
-
-    private static ClassLoader pluginClassLoader;
-
-    // Call this once during plugin initialization
-    public static void initialize(ClassLoader classLoader) {
-        pluginClassLoader = classLoader;
-    }
 
     public static String readInternalResource(String path) {
         //ClassLoader loader = pluginClassLoader != null ? pluginClassLoader : FileUtil.class.getClassLoader();
@@ -38,13 +30,6 @@ public final class FileUtil {
         }
     }
 
-//    public static String readInternalResource(String path) {
-//        try (InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(path)) {
-//            return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
 
     public static File[] listInternalFiles(String path) {
         try {

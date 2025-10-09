@@ -30,7 +30,7 @@ public class WarehouseAdminCommand implements SubCommand {
             GringottsPlayer gringottsPlayer = playerFuture.join();
             Warehouse warehouse = warehouseFuture.join();
 
-            WarehouseGui warehouseGui = GringottsGui.factory(() -> new WarehouseGui(warehouse, gringottsPlayer));
+            WarehouseGui warehouseGui = new WarehouseGui(warehouse, gringottsPlayer);
             warehouseGui.open(player);
         });
         return true;

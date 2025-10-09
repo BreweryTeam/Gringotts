@@ -24,26 +24,9 @@ public class GuiConfig extends OkaeriFile {
     @Comment("'altSlot' is used when the warehouse quickbar is not present.")
     private YourVaultsGui yourVaultsGui = new YourVaultsGui();
     private WarehouseGui warehouseGui = new WarehouseGui();
-    private VaultGui vaultGui = new VaultGui();
     private VaultOtherGui vaultOtherGui = new VaultOtherGui();
     private EditVaultGui editVaultGui = new EditVaultGui();
 
-
-    // TODO: Move to normal config
-    @Getter
-    @Accessors(fluent = true)
-    public static class VaultGui extends OkaeriConfig {
-        @Comment({
-                "This is the default title of all vaults for Gringotts.",
-                "This does not prevent players from changing their vault",
-                "names to whatever they want."
-        })
-        private String title = "Vault #{id}";
-        @Comment({
-                "The size of all vaults for Gringotts."
-        })
-        private int size = 54;
-    }
 
     @Getter
     @Accessors(fluent = true)
@@ -58,7 +41,7 @@ public class GuiConfig extends OkaeriFile {
     public static class EditVaultGui extends OkaeriConfig {
         private String title = "Editing Vault #{id}";
         private int size = 9;
-        private boolean borders = false; // TODO: Implement
+        private boolean borders = false;
 
         private EditVaultGuiItem backButton = new EditVaultGuiItem(
                 "<red>Back",
@@ -130,7 +113,7 @@ public class GuiConfig extends OkaeriFile {
     public static class VaultOtherGui extends OkaeriConfig {
         private String title = "{name}'s Vaults";
         private int size = 54;
-        private boolean borders = true; // TODO: Implement
+        private boolean borders = true;
 
         private VaultItem vaultItem = new VaultItem();
         private ConfigGuiArrowItem previousPage = new ConfigGuiArrowItem("Previous Page", List.of(), 48, Material.ARROW);
@@ -140,7 +123,7 @@ public class GuiConfig extends OkaeriFile {
         @Getter
         @Accessors(fluent = true)
         public static class VaultItem extends OkaeriConfig {
-            private String name = "<aqua>{vaultName}"; // {id} too
+            private String name = "<aqua><b>{vaultName}"; // {id} too
             private List<String> lore = List.of(
                     "",
                     "<white>Left-click to open",
@@ -180,7 +163,7 @@ public class GuiConfig extends OkaeriFile {
         public static class VaultItem extends OkaeriConfig {
             // TODO: glow when full?
             // TODO: % used of vault placeholder
-            private String name = "<aqua>{vaultName}";
+            private String name = "<aqua><b>{vaultName}";
             private List<String> lore = List.of(
                     "",
                     "<white>Left-click to open",
@@ -212,7 +195,7 @@ public class GuiConfig extends OkaeriFile {
     public static class WarehouseGui extends OkaeriConfig {
         private String title = "Your Warehouse";
         private int size = 45;
-        private boolean borders = true; // TODO: Implement
+        private boolean borders = true;
 
         private WarehouseItem warehouseItem = new WarehouseItem();
         private ManagerButton managerButton = new ManagerButton();
@@ -259,9 +242,11 @@ public class GuiConfig extends OkaeriFile {
             private String name = "<aqua><b>Warehouse Information";
             private List<String> lore = List.of(
                     "",
-                    "<gray>+ Owner: <aqua>{name}",
-                    "<gray>+ Stock: <aqua>{stock}/{maxStock}",
-                    "<gray>+ Space Used: <aqua>{stockPercent}%"
+                    "<gray>+ Owner: <yellow>{name}</yellow>",
+                    "",
+                    "<gray>+ Max Stock: <yellow>{maxStock}</yellow>",
+                    "",
+                    "<gray>+ Space Used: <yellow>{stockPercent}%</yellow>"
             );
             private Material material = Material.PLAYER_HEAD;
             private int slot = 44;

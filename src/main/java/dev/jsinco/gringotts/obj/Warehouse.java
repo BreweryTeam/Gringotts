@@ -4,6 +4,7 @@ import dev.jsinco.gringotts.configuration.ConfigManager;
 import dev.jsinco.gringotts.configuration.files.Config;
 import dev.jsinco.gringotts.configuration.files.GuiConfig;
 import dev.jsinco.gringotts.configuration.files.Lang;
+import dev.jsinco.gringotts.enums.TriState;
 import dev.jsinco.gringotts.gui.item.GuiItem;
 import dev.jsinco.gringotts.storage.DataSource;
 import dev.jsinco.gringotts.utility.Couple;
@@ -20,6 +21,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,16 +39,15 @@ public class Warehouse implements CachedObject {
 
     @Getter
     private final UUID owner;
-    // TODO: Can be EnumMap
-    private final Map<Material, Stock> warehouseMap; // Mapped to Material for faster lookup
+    private final EnumMap<Material, Stock> warehouseMap; // Mapped to Material for faster lookup
 
-    public Warehouse(UUID owner, Map<Material, Stock> warehouseMap) {
+    public Warehouse(UUID owner, EnumMap<Material, Stock> warehouseMap) {
         this.owner = owner;
         this.warehouseMap = warehouseMap;
     }
     public Warehouse(UUID owner) {
         this.owner = owner;
-        this.warehouseMap = new HashMap<>();
+        this.warehouseMap = new EnumMap<>(Material.class);
     }
 
 
@@ -62,7 +63,7 @@ public class Warehouse implements CachedObject {
      * @throws IllegalArgumentException if the provided material is not a valid item.
      */
     public int stockItem(Material material, int amt) {
-        GringottsPlayer gringottsPlayer = DataSource.getInstance().cachedGringottsPlayer(owner);
+        GringottsPlayer gringottsPlayer = DataSource.getInstance().cachedObject(owner, GringottsPlayer.class);
         int currentStockQuantity = currentStockQuantity();
         int maxWarehouseStock = gringottsPlayer.getCalculatedMaxWarehouseStock();
 
@@ -72,12 +73,14 @@ public class Warehouse implements CachedObject {
             amt = maxWarehouseStock - currentStockQuantity;
         }
 
+
         Stock stock = warehouseMap.get(material);
-        if (stock != null && amt > 0) {
+        if (stock != null) {
             stock.increase(amt);
         } else {
             warehouseMap.put(material, new Stock(material, amt));
         }
+
         return amt;
     }
 
@@ -121,13 +124,15 @@ public class Warehouse implements CachedObject {
         return warehouseMap.values().stream().mapToInt(Stock::getAmount).sum();
     }
 
-    public boolean removeItem(Material material) {
+    public TriState removeItem(Material material) {
         Stock stock = warehouseMap.get(material);
-        if (stock == null || stock.getAmount() == 0) {
+        if (stock == null) {
+            return TriState.ALTERNATIVE_STATE;
+        } else if (stock.getAmount() == 0) {
             warehouseMap.remove(material);
-            return true;
+            return TriState.TRUE;
         }
-        return false;
+        return TriState.FALSE;
     }
 
     public boolean hasCompartment(Material material) {
@@ -180,7 +185,6 @@ public class Warehouse implements CachedObject {
                         Player player = (Player) e.getWhoClicked();
                         PlayerInventory inv = player.getInventory();
                         ItemStack clickedItem = e.getCurrentItem();
-                        // TODO: Material overflow out of inventory
                         switch (e.getClick()) {
                             case LEFT -> {
                                 ItemStack item = destockItem(material, 1);
@@ -227,11 +231,6 @@ public class Warehouse implements CachedObject {
                                     return;
                                 }
 
-                                if (!canStock(material)) {
-                                    lng.entry(l -> l.warehouse().blacklistedItem(), player, Couple.of("{material}", Util.formatEnumerator(material)));
-                                    return;
-                                }
-
                                 int diff = stockItem(material, invAmt);
                                 if (diff > 0) {
                                     inv.removeItem(new ItemStack(material, diff));
@@ -251,5 +250,14 @@ public class Warehouse implements CachedObject {
             }
         }
         return items;
+    }
+
+    @Override
+    public String toString() {
+        return "Warehouse{" +
+                "expire=" + expire +
+                ", owner=" + owner +
+                ", warehouseMap=" + warehouseMap +
+                '}';
     }
 }

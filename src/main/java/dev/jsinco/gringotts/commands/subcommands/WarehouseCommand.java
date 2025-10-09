@@ -18,9 +18,10 @@ public class WarehouseCommand implements SubCommand {
     public boolean execute(Gringotts plugin, CommandSender sender, String label, List<String> args) {
         Player player = (Player) sender;
         DataSource dataSource = DataSource.getInstance();
-        Warehouse warehouse = dataSource.cachedWarehouse(player.getUniqueId());
-        GringottsPlayer gringottsPlayer = dataSource.cachedGringottsPlayer(player.getUniqueId());
-        WarehouseGui warehouseGui = GringottsGui.factory(() -> new WarehouseGui(warehouse, gringottsPlayer));
+        Warehouse warehouse = dataSource.cachedObject(player.getUniqueId(), Warehouse.class);
+        GringottsPlayer gringottsPlayer = dataSource.cachedObject(player.getUniqueId(), GringottsPlayer.class);
+        WarehouseGui warehouseGui = new WarehouseGui(warehouse, gringottsPlayer);
+
 
         warehouseGui.open(player);
         return true;

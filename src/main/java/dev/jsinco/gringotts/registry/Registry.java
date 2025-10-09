@@ -1,8 +1,11 @@
 package dev.jsinco.gringotts.registry;
 
 import dev.jsinco.gringotts.commands.interfaces.SubCommand;
+import dev.jsinco.gringotts.commands.subcommands.HelpCommand;
 import dev.jsinco.gringotts.commands.subcommands.ImportCommand;
 import dev.jsinco.gringotts.commands.subcommands.MaxCommand;
+import dev.jsinco.gringotts.commands.subcommands.ReloadCommand;
+import dev.jsinco.gringotts.commands.subcommands.VaultAdminCommand;
 import dev.jsinco.gringotts.commands.subcommands.VaultOtherCommand;
 import dev.jsinco.gringotts.commands.subcommands.VaultsCommand;
 import dev.jsinco.gringotts.commands.subcommands.WarehouseAdminCommand;
@@ -25,9 +28,9 @@ import java.util.Map;
 
 public class Registry<T extends RegistryItem> {
 
-    public static final Registry<SubCommand> SUB_COMMANDS = fromClasses(VaultsCommand.class, WarehouseCommand.class, ImportCommand.class, VaultOtherCommand.class, WarehouseAdminCommand.class, MaxCommand.class);
+    public static final Registry<SubCommand> SUB_COMMANDS = fromClasses(VaultsCommand.class, WarehouseCommand.class, ImportCommand.class, VaultOtherCommand.class, WarehouseAdminCommand.class, MaxCommand.class, VaultAdminCommand.class, ReloadCommand.class, HelpCommand.class);
     public static final Registry<Importer> IMPORTERS = fromClasses(PlayerVaultsImporter.class);
-    public static final Registry<OkaeriFile> CONFIGS = fromClassesWithCrafter(new ConfigManager.ConfigCrafter(), Config.class, GuiConfig.class, Lang.class);
+    public static final Registry<OkaeriFile> CONFIGS = fromClassesWithCrafter(new ConfigManager(), Config.class, GuiConfig.class, Lang.class);
 
     private final Map<String, T> map;
 
@@ -44,8 +47,9 @@ public class Registry<T extends RegistryItem> {
         return map.get(identifier);
     }
 
-    public T get(Class<T> clazz) {
-        return map.values().stream()
+    @SuppressWarnings("unchecked")
+    public <A extends T> A get(Class<A> clazz) {
+        return (A) map.values().stream()
                 .filter(it -> it.getClass().equals(clazz))
                 .findFirst()
                 .orElse(null);
@@ -84,7 +88,7 @@ public class Registry<T extends RegistryItem> {
         return ConstructableClassBuilder.builder().addConstructorParameters(constructorParamTypes, constructorParams).addClasses(classes).build();
     }
 
-    // TODO: Better class name
+
     public static class ConstructableClassBuilder {
         private final List<Class<?>> constructorClassTypes = new ArrayList<>();
         private final List<Object> constructorClassValues = new ArrayList<>();

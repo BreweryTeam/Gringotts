@@ -1,6 +1,8 @@
 package dev.jsinco.gringotts.commands.interfaces;
 
 import dev.jsinco.gringotts.Gringotts;
+import dev.jsinco.gringotts.configuration.ConfigManager;
+import dev.jsinco.gringotts.configuration.files.Lang;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -21,7 +23,7 @@ public abstract class SubCommandWrapper implements TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
         if (subCommand.playerOnly() && !(sender instanceof Player)) {
-            sender.sendMessage("This command can only be executed by a player.");
+            ConfigManager.get(Lang.class).entry(l -> l.command().base().playerOnly(), sender);
             return true;
         }
         return subCommand.execute(Gringotts.getInstance(), sender, label, List.of(args));

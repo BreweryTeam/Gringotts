@@ -15,7 +15,7 @@ import org.bukkit.event.player.PlayerItemConsumeEvent;
 public class WarehouseListener implements Listener {
 
     private void handle(Event event, Player player) {
-        GringottsPlayer gringottsPlayer = DataSource.getInstance().cachedGringottsPlayer(player.getUniqueId());
+        GringottsPlayer gringottsPlayer = DataSource.getInstance().cachedObject(player.getUniqueId(), GringottsPlayer.class);
         if (gringottsPlayer == null) {
             throw new IllegalStateException("GringottsPlayer is not cached.");
         }

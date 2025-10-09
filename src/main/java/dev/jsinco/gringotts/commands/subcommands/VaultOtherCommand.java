@@ -27,7 +27,7 @@ public class VaultOtherCommand implements SubCommand {
         DataSource dataSource = DataSource.getInstance();
 
         if (args.size() < 2) {
-            VaultOtherGui vaultOtherGui = GringottsGui.factory(() -> new VaultOtherGui(player, target));
+            VaultOtherGui vaultOtherGui = new VaultOtherGui(player, target);
             vaultOtherGui.open(player);
             return true;
         }
@@ -67,7 +67,7 @@ public class VaultOtherCommand implements SubCommand {
 
         /* Normally this method will not return null, but this player may not be online,
         so we'll just return nothing if that's the case. */
-        GringottsPlayer gringottsPlayer = dataSource.cachedGringottsPlayer(offlinePlayer.getUniqueId());
+        GringottsPlayer gringottsPlayer = dataSource.cachedObject(offlinePlayer.getUniqueId(), GringottsPlayer.class);
         if (gringottsPlayer == null) {
             return Util.tryGetNextNumberArg(args.get(1));
         }
@@ -92,8 +92,4 @@ public class VaultOtherCommand implements SubCommand {
         return "vaultother";
     }
 
-    @Override
-    public String[] names() {
-        return new String[] {"vaultother", "vaultadmin"};
-    }
 }
