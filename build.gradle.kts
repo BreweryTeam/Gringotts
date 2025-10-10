@@ -162,7 +162,7 @@ publishing {
 
 class DiscordWebhook(
     val webhookUrl: String,
-    var defaultThumbnail: Boolean = true
+    defaultThumbnail: Boolean = true
 ) {
 
     companion object {
@@ -174,7 +174,7 @@ class DiscordWebhook(
     var avatarUrl: String = "https://github.com/breweryteam.png"
     var embedTitle: String = "Embed Title"
     var embedDescription: String = "Embed Description"
-    var embedColor: String = "F5E083"
+    var embedColor: String = "b96648"
     var embedThumbnailUrl: String? = if (defaultThumbnail) avatarUrl else null
     var embedImageUrl: String? = null
 
