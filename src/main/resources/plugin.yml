@@ -6,6 +6,7 @@ author: Jsinco
 description: An expansive 'playervaults' style plugin that incorporates a warehouse for mass item storage.
 website: github.com/BreweryTeam/Gringotts
 softdepend: [Bolt, LWC, WorldGuard, Towny, CoreProtect]
+load: POSTWORLD
 commands:
   gringotts:
     description: Main command for Gringotts

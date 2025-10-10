@@ -28,9 +28,13 @@ import java.util.concurrent.CompletableFuture;
 
 public class SQLiteDataSource extends DataSource {
 
+    public SQLiteDataSource(Config.Storage config) {
+        super(config);
+    }
+
     @Override
-    public HikariConfig hikariConfig() {
-        String fileName = ConfigManager.get(Config.class).storage().database() + ".db";
+    public HikariConfig hikariConfig(Config.Storage config) {
+        String fileName = config.database() + ".db";
         File file = DATA_FOLDER.resolve(fileName).toFile();
         try {
             file.getParentFile().mkdirs();

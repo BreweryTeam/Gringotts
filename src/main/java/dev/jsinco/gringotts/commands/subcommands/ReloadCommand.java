@@ -26,11 +26,12 @@ public class ReloadCommand implements SubCommand {
                     .sorted(Comparator.comparing(OkaeriFile::isDynamicFileName))
                     .forEach(OkaeriFile::reload);
 
-            Driver setDriver = ConfigManager.get(Config.class).storage().driver();
+            Config.Storage storage = ConfigManager.get(Config.class).storage();
+            Driver setDriver = storage.driver();
             DataSource dataSource = DataSource.getInstance();
             if (setDriver.getIdentifyingClass() != dataSource.getClass()) {
                 dataSource.closeAsync().whenComplete((unused, throwable) -> {
-                    DataSource.createInstance(setDriver);
+                    DataSource.createInstance(storage);
                     lng.entry(l -> l.command().reload().newDatabaseDriverSet(), sender, Couple.of("{driver}", setDriver.toString()));
                 });
             }

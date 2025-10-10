@@ -25,6 +25,8 @@ public final class Gringotts extends JavaPlugin {
     @Getter
     private static boolean shutdown;
 
+
+
     @Override
     public void onLoad() {
         instance = this;
@@ -44,13 +46,6 @@ public final class Gringotts extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new GuiListener(), this);
         getServer().getPluginManager().registerEvents(new ChatPromptInputListener(), this);
 
-        Registry.INTEGRATIONS.values()
-                .forEach(integration -> {
-                    if (integration.canRegister()) {
-                        integration.register();
-                        Text.log("Registered " + integration.name() + " integration.");
-                    }
-                });
     }
 
     @Override

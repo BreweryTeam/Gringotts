@@ -83,19 +83,6 @@ public enum WarehouseMode {
             return;
         }
 
-        for (ProtectionIntegration integration : Registry.INTEGRATIONS.values()
-                .stream()
-                .filter(it -> it instanceof ProtectionIntegration)
-                .map(it -> (ProtectionIntegration) it)
-                .toList()) {
-            if (!integration.canAccess(clickedBlock, player)) {
-                Text.debug("Warehouse access to container blocked by " + integration.name() + " integration.");
-                lang.entry(l -> l.warehouse().cannotDepositItem(), player);
-                return;
-            }
-        }
-
-
 
         Material material = itemInHand.getType();
         Inventory inv = container.getInventory();
@@ -112,6 +99,7 @@ public enum WarehouseMode {
             int amt = item.getAmount();
             inv.addItem(item);
             CoreProtectIntegration coreProtectIntegration = Registry.INTEGRATIONS.get(CoreProtectIntegration.class);
+            System.out.println(coreProtectIntegration);
             if (coreProtectIntegration != null) {
                 coreProtectIntegration.logContainer(player, container);
             }

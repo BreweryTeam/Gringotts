@@ -106,7 +106,10 @@ public class WarehouseGui extends GringottsGui {
 
                 if (event.getClick() == ClickType.SHIFT_LEFT && isClicked) {
                     WarehouseMode mode = gringottsPlayer.getWarehouseMode();
-                    gringottsPlayer.setWarehouseMode(WarehouseMode.getNextMode(mode, player));
+                    WarehouseMode nextMode = WarehouseMode.getNextMode(mode, player);
+                    if (nextMode == mode) return;
+
+                    gringottsPlayer.setWarehouseMode(nextMode);
                     event.getInventory().setItem(cfg.managerButton().slot(), self.guiItemStack());
                     lng.entry(l -> l.warehouse().changedMode(), player, Couple.of("{mode}", Util.formatEnumerator(gringottsPlayer.getWarehouseMode())));
                     return;

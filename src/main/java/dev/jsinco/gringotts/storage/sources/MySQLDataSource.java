@@ -25,9 +25,12 @@ import java.util.concurrent.CompletableFuture;
 
 public class MySQLDataSource extends DataSource {
 
+    public MySQLDataSource(Config.Storage config) {
+        super(config);
+    }
+
     @Override
-    public HikariConfig hikariConfig() {
-        Config.Storage config = ConfigManager.get(Config.class).storage();
+    public HikariConfig hikariConfig(Config.Storage config) {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setPoolName("GringottsMySQL");
         hikariConfig.setDriverClassName("com.mysql.cj.jdbc.Driver");

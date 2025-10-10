@@ -1,8 +1,16 @@
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
+import io.papermc.hangarpublishplugin.model.Platforms
 import org.apache.tools.ant.filters.ReplaceTokens
+import java.net.HttpURLConnection
+import java.net.URI
 
 plugins {
     id("java")
+    id("maven-publish")
     id("com.gradleup.shadow") version "8.3.5"
+    id("io.papermc.hangar-publish-plugin") version "0.1.2"
+    id("com.modrinth.minotaur") version "2.8.7"
 }
 
 group = "dev.jsinco.gringotts"
@@ -71,5 +79,199 @@ tasks {
 
     withType<JavaCompile>().configureEach {
         options.encoding = Charsets.UTF_8.name()
+    }
+
+    register("publishToDiscord") {
+        val webhook = DiscordWebhook(System.getenv("DISCORD_WEBHOOK"))
+        webhook.message = "<@&1425973814558326824>"
+        webhook.embedTitle = "Gringotts - v${project.version}"
+        webhook.embedDescription = System.getenv("CHANGE_LOG") ?: "No changelog provided."
+        webhook.send()
+    }
+
+}
+
+modrinth {
+    token.set(System.getenv("MODRINTH_TOKEN") ?: run {
+        println("Could not find any Modrinth token!")
+        return@modrinth
+    })
+    projectId.set("15AC4wG1")
+    versionNumber.set(project.version.toString())
+    versionType.set("release")
+    uploadFile.set(tasks.shadowJar)
+    loaders.addAll("paper", "purpur")
+    gameVersions.addAll(listOf("1.21.8", "1.21.7", "1.21.4", "1.21.1", "1.20.6", "1.20.4"))
+    changelog.set(System.getenv("CHANGE_LOG") ?: "No changelog provided.")
+}
+
+hangarPublish {
+    publications.register("plugin") {
+        version.set(project.version.toString())
+        channel.set("Release")
+        id.set("Gringotts-Vaults")
+        apiKey.set(System.getenv("HANGAR_TOKEN") ?: return@register)
+        changelog.set(System.getenv("CHANGE_LOG") ?: "No changelog provided.")
+        platforms {
+            register(Platforms.PAPER) {
+                jar.set(tasks.shadowJar.flatMap { it.archiveFile })
+                platformVersions.set(listOf("1.21.x", "1.20.x"))
+            }
+        }
+    }
+}
+
+publishing {
+    val repoUrl = System.getenv("REPO_URL") ?: "https://repo.jsinco.dev/releases"
+    val user = System.getenv("REPO_USERNAME")
+    val pass = System.getenv("REPO_SECRET")
+
+
+    repositories {
+        if (user == null || pass == null) {
+            return@repositories
+        }
+        maven {
+            url = uri(repoUrl)
+            credentials(PasswordCredentials::class) {
+                username = user
+                password = pass
+            }
+            authentication {
+                create<BasicAuthentication>("basic")
+            }
+        }
+    }
+
+    publications {
+        if (user == null || pass == null) {
+            return@publications
+        }
+        create<MavenPublication>("maven") {
+            groupId = project.group.toString()
+            artifactId = project.name
+            version = project.version.toString()
+            artifact(tasks.shadowJar.get().archiveFile) {
+                builtBy(tasks.shadowJar)
+            }
+        }
+    }
+}
+
+
+
+class DiscordWebhook(
+    val webhookUrl: String,
+    var defaultThumbnail: Boolean = true
+) {
+
+    companion object {
+        private const val MAX_EMBED_DESCRIPTION_LENGTH = 4096
+    }
+
+    var message: String = "content"
+    var username: String = "Gringotts Updates"
+    var avatarUrl: String = "https://github.com/breweryteam.png"
+    var embedTitle: String = "Embed Title"
+    var embedDescription: String = "Embed Description"
+    var embedColor: String = "F5E083"
+    var embedThumbnailUrl: String? = if (defaultThumbnail) avatarUrl else null
+    var embedImageUrl: String? = null
+
+    private fun hexStringToInt(hex: String): Int {
+        val hexWithoutPrefix = hex.removePrefix("#")
+        return hexWithoutPrefix.toInt(16)
+    }
+
+    private fun buildToJson(): String {
+        val json = JsonObject()
+        json.addProperty("username", username)
+        json.addProperty("avatar_url", avatarUrl)
+        json.addProperty("content", message)
+
+        val embed = JsonObject()
+        embed.addProperty("title", embedTitle)
+        embed.addProperty("description", embedDescription)
+        embed.addProperty("color", hexStringToInt(embedColor))
+
+        embedThumbnailUrl?.let {
+            val thumbnail = JsonObject()
+            thumbnail.addProperty("url", it)
+            embed.add("thumbnail", thumbnail)
+        }
+
+        embedImageUrl?.let {
+            val image = JsonObject()
+            image.addProperty("url", it)
+            embed.add("image", image)
+        }
+
+        val embeds = JsonArray()
+        createEmbeds().forEach(embeds::add)
+
+        json.add("embeds", embeds)
+        return json.toString()
+    }
+
+    private fun createEmbeds(): List<JsonObject> {
+        if (embedDescription.length <= MAX_EMBED_DESCRIPTION_LENGTH) {
+            return listOf(JsonObject().apply {
+                addProperty("title", embedTitle)
+                addProperty("description", embedDescription)
+                addProperty("color", embedColor.toInt(16))
+                embedThumbnailUrl?.let {
+                    val thumbnail = JsonObject()
+                    thumbnail.addProperty("url", it)
+                    add("thumbnail", thumbnail)
+                }
+                embedImageUrl?.let {
+                    val image = JsonObject()
+                    image.addProperty("url", it)
+                    add("image", image)
+                }
+            })
+        }
+        val embeds = mutableListOf<JsonObject>()
+        var description = embedDescription
+        while (description.isNotEmpty()) {
+            val chunkLength = minOf(MAX_EMBED_DESCRIPTION_LENGTH, description.length)
+            val chunk = description.take(chunkLength)
+            description = description.substring(chunkLength)
+            embeds.add(JsonObject().apply {
+                addProperty("title", embedTitle)
+                addProperty("description", chunk)
+                addProperty("color", embedColor.toInt(16))
+                embedThumbnailUrl?.let {
+                    val thumbnail = JsonObject()
+                    thumbnail.addProperty("url", it)
+                    add("thumbnail", thumbnail)
+                }
+                embedImageUrl?.let {
+                    val image = JsonObject()
+                    image.addProperty("url", it)
+                    add("image", image)
+                }
+            })
+        }
+        return embeds
+    }
+
+    fun send() {
+        val url = URI(webhookUrl).toURL()
+        val connection = url.openConnection() as HttpURLConnection
+        connection.requestMethod = "POST"
+        connection.setRequestProperty("Content-Type", "application/json")
+        connection.doOutput = true
+        connection.outputStream.use { outputStream ->
+            outputStream.write(buildToJson().toByteArray())
+
+            val responseCode = connection.responseCode
+            println("POST Response Code :: $responseCode")
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                println("Message sent successfully.")
+            } else {
+                println("Failed to send message.")
+            }
+        }
     }
 }

@@ -105,13 +105,17 @@ public class Warehouse implements CachedObject {
         Stock stock = warehouseMap.get(material);
         if (stock == null) return null;
 
-        WarehouseDestockEvent event = new WarehouseDestockEvent(this, material, amt);
+        WarehouseDestockEvent event = new WarehouseDestockEvent(this, material, stock.getAmount());
         event.setCancelled(stock.getAmount() < 1);
 
         if (!event.callEvent()) {
             return null;
         } else if (event.getAmount() < amt) {
             amt = event.getAmount();
+        }
+
+        if (amt < 1) {
+            return null;
         }
 
         stock.decrease(amt);

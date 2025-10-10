@@ -56,7 +56,7 @@ public abstract class DataSource {
 
     private final ConcurrentLinkedQueue<CachedObject> cachedObjects = new ConcurrentLinkedQueue<>();
 
-    public abstract HikariConfig hikariConfig();
+    public abstract HikariConfig hikariConfig(Config.Storage config);
     public abstract CompletableFuture<Void> createTables();
 
     public abstract CompletableFuture<Vault> getVault(UUID owner, int id);
@@ -77,8 +77,8 @@ public abstract class DataSource {
 
 
 
-    public DataSource() {
-        this.hikari = new HikariDataSource(this.hikariConfig());
+    public DataSource(Config.Storage config) {
+        this.hikari = new HikariDataSource(this.hikariConfig(config));
     }
 
     public Connection connection() throws SQLException {
@@ -297,16 +297,17 @@ public abstract class DataSource {
     }
 
     public static void createInstance() {
-        createInstance(ConfigManager.get(Config.class).storage().driver());
+        Config config = new ConfigManager().craft(Config.class);
+        createInstance(config.storage());
     }
 
-    public static void createInstance(Driver driver) {
+    public static void createInstance(Config.Storage config) {
         TriState closed = instance != null ? instance.isClosed() : TriState.TRUE;
         if (closed != TriState.TRUE) {
             throw new IllegalStateException(closed == TriState.ALTERNATIVE_STATE ? "DataSource is not properly closed." : "DataSource is not closed.");
         }
 
-        instance = driver.getSupplier().get(); // Set a new instance
+        instance = config.driver().supply(config); // Set a new instance
         instance.setup().whenComplete((unused, throwable) -> {
             for (Player player : Bukkit.getOnlinePlayers()) {
                 instance.cacheObject(instance.getGringottsPlayer(player.getUniqueId()));
