@@ -17,8 +17,14 @@ import dev.jsinco.gringotts.configuration.files.GuiConfig;
 import dev.jsinco.gringotts.configuration.files.Lang;
 import dev.jsinco.gringotts.importers.Importer;
 import dev.jsinco.gringotts.importers.PlayerVaultsImporter;
+import dev.jsinco.gringotts.integration.external.BoltIntegration;
+import dev.jsinco.gringotts.integration.external.CoreProtectIntegration;
 import dev.jsinco.gringotts.integration.Integration;
-import dev.jsinco.gringotts.integration.bstats.BStatsIntegration;
+import dev.jsinco.gringotts.integration.IntegrationCrafter;
+import dev.jsinco.gringotts.integration.external.LWCIntegration;
+import dev.jsinco.gringotts.integration.external.TownyIntegration;
+import dev.jsinco.gringotts.integration.external.WorldGuardIntegration;
+import dev.jsinco.gringotts.integration.compiled.BStatsIntegration;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -26,13 +32,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class Registry<T extends RegistryItem> {
 
     public static final Registry<SubCommand> SUB_COMMANDS = fromClasses(VaultsCommand.class, WarehouseCommand.class, ImportCommand.class, VaultOtherCommand.class, WarehouseAdminCommand.class, MaxCommand.class, VaultAdminCommand.class, ReloadCommand.class, HelpCommand.class);
     public static final Registry<Importer> IMPORTERS = fromClasses(PlayerVaultsImporter.class);
     public static final Registry<OkaeriFile> CONFIGS = fromClassesWithCrafter(new ConfigManager(), Config.class, GuiConfig.class, Lang.class);
-    public static final Registry<Integration> INTEGRATIONS = fromClasses(BStatsIntegration.class);
+    public static final Registry<Integration> INTEGRATIONS = fromClassesWithCrafter(new IntegrationCrafter(), BStatsIntegration.class, BoltIntegration.class, LWCIntegration.class, WorldGuardIntegration.class, TownyIntegration.class, CoreProtectIntegration.class);
 
     private final Map<String, T> map;
 
@@ -76,7 +83,7 @@ public class Registry<T extends RegistryItem> {
                 throw new IllegalArgumentException("Unknown crafter type");
             }
         }
-        return new Registry<>(eClasses);
+        return new Registry<>(eClasses.stream().filter(Objects::nonNull).toList());
     }
 
     @SafeVarargs

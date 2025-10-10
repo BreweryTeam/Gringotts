@@ -3,11 +3,15 @@ package dev.jsinco.gringotts.enums;
 import dev.jsinco.gringotts.configuration.ConfigManager;
 import dev.jsinco.gringotts.configuration.files.Config;
 import dev.jsinco.gringotts.configuration.files.Lang;
+import dev.jsinco.gringotts.integration.external.CoreProtectIntegration;
+import dev.jsinco.gringotts.integration.ProtectionIntegration;
 import dev.jsinco.gringotts.obj.GringottsPlayer;
 import dev.jsinco.gringotts.obj.Warehouse;
+import dev.jsinco.gringotts.registry.Registry;
 import dev.jsinco.gringotts.storage.DataSource;
 import dev.jsinco.gringotts.utility.Couple;
 import dev.jsinco.gringotts.utility.Executors;
+import dev.jsinco.gringotts.utility.Text;
 import dev.jsinco.gringotts.utility.Util;
 import io.papermc.paper.block.TileStateInventoryHolder;
 import org.bukkit.Material;
@@ -68,18 +72,32 @@ public enum WarehouseMode {
         );
     }),
 
-    // TODO: Figure out how to integrate this with protection plugins.
     // Allows players to click on a container to deposit items from their warehouse into it depending on the material they are holding.
     CLICK_TO_DEPOSIT(PlayerInteractEvent.class, (event, gringottsPlayer, warehouse) -> {
         Block clickedBlock = event.getClickedBlock();
         ItemStack itemInHand = event.getItem();
         Player player = event.getPlayer();
+        Lang lang = ConfigManager.get(Lang.class);
 
         if (itemInHand == null || clickedBlock == null || !warehouse.hasCompartment(itemInHand) || !player.isSneaking() || !(clickedBlock.getState(false) instanceof TileStateInventoryHolder container)) {
             return;
         }
+
+        for (ProtectionIntegration integration : Registry.INTEGRATIONS.values()
+                .stream()
+                .filter(it -> it instanceof ProtectionIntegration)
+                .map(it -> (ProtectionIntegration) it)
+                .toList()) {
+            if (!integration.canAccess(clickedBlock, player)) {
+                Text.debug("Warehouse access to container blocked by " + integration.name() + " integration.");
+                lang.entry(l -> l.warehouse().cannotDepositItem(), player);
+                return;
+            }
+        }
+
+
+
         Material material = itemInHand.getType();
-        Lang lang = ConfigManager.get(Lang.class);
         Inventory inv = container.getInventory();
 
 
@@ -93,6 +111,10 @@ public enum WarehouseMode {
         if (item != null) {
             int amt = item.getAmount();
             inv.addItem(item);
+            CoreProtectIntegration coreProtectIntegration = Registry.INTEGRATIONS.get(CoreProtectIntegration.class);
+            if (coreProtectIntegration != null) {
+                coreProtectIntegration.logContainer(player, container);
+            }
             lang.actionBarEntry(l -> l.warehouse().depositedItem(), player,
                     Couple.of("{material}", Util.formatEnumerator(material)),
                     Couple.of("{amount}", amt),

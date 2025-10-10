@@ -48,6 +48,7 @@ public class Lang extends OkaeriFile {
         private String replenishedItem;
         private String autoStoredItem;
         private String depositedItem;
+        private String cannotDepositItem;
         private String blacklistedItem;
     }
 

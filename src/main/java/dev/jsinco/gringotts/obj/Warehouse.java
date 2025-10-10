@@ -1,5 +1,6 @@
 package dev.jsinco.gringotts.obj;
 
+import com.google.common.base.Preconditions;
 import dev.jsinco.gringotts.api.events.interfaces.EventAction;
 import dev.jsinco.gringotts.api.events.warehouse.WarehouseCompartmentEvent;
 import dev.jsinco.gringotts.api.events.warehouse.WarehouseDestockEvent;
@@ -68,6 +69,7 @@ public class Warehouse implements CachedObject {
      */
     public int stockItem(Material material, int amt) {
         GringottsPlayer gringottsPlayer = DataSource.getInstance().cachedObject(owner, GringottsPlayer.class);
+        Preconditions.checkNotNull(gringottsPlayer, "GringottsPlayer is null for owner: " + owner);
         int currentStockQuantity = currentStockQuantity();
         int maxWarehouseStock = gringottsPlayer.getCalculatedMaxWarehouseStock();
 

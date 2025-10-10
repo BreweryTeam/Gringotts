@@ -1,4 +1,4 @@
-package dev.jsinco.gringotts.integration.bstats;
+package dev.jsinco.gringotts.integration.compiled;
 
 import dev.jsinco.gringotts.Gringotts;
 import dev.jsinco.gringotts.configuration.ConfigManager;
@@ -11,7 +11,7 @@ import org.bstats.charts.SingleLineChart;
 
 public class BStatsIntegration implements Integration.Compiled {
 
-    private static final int BSTATS_ID = 27527;
+    private static final int ID = 27527;
 
     private Metrics metrics;
 
@@ -22,7 +22,7 @@ public class BStatsIntegration implements Integration.Compiled {
 
     @Override
     public void register() {
-        this.metrics = new Metrics(Gringotts.getInstance(), BSTATS_ID);
+        this.metrics = new Metrics(Gringotts.getInstance(), ID);
 
         DataSource dataSource = DataSource.getInstance();
         Config config = ConfigManager.get(Config.class);
