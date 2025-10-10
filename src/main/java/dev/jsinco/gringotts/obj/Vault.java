@@ -3,9 +3,13 @@ package dev.jsinco.gringotts.obj;
 import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import dev.jsinco.gringotts.api.events.interfaces.EventAction;
+import dev.jsinco.gringotts.api.events.vault.VaultIconChangeEvent;
+import dev.jsinco.gringotts.api.events.vault.VaultNameChangeEvent;
+import dev.jsinco.gringotts.api.events.vault.VaultOpenEvent;
+import dev.jsinco.gringotts.api.events.vault.VaultTrustPlayerEvent;
 import dev.jsinco.gringotts.configuration.ConfigManager;
 import dev.jsinco.gringotts.configuration.files.Config;
-import dev.jsinco.gringotts.configuration.files.GuiConfig;
 import dev.jsinco.gringotts.configuration.files.Lang;
 import dev.jsinco.gringotts.utility.Couple;
 import dev.jsinco.gringotts.utility.Executors;
@@ -50,7 +54,7 @@ public class Vault implements GringottsInventory {
         this.owner = owner;
         this.id = id;
         this.customName = cfg.vaults().defaultName().replace("{id}", String.valueOf(id));
-        this.icon = Material.CHEST;
+        this.icon = cfg.vaults().defaultIcon();
         this.trustedPlayers = new ArrayList<>();
 
         int size = cfg.vaults().size();
@@ -63,7 +67,7 @@ public class Vault implements GringottsInventory {
         this.owner = owner;
         this.id = id;
         this.customName = cfg.vaults().defaultName().replace("{id}", String.valueOf(id));
-        this.icon = Material.CHEST;
+        this.icon = cfg.vaults().defaultIcon();
         this.trustedPlayers = new ArrayList<>();
 
 
@@ -79,7 +83,7 @@ public class Vault implements GringottsInventory {
         this.owner = owner;
         this.id = id;
         this.customName = customName != null && !customName.isEmpty() ? customName : "Vault #" + id;
-        this.icon = icon != null && icon.isItem() ? icon : Material.CHEST;
+        this.icon = icon != null && icon.isItem() ? icon : cfg.vaults().defaultIcon();
 
         List<UUID> json = GSON.fromJson(trustedPlayers, TYPE_TOKEN);
         this.trustedPlayers = json != null ? json : new ArrayList<>();
@@ -107,18 +111,28 @@ public class Vault implements GringottsInventory {
     }
 
     public void open(Player player) {
-        var couple = this.getOpenState();
-        var state = couple.a();
-        var otherPlayer = couple.b();
-        if (state == VaultOpenState.OPEN) {
-            ConfigManager.get(Lang.class).entry(l -> l.vaults().alreadyOpen(), player);
-            return;
-        }
-
+        Couple<VaultOpenState, Player> couple = this.getOpenState();
         Executors.runSync(() -> {
+            VaultOpenEvent event = new VaultOpenEvent(this, player, couple);
+            event.setCancelled(couple.a() == VaultOpenState.OPEN);
+            event.callEvent();
+
+            Couple<VaultOpenState, Player> updatedCouple = event.getOpenState();
+            VaultOpenState updatedState = updatedCouple.a();
+            Player updatedOtherPlayer = updatedCouple.b();
+
+            if (event.isCancelled()) {
+                if (updatedState == VaultOpenState.OPEN) {
+                    ConfigManager.get(Lang.class).entry(l -> l.vaults().alreadyOpen(), player);
+                }
+                return;
+            }
+
+
             player.openInventory(this.inventory);
-            if (state == VaultOpenState.OPEN_BY_MOD && otherPlayer.getOpenInventory().getTopInventory().getHolder(false) instanceof Vault otherVault) {
-                otherVault.update(otherPlayer);
+
+            if (updatedState == VaultOpenState.OPEN_BY_MOD && updatedOtherPlayer.getOpenInventory().getTopInventory().getHolder(false) instanceof Vault otherVault) {
+                otherVault.update(updatedOtherPlayer);
             }
         });
     }
@@ -158,15 +172,42 @@ public class Vault implements GringottsInventory {
 
     public boolean addTrusted(UUID uuid) {
         int cap = cfg.vaults().trustCap();
-        if (trustedPlayers.size() >= cap) {
+        VaultTrustPlayerEvent event = new VaultTrustPlayerEvent(this, EventAction.ADD, uuid);
+        event.setCancelled(trustedPlayers.size() >= cap);
+        event.callEvent();
+
+        if (event.isCancelled()) {
             return false;
         }
-        trustedPlayers.add(uuid);
+        trustedPlayers.add(event.getTrustedUUID());
         return true;
     }
 
-    public void removeTrusted(UUID uuid) {
-        trustedPlayers.remove(uuid);
+    public boolean removeTrusted(UUID uuid) {
+        if (!trustedPlayers.contains(uuid)) return false;
+        VaultTrustPlayerEvent event = new VaultTrustPlayerEvent(this, EventAction.REMOVE, uuid);
+        if (event.callEvent()) return false;
+
+        trustedPlayers.remove(event.getTrustedUUID());
+        return true;
+    }
+
+    public boolean setCustomName(@NotNull String customName) {
+        int maxLength = cfg.vaults().maxNameCharacters();
+        VaultNameChangeEvent event = new VaultNameChangeEvent(this, customName);
+        event.setCancelled(customName.length() > maxLength);
+        if (event.callEvent()) return false;
+
+        this.customName = customName;
+        return true;
+    }
+
+    public boolean setIcon(@NotNull Material icon) {
+        VaultIconChangeEvent event = new VaultIconChangeEvent(this, icon);
+        if (!event.callEvent()) return false;
+
+        this.icon = event.getNewIcon();
+        return true;
     }
 
     private static ItemStack[] decodeInventory(String encodedInventory) {

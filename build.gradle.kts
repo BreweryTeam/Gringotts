@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "dev.jsinco.gringotts"
-version = "0.0-BETA"
+version = "0.1-BETA"
 
 repositories {
     mavenCentral()
@@ -24,6 +24,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:6.3.0") // mavenCentral
     implementation("eu.okaeri:okaeri-configs-yaml-bukkit:5.0.5") // storehouse.okaeri.eu
     implementation("eu.okaeri:okaeri-configs-serdes-bukkit:5.0.5")  // storehouse.okaeri.eu
+    implementation("org.bstats:bstats-bukkit:3.0.2") // mavenCentral
 
     annotationProcessor("org.projectlombok:lombok:1.18.30") // mavenCentral
 }
@@ -33,6 +34,7 @@ tasks {
     shadowJar {
         relocate("eu.okaeri", "dev.jsinco.gringotts.okaeri")
         relocate("com.zaxxer.hikari", "dev.jsinco.gringotts.hikari")
+        relocate("org.bstats", "dev.jsinco.gringotts.integration.bstats")
         archiveClassifier.set("")
     }
 

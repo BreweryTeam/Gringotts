@@ -1,0 +1,1 @@
+SELECT COUNT(*) FROM gringotts_warehouses;

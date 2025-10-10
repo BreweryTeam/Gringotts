@@ -4,6 +4,8 @@ import com.google.common.base.Preconditions;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import dev.jsinco.gringotts.Gringotts;
+import dev.jsinco.gringotts.api.events.CachedObjectEvent;
+import dev.jsinco.gringotts.api.events.interfaces.EventAction;
 import dev.jsinco.gringotts.configuration.ConfigManager;
 import dev.jsinco.gringotts.configuration.files.Config;
 import dev.jsinco.gringotts.enums.Driver;
@@ -69,6 +71,9 @@ public abstract class DataSource {
     public abstract CompletableFuture<@NotNull GringottsPlayer> getGringottsPlayer(UUID uuid);
     public abstract CompletableFuture<Void> saveGringottsPlayer(GringottsPlayer gringottsPlayer);
 
+    // Metrics
+    public abstract CompletableFuture<Integer> getTotalVaultCount();
+    public abstract CompletableFuture<Integer> getTotalWarehouseStockCount();
 
 
 
@@ -89,6 +94,7 @@ public abstract class DataSource {
 
                 if (cachedObject.isExpired()) {
                     cachedObjects.remove(cachedObject);
+                    new CachedObjectEvent(this, cachedObject, EventAction.REMOVE).callEvent();
                     Text.debug("Uncached " + cachedObject.getClass().getSimpleName() + ": " + cachedObject.getUuid() + " because it was expired");
                 }
             }
@@ -228,38 +234,14 @@ public abstract class DataSource {
     }
 
     public <T extends CachedObject> CompletableFuture<T> cacheObject(CompletableFuture<T> future, long expire) {
-        return future.thenCompose(obj -> {
-            if (obj == null) {
-                return CompletableFuture.completedFuture(null);
-            }
-
-            // First, try to find a cached version
-            synchronized (cachedObjects) {
-                for (CachedObject cached : cachedObjects) {
-                    if (cached.getClass().equals(obj.getClass()) &&
-                            cached.getUuid().equals(obj.getUuid())) {
-
-                        @SuppressWarnings("unchecked")
-                        T alreadyCached = (T) cached;
-                        Text.debug("Using cached " + obj.getClass().getSimpleName() + ": " + obj.getUuid());
-                        return CompletableFuture.completedFuture(alreadyCached);
-                    }
-                }
-            }
-
-            // Not found, cache the new object
-            obj.setExpire(System.currentTimeMillis() + expire);
-            synchronized (cachedObjects) {
-                cachedObjects.add(obj);
-            }
-
-            Text.debug("Caching " + obj.getClass().getSimpleName() + ": " + obj.getUuid() + " until " + expire);
-            return CompletableFuture.completedFuture(obj);
-        });
+        return cacheObjectInternal(future, System.currentTimeMillis() + expire);
     }
 
-
     public <T extends CachedObject> CompletableFuture<T> cacheObject(CompletableFuture<T> future) {
+        return cacheObjectInternal(future, null);
+    }
+
+    private <T extends CachedObject> CompletableFuture<T> cacheObjectInternal(CompletableFuture<T> future, Long expireTime) {
         return future.thenCompose(obj -> {
             if (obj == null) {
                 return CompletableFuture.completedFuture(null);
@@ -273,7 +255,7 @@ public abstract class DataSource {
 
                         @SuppressWarnings("unchecked")
                         T alreadyCached = (T) cached;
-                        alreadyCached.setExpire(null); // remove expire time
+                        alreadyCached.setExpire(expireTime);
                         Text.debug("Using cached " + obj.getClass().getSimpleName() + ": " + obj.getUuid());
                         return CompletableFuture.completedFuture(alreadyCached);
                     }
@@ -281,11 +263,14 @@ public abstract class DataSource {
             }
 
             // Not found, cache the new object
+            obj.setExpire(expireTime);
             synchronized (cachedObjects) {
                 cachedObjects.add(obj);
+                new CachedObjectEvent(this, obj, EventAction.ADD).callEvent();
             }
 
-            Text.debug("Caching " + obj.getClass().getSimpleName() + ": " + obj.getUuid());
+            String expireMsg = expireTime != null ? " until " + expireTime : "";
+            Text.debug("Caching " + obj.getClass().getSimpleName() + ": " + obj.getUuid() + expireMsg);
             return CompletableFuture.completedFuture(obj);
         });
     }
@@ -297,6 +282,7 @@ public abstract class DataSource {
             Text.debug("Uncaching " + cachedObject.getClass().getSimpleName() + ": " + cachedObject.getUuid());
             cachedObject.save(this);
             cachedObjects.remove(cachedObject);
+            new CachedObjectEvent(this, cachedObject, EventAction.REMOVE).callEvent();
         }
     }
 

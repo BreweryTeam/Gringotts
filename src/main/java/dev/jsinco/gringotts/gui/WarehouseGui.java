@@ -139,7 +139,7 @@ public class WarehouseGui extends GringottsGui {
                         if (clickedInventory != event.getInventory()) {
                             break;
                         }
-                        TriState triState = warehouse.removeItem(material);
+                        TriState triState = warehouse.removeCompartment(material);
                         if (triState == TriState.TRUE) {
                             lng.entry(l -> l.warehouse().removedCompartment(), player,
                                     Couple.of("{material}", Util.formatEnumerator(material))
@@ -245,7 +245,7 @@ public class WarehouseGui extends GringottsGui {
 
 
     @Override
-    public void open(Player player) {
+    public void openImpl(Player player) {
         Executors.sync(() -> player.openInventory(this.paginatedGui.getPage(0)));
     }
 

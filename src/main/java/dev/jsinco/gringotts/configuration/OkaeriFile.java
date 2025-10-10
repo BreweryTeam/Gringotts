@@ -9,6 +9,10 @@ import static dev.jsinco.gringotts.storage.DataSource.DATA_FOLDER;
 
 public class OkaeriFile extends OkaeriConfig implements RegistryItem {
 
+    public String getFileName() {
+        return getFileName(true);
+    }
+
     public String getFileName(boolean dynamicFileName) {
         OkaeriFileName annotation = getClass().getAnnotation(OkaeriFileName.class);
         if (annotation == null) {

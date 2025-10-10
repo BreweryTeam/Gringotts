@@ -214,4 +214,36 @@ public class MySQLDataSource extends DataSource {
             return null;
         });
     }
+
+    @Override
+    public CompletableFuture<Integer> getTotalVaultCount() {
+        return Executors.supplyAsyncWithSQLException(() -> {
+            try (Connection connection = this.connection()) {
+                PreparedStatement statement = connection.prepareStatement(
+                        this.getStatement("vaults/total_vault_count.sql")
+                );
+                ResultSet rs = statement.executeQuery();
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+                return 0;
+            }
+        });
+    }
+
+    @Override
+    public CompletableFuture<Integer> getTotalWarehouseStockCount() {
+        return Executors.supplyAsyncWithSQLException(() -> {
+            try (Connection connection = this.connection()) {
+                PreparedStatement statement = connection.prepareStatement(
+                        this.getStatement("warehouses/total_warehouse_stock.sql")
+                );
+                ResultSet rs = statement.executeQuery();
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+                return 0;
+            }
+        });
+    }
 }

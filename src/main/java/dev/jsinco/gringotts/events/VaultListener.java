@@ -1,5 +1,6 @@
 package dev.jsinco.gringotts.events;
 
+import dev.jsinco.gringotts.api.events.vault.VaultClickEvent;
 import dev.jsinco.gringotts.configuration.files.Config;
 import dev.jsinco.gringotts.configuration.ConfigManager;
 import dev.jsinco.gringotts.gui.GringottsGui;
@@ -42,6 +43,11 @@ public class VaultListener implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getInventory().getHolder(false) instanceof Vault vault)) {
+            return;
+        }
+        VaultClickEvent vaultClickEvent = new VaultClickEvent(vault, event);
+        if (!vaultClickEvent.callEvent()) {
+            event.setCancelled(true);
             return;
         }
 

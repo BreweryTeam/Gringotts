@@ -17,6 +17,8 @@ import dev.jsinco.gringotts.configuration.files.GuiConfig;
 import dev.jsinco.gringotts.configuration.files.Lang;
 import dev.jsinco.gringotts.importers.Importer;
 import dev.jsinco.gringotts.importers.PlayerVaultsImporter;
+import dev.jsinco.gringotts.integration.Integration;
+import dev.jsinco.gringotts.integration.bstats.BStatsIntegration;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -25,21 +27,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 public class Registry<T extends RegistryItem> {
 
     public static final Registry<SubCommand> SUB_COMMANDS = fromClasses(VaultsCommand.class, WarehouseCommand.class, ImportCommand.class, VaultOtherCommand.class, WarehouseAdminCommand.class, MaxCommand.class, VaultAdminCommand.class, ReloadCommand.class, HelpCommand.class);
     public static final Registry<Importer> IMPORTERS = fromClasses(PlayerVaultsImporter.class);
     public static final Registry<OkaeriFile> CONFIGS = fromClassesWithCrafter(new ConfigManager(), Config.class, GuiConfig.class, Lang.class);
+    public static final Registry<Integration> INTEGRATIONS = fromClasses(BStatsIntegration.class);
 
     private final Map<String, T> map;
 
     public Registry(Collection<T> values) {
         this.map = new HashMap<>();
         values.forEach(item -> {
-            for (String name : item.names()) {
-                map.put(name, item);
-            }
+            map.put(item.name(), item);
         });
     }
 

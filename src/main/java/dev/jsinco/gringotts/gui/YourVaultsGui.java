@@ -149,7 +149,7 @@ public class YourVaultsGui extends GringottsGui implements PromisedInventory {
     }
 
     @Override
-    public void open(Player player) {
+    public void openImpl(Player player) {
         promiseInventory().thenAccept(inventory -> {
             Executors.sync(() -> player.openInventory(inventory));
         });

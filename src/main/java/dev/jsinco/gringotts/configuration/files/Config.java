@@ -100,6 +100,13 @@ public class Config extends OkaeriFile {
                 "names to whatever they want."
         })
         private String defaultName = "Vault #{id}";
+
+        @Comment({
+                "The default icon for all vaults. This does not prevent",
+                "players from setting their own custom icon."
+        })
+        private Material defaultIcon = Material.CHEST;
+
         @Comment({
                 "The size for all Gringotts vaults. This setting applies globally.",
                 "If this setting is lowered and players already have vaults that fill up to 54 slots,",

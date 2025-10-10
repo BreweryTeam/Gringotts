@@ -9,7 +9,9 @@ import dev.jsinco.gringotts.events.PlayerListener;
 import dev.jsinco.gringotts.events.VaultListener;
 import dev.jsinco.gringotts.events.WarehouseListener;
 import dev.jsinco.gringotts.obj.GringottsInventory;
+import dev.jsinco.gringotts.registry.Registry;
 import dev.jsinco.gringotts.storage.DataSource;
+import dev.jsinco.gringotts.utility.Text;
 import lombok.Getter;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -41,6 +43,14 @@ public final class Gringotts extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new WarehouseListener(), this);
         getServer().getPluginManager().registerEvents(new GuiListener(), this);
         getServer().getPluginManager().registerEvents(new ChatPromptInputListener(), this);
+
+        Registry.INTEGRATIONS.values()
+                .forEach(integration -> {
+                    if (integration.canRegister()) {
+                        integration.register();
+                        Text.log("Registered " + integration.name() + " integration.");
+                    }
+                });
     }
 
     @Override

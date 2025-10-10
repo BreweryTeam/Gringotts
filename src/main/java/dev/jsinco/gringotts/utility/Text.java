@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.stream.Stream;
 
-public class Text {
+public final class Text {
 
     public static final ConsoleCommandSender CONSOLE = Bukkit.getConsoleSender();
 

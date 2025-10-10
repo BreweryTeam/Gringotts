@@ -1,5 +1,9 @@
 package dev.jsinco.gringotts.obj;
 
+import dev.jsinco.gringotts.api.events.interfaces.EventAction;
+import dev.jsinco.gringotts.api.events.warehouse.WarehouseCompartmentEvent;
+import dev.jsinco.gringotts.api.events.warehouse.WarehouseDestockEvent;
+import dev.jsinco.gringotts.api.events.warehouse.WarehouseStockEvent;
 import dev.jsinco.gringotts.configuration.ConfigManager;
 import dev.jsinco.gringotts.configuration.files.Config;
 import dev.jsinco.gringotts.configuration.files.GuiConfig;
@@ -73,11 +77,21 @@ public class Warehouse implements CachedObject {
             amt = maxWarehouseStock - currentStockQuantity;
         }
 
+        WarehouseStockEvent stockEvent = new WarehouseStockEvent(this, material, amt);
+        if (!stockEvent.callEvent()) return 0;
+
+        material = stockEvent.getMaterial();
+        amt = stockEvent.getAmount();
+
 
         Stock stock = warehouseMap.get(material);
         if (stock != null) {
             stock.increase(amt);
         } else {
+            WarehouseCompartmentEvent compartmentEvent = new WarehouseCompartmentEvent(this, EventAction.ADD, material);
+            if (!compartmentEvent.callEvent()) return 0;
+
+            material = compartmentEvent.getMaterial();
             warehouseMap.put(material, new Stock(material, amt));
         }
 
@@ -87,10 +101,15 @@ public class Warehouse implements CachedObject {
     @Nullable
     public ItemStack destockItem(Material material, int amt) {
         Stock stock = warehouseMap.get(material);
-        if (stock == null || stock.getAmount() < 1) {
+        if (stock == null) return null;
+
+        WarehouseDestockEvent event = new WarehouseDestockEvent(this, material, amt);
+        event.setCancelled(stock.getAmount() < 1);
+
+        if (!event.callEvent()) {
             return null;
-        } else if (stock.getAmount() < amt) {
-            amt = stock.getAmount();
+        } else if (event.getAmount() < amt) {
+            amt = event.getAmount();
         }
 
         stock.decrease(amt);
@@ -124,11 +143,14 @@ public class Warehouse implements CachedObject {
         return warehouseMap.values().stream().mapToInt(Stock::getAmount).sum();
     }
 
-    public TriState removeItem(Material material) {
+    public TriState removeCompartment(Material material) {
         Stock stock = warehouseMap.get(material);
-        if (stock == null) {
-            return TriState.ALTERNATIVE_STATE;
-        } else if (stock.getAmount() == 0) {
+        if (stock == null) return TriState.ALTERNATIVE_STATE;
+
+        WarehouseCompartmentEvent event = new WarehouseCompartmentEvent(this, EventAction.REMOVE, material);
+        event.setCancelled(stock.getAmount() > 0);
+
+        if (event.callEvent()) {
             warehouseMap.remove(material);
             return TriState.TRUE;
         }

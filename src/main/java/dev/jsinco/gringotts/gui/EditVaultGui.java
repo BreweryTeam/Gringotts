@@ -73,7 +73,7 @@ public class EditVaultGui extends GringottsGui {
                         Text.title("<red><b>Enter text", "Enter in chat"),
                         "Enter a new vault name in chat, type 'cancel' to cancel.",
                         input -> {
-                            vault.setCustomName(input);
+                            if (!vault.setCustomName(input)) return;
                             DataSource.getInstance().saveVault(vault);
 
                             lng.entry(l -> l.vaults().nameChanged(), player, Couple.of("{vaultName}", vault.getCustomName()));
@@ -109,7 +109,8 @@ public class EditVaultGui extends GringottsGui {
                 if (isClicked) {
                     iconItem.setData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, !currentValue);
                 } else if (currentValue && clickedInventory != event.getInventory()) {
-                    vault.setIcon(clickedItem.getType());
+                    if (!vault.setIcon(clickedItem.getType())) return;
+
                     DataSource.getInstance().saveVault(vault);
 
                     iconItem.setType(clickedItem.getType());
@@ -153,8 +154,11 @@ public class EditVaultGui extends GringottsGui {
                             }
 
                             if (vault.isTrusted(offlinePlayer.getUniqueId())) {
-                                vault.removeTrusted(offlinePlayer.getUniqueId());
-                                lng.entry(l -> l.vaults().playerUntrusted(), player, Couple.of("{name}", input));
+                                if (vault.removeTrusted(offlinePlayer.getUniqueId())) {
+                                    lng.entry(l -> l.vaults().playerUntrusted(), player, Couple.of("{name}", input));
+                                } else {
+                                    lng.entry(l -> l.vaults().playerNotTrusted(), player, Couple.of("{name}", input));
+                                }
                             } else if (vault.addTrusted(offlinePlayer.getUniqueId())){
                                 lng.entry(l -> l.vaults().playerTrusted(), player, Couple.of("{name}", input));
                             } else {
@@ -205,7 +209,7 @@ public class EditVaultGui extends GringottsGui {
     }
 
     @Override
-    public void open(Player player) {
+    public void openImpl(Player player) {
         Executors.sync(() -> player.openInventory(this.getInventory()));
     }
 

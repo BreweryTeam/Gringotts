@@ -144,7 +144,7 @@ public class VaultOtherGui extends GringottsGui implements PromisedInventory {
     }
 
     @Override
-    public void open(Player player) {
+    public void openImpl(Player player) {
         promiseInventory().thenAccept(inventory -> {
             if (inventory != null) {
                 Executors.sync(() -> player.openInventory(inventory));

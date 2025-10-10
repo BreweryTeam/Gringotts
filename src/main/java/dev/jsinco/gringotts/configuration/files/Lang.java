@@ -62,10 +62,12 @@ public class Lang extends OkaeriFile {
         private String playerNeverOnServer;
         private String playerTrusted;
         private String playerUntrusted;
+        private String playerNotTrusted;
         private String noVaultsFound;
         private String noVaultsAccessible;
         private String noVaultFound;
         private String vaultDeleted;
+        private String vaultNameTooLong;
     }
 
     @Getter

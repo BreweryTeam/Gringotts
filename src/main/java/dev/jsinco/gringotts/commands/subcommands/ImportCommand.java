@@ -1,6 +1,7 @@
 package dev.jsinco.gringotts.commands.subcommands;
 
 import dev.jsinco.gringotts.Gringotts;
+import dev.jsinco.gringotts.api.events.ImportEvent;
 import dev.jsinco.gringotts.commands.interfaces.SubCommand;
 import dev.jsinco.gringotts.importers.Importer;
 import dev.jsinco.gringotts.registry.Registry;
@@ -23,7 +24,13 @@ public class ImportCommand implements SubCommand {
             return false;
         }
         String importerName = args.getFirst();
-        Importer importer = Registry.IMPORTERS.get(importerName);
+        Importer imp = Registry.IMPORTERS.get(importerName);
+
+        ImportEvent event = new ImportEvent(imp);
+        event.setCancelled(imp == null || !imp.canImport());
+        if (!event.callEvent()) return true;
+
+        Importer importer = event.getImporter();
 
         if (importer == null || !importer.canImport()) {
             lng.entry(l -> l.command()._import().cannotImport(),

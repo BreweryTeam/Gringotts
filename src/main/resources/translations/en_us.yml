@@ -26,10 +26,12 @@ vaults:
   playerNeverOnServer: '{name} has never joined this server.'
   playerTrusted: '{name} has been added to your trust list.'
   playerUntrusted: '{name} has been removed from your trust list.'
+  playerNotTrusted: '{name} is not on your trust list.'
   noVaultsFound: There are no vaults for {name}.
   noVaultsAccessible: You do not have access to any vaults for {name}. Have they trusted you to any of them?
   noVaultFound: '<aqua><b>Vault #{id}</b></aqua> does not exist.'
   vaultDeleted: '<aqua><b>Vault #{id}</b></aqua> has been deleted.'
+  vaultNameTooLong: Vault names cannot be longer than {maxLength} characters.
 
 gui:
   firstPage: You are on the first page.

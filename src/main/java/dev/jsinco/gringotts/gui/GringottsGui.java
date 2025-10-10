@@ -1,5 +1,6 @@
 package dev.jsinco.gringotts.gui;
 
+import dev.jsinco.gringotts.api.events.gui.GringottsGuiOpenEvent;
 import dev.jsinco.gringotts.obj.GringottsInventory;
 import dev.jsinco.gringotts.gui.item.AbstractGuiItem;
 import dev.jsinco.gringotts.gui.item.IgnoreAutoRegister;
@@ -15,9 +16,9 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 public abstract class GringottsGui implements GringottsInventory {
 
-    @Getter
     protected final Inventory inventory;
     protected final List<AbstractGuiItem> guiItems;
 
@@ -28,8 +29,15 @@ public abstract class GringottsGui implements GringottsInventory {
     }
 
     public abstract void onInventoryClick(InventoryClickEvent event);
-    public abstract void open(Player player);
+    public abstract void openImpl(Player player);
 
+
+    public void open(Player player) {
+        GringottsGuiOpenEvent event = new GringottsGuiOpenEvent(this, player);
+        if (event.callEvent()) {
+            this.openImpl(event.getPlayer());
+        }
+    }
 
 
     public void addGuiItem(AbstractGuiItem item) {

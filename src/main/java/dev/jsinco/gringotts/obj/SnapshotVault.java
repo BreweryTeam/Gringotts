@@ -21,7 +21,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-// A snapshot of a vault with reduced information
+/**
+ * A snapshot of a vault's data, used for displaying in GUIs without loading the full vault.
+ */
 public class SnapshotVault implements AbstractGuiItem {
 
     private static final GuiConfig.YourVaultsGui.VaultItem cfg = ConfigManager.get(GuiConfig.class).yourVaultsGui().vaultItem();
