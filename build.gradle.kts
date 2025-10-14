@@ -164,8 +164,7 @@ publishing {
 
 
 class DiscordWebhook(
-    val webhookUrl: String,
-    defaultThumbnail: Boolean = true
+    val webhookUrl: String
 ) {
 
     companion object {
@@ -178,7 +177,7 @@ class DiscordWebhook(
     var embedTitle: String = "Embed Title"
     var embedDescription: String = "Embed Description"
     var embedColor: String = "b96648"
-    var embedThumbnailUrl: String? = if (defaultThumbnail) avatarUrl else null
+    var embedThumbnailUrl: String = "https://github.com/BreweryTeam/Malts/blob/master/images/maltslogo.png?raw=true"
     var embedImageUrl: String? = null
 
     private fun hexStringToInt(hex: String): Int {
