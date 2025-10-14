@@ -1,4 +1,4 @@
-prefix: '<#b986f9><b>Gringotts</b></#b986f9> <dark_gray>»</dark_gray> '
+prefix: '<#b986f9><b>Malts</b></#b986f9> <dark_gray>»</dark_gray> '
 
 warehouse:
   notEnoughMaterial: You don't have enough <aqua><b>{material}</b></aqua> to do this.
@@ -43,20 +43,20 @@ gui:
 command:
   help: |
     
-    <gold>---- <b>Gringotts</b> <gray>v{version}</gray> ----</gold>
+    <gold>---- <b>Malts</b> <gray>v{version}</gray> ----</gold>
     <aqua>{description}</aqua>
     <gray>---- <b>Commands</b> ----</gray>
-    <green>/gringotts help - <gray>Show this help message.
-    <green>/gringotts import <importer> - <gray>Import vaults from another plugin.
-    <green>/gringotts max <vaults|stock> <add|set|remove> <name> <newMax> - <gray>Adjust vault or stock caps dynamically.
-    <green>/gringotts reload - <gray>Reload configuration files.
-    <green>/gringotts vaultadmin <delete|open> <name> <index?> - <gray>Manage other players vaults.
-    <green>/gringotts vaultother <name> <index?> - <gray>Open a vault(s) you're trusted to view.
-    <green>/gringotts vaults <index?> - <gray>Open a vault(s) you own.
-    <green>/gringotts warehouseadmin <name> - <gray>Manage the warehouse of another player.
-    <green>/gringotts warehouse - <gray>Open your warehouse.
+    <green>/malts help - <gray>Show this help message.
+    <green>/malts import <importer> - <gray>Import vaults from another plugin.
+    <green>/malts max <vaults|stock> <add|set|remove> <name> <newMax> - <gray>Adjust vault or stock caps dynamically.
+    <green>/malts reload - <gray>Reload configuration files.
+    <green>/malts vaultadmin <delete|open> <name> <index?> - <gray>Manage other players vaults.
+    <green>/malts vaultother <name> <index?> - <gray>Open a vault(s) you're trusted to view.
+    <green>/malts vaults <index?> - <gray>Open a vault(s) you own.
+    <green>/malts warehouseadmin <name> - <gray>Manage the warehouse of another player.
+    <green>/malts warehouse - <gray>Open your warehouse.
   base:
-    unknownCommand: Unknown command. Type <aqua>/gringotts help</aqua> for a list of commands.
+    unknownCommand: Unknown command. Type <aqua>/malts help</aqua> for a list of commands.
     playerOnly: This command can only be executed by a player.
     noPermission: You do not have permission to execute this command.
   max:
@@ -72,4 +72,4 @@ command:
   reload:
     success: Successfully reloaded configuration files.
     failed: Failed to reload one or more configuration files. Check console for stacktrace.
-    newDatabaseDriverSet: The database driver in the configuration file has been changed. Gringotts will now reload from <red>{driver}</red> using the new driver. Please be aware that Gringotts provides no methods for transferring data between databases.
+    newDatabaseDriverSet: The database driver in the configuration file has been changed. Malts will now reload from <red>{driver}</red> using the new driver. Please be aware that Malts provides no methods for transferring data between databases.

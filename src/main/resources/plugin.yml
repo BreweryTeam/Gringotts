@@ -1,57 +1,57 @@
-main: dev.jsinco.gringotts.Gringotts
-name: Gringotts
+main: dev.jsinco.malts.Malts
+name: Malts
 version: '${version}'
 api-version: 1.21
 author: Jsinco
-description: An expansive 'playervaults' style plugin that incorporates a warehouse for mass item storage.
-website: github.com/BreweryTeam/Gringotts
+description: An open-source and free Vaults plugin that incorporates a warehouse for mass item storage.
+website: github.com/BreweryTeam/Malts
 softdepend: [Bolt, LWC, WorldGuard, Towny, CoreProtect]
 load: POSTWORLD
 commands:
-  gringotts:
-    description: Main command for Gringotts
+  malts:
+    description: Main command for Malts
   vaults:
-    description: Alias for /gringotts vaults <index?>
+    description: Alias for /malts vaults <index?>
     aliases: [pv, vault, vaults, chest]
   warehouse:
-    description: Alias for /gringotts warehouse
+    description: Alias for /malts warehouse
     aliases: [es, wh]
 permissions:
-  gringotts.*:
-    description: A permission node for Gringotts intended for admins.
+  malts.*:
+    description: A permission node for Malts intended for admins.
     default: op
     children:
-      gringotts.admin: true
-  gringotts.admin:
-    description: A permission node for Gringotts intended for admins.
+      malts.admin: true
+  malts.admin:
+    description: A permission node for Malts intended for admins.
     default: op
     children:
-      gringotts.command.*: true
-      gringotts.mod: true
-  gringotts.mod:
-    description: A permission node for Gringotts intended for staff members. Also allows a player to open a vault at the same time as another player.
+      malts.command.*: true
+      malts.mod: true
+  malts.mod:
+    description: A permission node for Malts intended for staff members. Also allows a player to open a vault at the same time as another player.
     default: op
     children:
-      gringotts.command.vaultadmin: true
-      gringotts.command.warehouseadmin: true
-  gringotts.default:
-    description: A permission node for Gringotts intended for players.
+      malts.command.vaultadmin: true
+      malts.command.warehouseadmin: true
+  malts.default:
+    description: A permission node for Malts intended for players.
     default: true
     children:
-      gringotts.command.base: true
-      gringotts.command.help: true
-      gringotts.command.vaults: true
-      gringotts.command.vaultother: true
-      gringotts.command.warehouse: true
-  gringotts.command.*:
+      malts.command.base: true
+      malts.command.help: true
+      malts.command.vaults: true
+      malts.command.vaultother: true
+      malts.command.warehouse: true
+  malts.command.*:
     children:
-      gringotts.command.base: true
-      gringotts.command.help: true
-      gringotts.command.import: true
-      gringotts.command.max: true
-      gringotts.command.reload: true
-      gringotts.command.vaultadmin: true
-      gringotts.command.vaultother: true
-      gringotts.command.vaults: true
-      gringotts.command.warehouseadmin: true
-      gringotts.command.warehouse: true
+      malts.command.base: true
+      malts.command.help: true
+      malts.command.import: true
+      malts.command.max: true
+      malts.command.reload: true
+      malts.command.vaultadmin: true
+      malts.command.vaultother: true
+      malts.command.vaults: true
+      malts.command.warehouseadmin: true
+      malts.command.warehouse: true

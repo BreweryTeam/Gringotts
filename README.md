@@ -1,11 +1,10 @@
-# Gringotts
+# Malts
 
-An expansive 'playervaults' style plugin that incorporates a warehouse for mass item storage.
+An open-source and free Vaults plugin that incorporates a warehouse for mass item storage.
 
 
 > [!IMPORTANT]
 > This project is currently in beta!
-> Support is only guaranteed for the latest versions on PaperMC-based servers.
 
 Beta builds can be found on Modrinth and Hangar:
 
@@ -24,14 +23,14 @@ Beta builds can be found on Modrinth and Hangar:
 - A converter to migrate from "PlayerVaults/PlayerVaultsX".
 
 
-## Some more info on Gringotts (for those who aren't familiar):
+## Some more info on Malts (for those who aren't familiar):
 
-- Gringotts is an open-source plugin that allows players to use vaults and a warehouse to store items.
+- Malts is an open-source plugin that allows players to use vaults and a warehouse to store items.
 
 
 ### Vaults
 Vaults are virtual chests that players may use to store items of their choosing. They work very similarly to vaults
-from the "PlayerVaults" plugin. Gringotts includes a GUI to show players their vaults in a nice and orderly fashion.
+from the "PlayerVaults" plugin. Malts includes a GUI to show players their vaults in a nice and orderly fashion.
 Player can customize, change the name, and even trust other players to their vaults to share them! The amount of
 vaults a player can access is configurable and dynamically modifiable through commands!
 
@@ -42,7 +41,7 @@ of material they can store is based on their maximum stock which is configurable
 The warehouse also has additional features such as "auto storing", "click to deposit", and "auto replenish".
 
 ### Importing
-Gringotts supports importing vaults from "PlayerVaults" currently. More importers will be added closer to Gringotts' first
+Malts supports importing vaults from "PlayerVaults" currently. More importers will be added closer to Malts' first
 non-beta release.
 
 ### Quickbar
@@ -51,14 +50,14 @@ a quickbar showing the most recently accessed warehouse compartments is availabl
 This can be configured.
 
 ### QuickReturn
-Players can right-click outside any Gringotts gui to return to "Your Vaults" gui. This can be configured.
+Players can right-click outside any Malts gui to return to "Your Vaults" gui. This can be configured.
 
-Gringotts has other nuanced features too.
+Malts has other nuanced features too.
 As stated before, this project is in **beta** and should not be used on production servers at the moment.
-Gringotts only supports PaperMC-based servers.
+Malts only supports PaperMC-based servers.
 
 
-Attached below are a showcase of some of the guis in Gringotts:
+Attached below are a showcase of some of the guis in Malts:
 
 ![yourvaults.png](images/yourvaults.png)
 

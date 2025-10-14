@@ -1,3 +1,3 @@
 SELECT *
-FROM gringotts_players
+FROM malts_players
 WHERE uuid = ?;

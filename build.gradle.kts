@@ -13,7 +13,7 @@ plugins {
     id("com.modrinth.minotaur") version "2.8.7"
 }
 
-group = "dev.jsinco.gringotts"
+group = "dev.jsinco.malts"
 version = "0.1-BETA"
 
 repositories {
@@ -84,7 +84,7 @@ tasks {
     register("publishToDiscord") {
         val webhook = DiscordWebhook(System.getenv("DISCORD_WEBHOOK"))
         webhook.message = "<@&1425973814558326824>"
-        webhook.embedTitle = "Gringotts - v${project.version}"
+        webhook.embedTitle = "Malts - v${project.version}"
         webhook.embedDescription = System.getenv("CHANGE_LOG") ?: "No changelog provided."
         webhook.send()
     }
@@ -170,7 +170,7 @@ class DiscordWebhook(
     }
 
     var message: String = "content"
-    var username: String = "Gringotts Updates"
+    var username: String = "Malts Updates"
     var avatarUrl: String = "https://github.com/breweryteam.png"
     var embedTitle: String = "Embed Title"
     var embedDescription: String = "Embed Description"

@@ -1,1 +1,1 @@
-SELECT COUNT(*) FROM gringotts_warehouses;
+SELECT COUNT(*) FROM malts_warehouses;

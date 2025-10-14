@@ -1,4 +1,4 @@
-INSERT INTO gringotts_warehouses (owner, material, quantity, last_update)
+INSERT INTO malts_warehouses (owner, material, quantity, last_update)
 VALUES (?, ?, ?, ?)
     ON CONFLICT(owner, material)
 DO UPDATE SET

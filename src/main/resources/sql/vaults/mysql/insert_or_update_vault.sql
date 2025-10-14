@@ -1,4 +1,4 @@
-INSERT INTO gringotts_vaults(
+INSERT INTO malts_vaults(
     owner, id, inventory, custom_name, icon, trusted_players
 ) VALUES (?, ?, ?, ?, ?, ?)
 ON DUPLICATE KEY UPDATE
