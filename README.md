@@ -8,8 +8,8 @@ An open-source and free Vaults plugin that incorporates a warehouse for mass ite
 
 Beta builds can be found on Modrinth and Hangar:
 
-- https://modrinth.com/plugin/gringotts
-- https://hangar.papermc.io/BreweryTeam/Gringotts-Vaults
+- https://modrinth.com/plugin/malts
+- https://hangar.papermc.io/BreweryTeam/Malts
 
 ## Quick overview of features if you're familiar with Vault plugins:
 

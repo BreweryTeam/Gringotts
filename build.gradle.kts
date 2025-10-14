@@ -109,7 +109,7 @@ hangarPublish {
     publications.register("plugin") {
         version.set(project.version.toString())
         channel.set("Release")
-        id.set("Gringotts-Vaults")
+        id.set(project.name)
         apiKey.set(System.getenv("HANGAR_TOKEN") ?: return@register)
         changelog.set(System.getenv("CHANGE_LOG") ?: "No changelog provided.")
         platforms {
