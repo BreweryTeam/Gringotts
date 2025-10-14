@@ -2,12 +2,14 @@ package dev.jsinco.malts.storage.sources;
 
 import com.zaxxer.hikari.HikariConfig;
 import dev.jsinco.malts.configuration.files.Config;
+import dev.jsinco.malts.enums.TriState;
 import dev.jsinco.malts.obj.MaltsPlayer;
 import dev.jsinco.malts.obj.SnapshotVault;
 import dev.jsinco.malts.obj.Stock;
 import dev.jsinco.malts.obj.Vault;
 import dev.jsinco.malts.obj.Warehouse;
 import dev.jsinco.malts.storage.DataSource;
+import dev.jsinco.malts.utility.Couple;
 import dev.jsinco.malts.utility.Executors;
 import dev.jsinco.malts.utility.Text;
 import org.bukkit.Material;
@@ -25,6 +27,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+@SuppressWarnings("DuplicatedCode") // TODO: Abstract out common code
 public class SQLiteDataSource extends DataSource {
 
     public SQLiteDataSource(Config.Storage config) {
@@ -66,7 +69,7 @@ public class SQLiteDataSource extends DataSource {
     }
 
     @Override
-    public @Nullable CompletableFuture<Vault> getVault(UUID owner, int id) {
+    public CompletableFuture<@Nullable Vault> getVault(UUID owner, int id, boolean createIfNull) {
         return Executors.supplyAsyncWithSQLException(() -> {
             try (Connection connection = this.connection()) {
                 PreparedStatement statement = connection.prepareStatement(
@@ -75,7 +78,8 @@ public class SQLiteDataSource extends DataSource {
                 statement.setString(1, owner.toString());
                 statement.setInt(2, id);
                 ResultSet resultSet = statement.executeQuery();
-                return this.mapVault(resultSet, owner, id);
+
+                return this.mapVault(resultSet, owner, id, createIfNull);
             }
         });
     }

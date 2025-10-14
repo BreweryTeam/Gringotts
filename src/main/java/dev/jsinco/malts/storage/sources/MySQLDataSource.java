@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+@SuppressWarnings("DuplicatedCode") // TODO: Abstract out common code
 public class MySQLDataSource extends DataSource {
 
     public MySQLDataSource(Config.Storage config) {
@@ -53,7 +54,7 @@ public class MySQLDataSource extends DataSource {
     }
 
     @Override
-    public CompletableFuture<Vault> getVault(UUID owner, int id) {
+    public CompletableFuture<Vault> getVault(UUID owner, int id, boolean createIfNull) {
         return Executors.supplyAsyncWithSQLException(() -> {
             try (Connection connection = this.connection()) {
                 PreparedStatement statement = connection.prepareStatement(
@@ -62,7 +63,7 @@ public class MySQLDataSource extends DataSource {
                 statement.setString(1, owner.toString());
                 statement.setInt(2, id);
                 ResultSet resultSet = statement.executeQuery();
-                return this.mapVault(resultSet, owner, id);
+                return this.mapVault(resultSet, owner, id, createIfNull);
             }
         });
     }

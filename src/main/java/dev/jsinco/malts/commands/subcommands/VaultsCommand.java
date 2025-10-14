@@ -2,18 +2,20 @@ package dev.jsinco.malts.commands.subcommands;
 
 import dev.jsinco.malts.Malts;
 import dev.jsinco.malts.commands.interfaces.SubCommand;
+import dev.jsinco.malts.configuration.ConfigManager;
+import dev.jsinco.malts.configuration.files.Config;
 import dev.jsinco.malts.gui.YourVaultsGui;
+import dev.jsinco.malts.integration.EconomyIntegration;
 import dev.jsinco.malts.obj.MaltsPlayer;
-import dev.jsinco.malts.obj.Vault;
 import dev.jsinco.malts.storage.DataSource;
 import dev.jsinco.malts.utility.Couple;
-import dev.jsinco.malts.utility.Executors;
 import dev.jsinco.malts.utility.Util;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -38,9 +40,14 @@ public class VaultsCommand implements SubCommand {
             return true;
         }
 
-        dataSource.getVault(player.getUniqueId(), vaultId).thenAccept(qVault -> {
-            Vault vault = Objects.requireNonNullElseGet(qVault, () -> new Vault(player.getUniqueId(), vaultId));
-            Executors.sync(() -> vault.open(player));
+        UUID owner = player.getUniqueId();
+
+        Config.Economy cfg = ConfigManager.get(Config.class).economy();
+        @Nullable EconomyIntegration econ = cfg.economyProvider().getIntegration();
+        double cost = cfg.vaults().creationFee();
+
+        dataSource.getVaultWithEconomy(player, vaultId, vault -> {
+            vault.open(player);
             lng.entry(l -> l.vaults().opening(), player,
                     Couple.of("{id}", vaultId),
                     Couple.of("{vaultName}", vault.getCustomName())

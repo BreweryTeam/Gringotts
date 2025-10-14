@@ -8,14 +8,17 @@ import dev.jsinco.malts.api.events.CachedObjectEvent;
 import dev.jsinco.malts.api.events.interfaces.EventAction;
 import dev.jsinco.malts.configuration.ConfigManager;
 import dev.jsinco.malts.configuration.files.Config;
+import dev.jsinco.malts.configuration.files.Lang;
 import dev.jsinco.malts.enums.TriState;
 import dev.jsinco.malts.enums.WarehouseMode;
+import dev.jsinco.malts.integration.EconomyIntegration;
 import dev.jsinco.malts.obj.CachedObject;
 import dev.jsinco.malts.obj.MaltsPlayer;
 import dev.jsinco.malts.obj.SnapshotVault;
 import dev.jsinco.malts.obj.Stock;
 import dev.jsinco.malts.obj.Vault;
 import dev.jsinco.malts.obj.Warehouse;
+import dev.jsinco.malts.utility.Couple;
 import dev.jsinco.malts.utility.Executors;
 import dev.jsinco.malts.utility.FileUtil;
 import dev.jsinco.malts.utility.Text;
@@ -40,6 +43,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public abstract class DataSource {
 
@@ -58,10 +62,11 @@ public abstract class DataSource {
     public abstract HikariConfig hikariConfig(Config.Storage config);
     public abstract CompletableFuture<Void> createTables();
 
-    public abstract CompletableFuture<Vault> getVault(UUID owner, int id);
-    public abstract CompletableFuture<List<SnapshotVault>> getVaults(UUID owner);
+    public abstract CompletableFuture<@Nullable Vault> getVault(UUID owner, int id, boolean createIfNull);
+
+    public abstract CompletableFuture<@NotNull List<SnapshotVault>> getVaults(UUID owner);
     public abstract CompletableFuture<Void> saveVault(Vault vault);
-    public abstract CompletableFuture<Boolean> deleteVault(UUID owner, int id);
+    public abstract CompletableFuture<@NotNull Boolean> deleteVault(UUID owner, int id);
 
 
     public abstract CompletableFuture<@NotNull Warehouse> getWarehouse(UUID owner);
@@ -73,6 +78,39 @@ public abstract class DataSource {
     // Metrics
     public abstract CompletableFuture<Integer> getTotalVaultCount();
     public abstract CompletableFuture<Integer> getTotalWarehouseStockCount();
+
+    // Abstract Utility
+
+    public CompletableFuture<@NotNull Vault> getVault(UUID owner, int id) {
+        return getVault(owner, id, true);
+    }
+
+    public void getVaultWithEconomy(Player player, int id, Consumer<@NotNull Vault> consumer) {
+        Config.Economy economy = ConfigManager.get(Config.class).economy();
+        Lang lang = ConfigManager.get(Lang.class);
+        @Nullable EconomyIntegration econ = economy.economyProvider().getIntegration();
+        double creationFee = economy.vaults().creationFee();
+        double accessFee = economy.vaults().accessFee();
+        UUID owner = player.getUniqueId();
+
+        getVault(owner, id, false).thenAccept(vault -> {
+            if (vault == null) {
+                if (econ == null) {
+                    vault = new Vault(owner, id);
+                } else if (econ.withdrawOrBypass(player, creationFee)) {
+                    vault = new Vault(owner, id);
+                    lang.entry(l -> l.economy().vaults().created(), player, Couple.of("{cost}", String.format("%,.2f", creationFee)));
+                } else {
+                    lang.entry(l -> l.economy().vaults().cannotAffordCreation(), player, Couple.of("{cost}", String.format("%,.2f", creationFee)));
+                    return;
+                }
+            } else if (econ != null && !econ.withdrawOrBypass(player, accessFee)) {
+                lang.entry(l -> l.economy().vaults().cannotAffordCreation(), player, Couple.of("{cost}", String.format("%,.2f", accessFee)));
+                return;
+            }
+            consumer.accept(vault);
+        });
+    }
 
 
 
@@ -155,7 +193,7 @@ public abstract class DataSource {
     }
 
     @Nullable
-    public Vault mapVault(ResultSet rs, UUID owner, int id) throws SQLException {
+    public Vault mapVault(ResultSet rs, UUID owner, int id, boolean create) throws SQLException {
         if (rs.next()) {
             return new Vault(
                     owner,
@@ -166,7 +204,7 @@ public abstract class DataSource {
                     rs.getString("trusted_players")
             );
         }
-        return new Vault(owner, id);
+        return create ? new Vault(owner, id) : null;
     }
 
     public List<SnapshotVault> mapSnapshotVaults(ResultSet rs, UUID owner) throws SQLException {

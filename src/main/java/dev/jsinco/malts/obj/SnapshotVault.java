@@ -2,9 +2,12 @@ package dev.jsinco.malts.obj;
 
 import com.google.common.collect.ImmutableList;
 import dev.jsinco.malts.configuration.ConfigManager;
+import dev.jsinco.malts.configuration.files.Config;
 import dev.jsinco.malts.configuration.files.GuiConfig;
+import dev.jsinco.malts.configuration.files.Lang;
 import dev.jsinco.malts.gui.EditVaultGui;
 import dev.jsinco.malts.gui.item.AbstractGuiItem;
+import dev.jsinco.malts.integration.EconomyIntegration;
 import dev.jsinco.malts.storage.DataSource;
 import dev.jsinco.malts.utility.Couple;
 import dev.jsinco.malts.utility.ItemStacks;
@@ -19,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 /**
  * A snapshot of a vault's data, used for displaying in GUIs without loading the full vault.
@@ -26,6 +30,7 @@ import java.util.concurrent.CompletableFuture;
 public class SnapshotVault implements AbstractGuiItem {
 
     private static final GuiConfig.YourVaultsGui.VaultItem cfg = ConfigManager.get(GuiConfig.class).yourVaultsGui().vaultItem();
+    private static final Lang lng = ConfigManager.get(Lang.class);
 
     @Getter
     private final UUID owner;
@@ -71,6 +76,11 @@ public class SnapshotVault implements AbstractGuiItem {
         return dataSource.getVault(owner, id);
     }
 
+    public void toVaultWithEconomy(Player player, Consumer<Vault> consumer) {
+        DataSource dataSource = DataSource.getInstance();
+        dataSource.getVaultWithEconomy(player, id, consumer);
+    }
+
     public boolean isTrusted(UUID uuid) {
         return trustedPlayers.contains(uuid);
     }
@@ -103,21 +113,27 @@ public class SnapshotVault implements AbstractGuiItem {
         return CompletableFuture.completedFuture(lazyVault);
     }
 
+    public void lazyVaultWithEconomy(Player player, Consumer<Vault> consumer) {
+        toVaultWithEconomy(player, consumer);
+    }
+
     @Override
     public void onClick(InventoryClickEvent event, ItemStack clickedItem) {
         if (!Util.hasPersistentKey(clickedItem, key())) {
             return;
         }
+
+        final boolean isLeftClick = event.isLeftClick();
         Player player = (Player) event.getWhoClicked();
-        if (event.isLeftClick()) {
-            // Open vault
-            lazyVault().thenAccept(vault -> vault.open(player));
-        } else if (event.isRightClick()) {
-            lazyVault().thenAccept(vault -> {
+
+        lazyVaultWithEconomy(player, vault -> {
+            if (isLeftClick) {
+                vault.open(player);
+            } else {
                 MaltsPlayer maltsPlayer = DataSource.getInstance().cachedObject(player.getUniqueId(), MaltsPlayer.class);
                 EditVaultGui editVaultGui = new EditVaultGui(vault, maltsPlayer, player);
                 editVaultGui.open(player);
-            });
-        }
+            }
+        });
     }
 }

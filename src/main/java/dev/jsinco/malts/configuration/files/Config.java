@@ -3,6 +3,7 @@ package dev.jsinco.malts.configuration.files;
 import dev.jsinco.malts.configuration.OkaeriFile;
 import dev.jsinco.malts.configuration.OkaeriFileName;
 import dev.jsinco.malts.enums.Driver;
+import dev.jsinco.malts.enums.EconomyProvider;
 import dev.jsinco.malts.enums.WarehouseMode;
 import eu.okaeri.configs.OkaeriConfig;
 import eu.okaeri.configs.annotation.Comment;
@@ -30,6 +31,7 @@ public class Config extends OkaeriFile {
 
     @Comment("What subcommand should the base command default to?")
     private String baseCommandBehavior = "vaults";
+
 
     @Comment("Toggles debug messages.")
     private boolean verboseLogging = false;
@@ -192,4 +194,36 @@ public class Config extends OkaeriFile {
         private int defaultMaxStock = 0;
     }
 
+    private Economy economy = new Economy();
+    @Getter
+    @Accessors(fluent = true)
+    public static class Economy extends OkaeriConfig {
+
+        @Comment({
+                "The economy provider to use for Malts transactions",
+                "",
+                "* Options: NONE, VAULT"
+        })
+        private EconomyProvider economyProvider = EconomyProvider.NONE;
+        private Vaults vaults = new Vaults();
+
+        @Getter
+        @Accessors(fluent = true)
+        public static class Vaults extends OkaeriConfig {
+            @Comment({
+                    "The amount of currency a player is charged",
+                    "to create a new vault. Bypass with 'malts.bypass.economy'",
+                    "* Requires 'economyProvider' to be set to a valid provider.",
+
+            })
+            private double creationFee = 0.0;
+
+            @Comment({
+                    "The amount of currency a player is charged",
+                    "to open a vault. Bypass with 'malts.bypass.economy'",
+                    "* Requires 'economyProvider' to be set to a valid provider.",
+            })
+            private double accessFee = 0.0;
+        }
+    }
 }

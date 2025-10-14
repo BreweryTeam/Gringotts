@@ -14,7 +14,7 @@ plugins {
 }
 
 group = "dev.jsinco.malts"
-version = "0.1-BETA"
+version = "0.2-BETA"
 
 repositories {
     mavenCentral()
@@ -25,6 +25,7 @@ repositories {
     maven("https://maven.enginehub.org/repo/")
     maven("https://repo.glaremasters.me/repository/towny/")
     maven("https://maven.playpro.com/")
+    maven("https://jitpack.io")
 }
 
 dependencies {
@@ -32,7 +33,7 @@ dependencies {
     compileOnly("org.projectlombok:lombok:1.18.30") // mavenCentral
     compileOnly("org.xerial:sqlite-jdbc:3.47.2.0") // mavenCentral
     compileOnly("com.drtshock.playervaults:PlayerVaultsX:4.4.7") // repo.jsinco.dev
-    compileOnly("org.popcraft:bolt-bukkit:1.1.33") { // repo.codemc.io
+    compileOnly("org.popcraft:bolt-bukkit:1.1.33") /* repo.codemc.io */ {
         artifact { classifier = "" }
     }
     compileOnly("com.griefcraft:lwc:2.2.9-dev") // repo.codemc.io
@@ -40,6 +41,9 @@ dependencies {
     compileOnly("com.sk89q.worldguard:worldguard-core:7.0.9-beta1") // maven.enginehub.org
     compileOnly("com.palmergames.bukkit.towny:towny:0.101.2.0") // repo.glaremasters.me
     compileOnly("net.coreprotect:coreprotect:23.0") // maven.playpro.com
+    compileOnly("com.github.MilkBowl:VaultAPI:1.7") /* jitpack.io */ {
+        exclude(group = "org.bukkit")
+    }
 
 
     implementation("com.zaxxer:HikariCP:6.3.0") // mavenCentral
@@ -93,7 +97,6 @@ tasks {
 
 modrinth {
     token.set(System.getenv("MODRINTH_TOKEN") ?: run {
-        println("Could not find any Modrinth token!")
         return@modrinth
     })
     projectId.set("15AC4wG1")
@@ -267,7 +270,7 @@ class DiscordWebhook(
 
             val responseCode = connection.responseCode
             println("POST Response Code :: $responseCode")
-            if (responseCode == HttpURLConnection.HTTP_OK) {
+            if (responseCode in 200..299) {
                 println("Message sent successfully.")
             } else {
                 println("Failed to send message.")

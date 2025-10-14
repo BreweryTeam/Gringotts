@@ -23,6 +23,7 @@ import dev.jsinco.malts.integration.Integration;
 import dev.jsinco.malts.integration.IntegrationCrafter;
 import dev.jsinco.malts.integration.external.LWCIntegration;
 import dev.jsinco.malts.integration.external.TownyIntegration;
+import dev.jsinco.malts.integration.external.VaultIntegration;
 import dev.jsinco.malts.integration.external.WorldGuardIntegration;
 import dev.jsinco.malts.integration.compiled.BStatsIntegration;
 
@@ -39,7 +40,7 @@ public class Registry<T extends RegistryItem> {
     public static final Registry<SubCommand> SUB_COMMANDS = fromClasses(VaultsCommand.class, WarehouseCommand.class, ImportCommand.class, VaultOtherCommand.class, WarehouseAdminCommand.class, MaxCommand.class, VaultAdminCommand.class, ReloadCommand.class, HelpCommand.class);
     public static final Registry<Importer> IMPORTERS = fromClasses(PlayerVaultsImporter.class);
     public static final Registry<OkaeriFile> CONFIGS = fromClassesWithCrafter(new ConfigManager(), Config.class, GuiConfig.class, Lang.class);
-    public static final Registry<Integration> INTEGRATIONS = fromClassesWithCrafter(new IntegrationCrafter(), BStatsIntegration.class, BoltIntegration.class, LWCIntegration.class, WorldGuardIntegration.class, TownyIntegration.class, CoreProtectIntegration.class);
+    public static final Registry<Integration> INTEGRATIONS = fromClassesWithCrafter(new IntegrationCrafter(), BStatsIntegration.class, BoltIntegration.class, LWCIntegration.class, WorldGuardIntegration.class, TownyIntegration.class, CoreProtectIntegration.class, VaultIntegration.class);
 
     private final Map<String, T> map;
 

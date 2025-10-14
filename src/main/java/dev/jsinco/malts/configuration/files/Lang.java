@@ -30,6 +30,7 @@ public class Lang extends OkaeriFile {
     private Warehouse warehouse = new Warehouse();
     private Vaults vaults = new Vaults();
     private Gui gui = new Gui();
+    private Economy economy = new Economy();
     private Command command = new Command();
 
     @Getter
@@ -124,6 +125,19 @@ public class Lang extends OkaeriFile {
             private String success;
             private String failed;
             private String newDatabaseDriverSet;
+        }
+    }
+
+    @Getter
+    @Accessors(fluent = true)
+    public static class Economy extends OkaeriConfig {
+        private Vaults vaults = new Vaults();
+
+        @Getter
+        @Accessors(fluent = true)
+        public static class Vaults extends OkaeriConfig {
+            private String created;
+            private String cannotAffordCreation;
         }
     }
 

@@ -5,7 +5,6 @@ api-version: 1.21
 author: Jsinco
 description: An open-source and free Vaults plugin that incorporates a warehouse for mass item storage.
 website: github.com/BreweryTeam/Malts
-softdepend: [Bolt, LWC, WorldGuard, Towny, CoreProtect]
 load: POSTWORLD
 commands:
   malts:
@@ -28,12 +27,14 @@ permissions:
     children:
       malts.command.*: true
       malts.mod: true
+      malts.bypass.*: true
   malts.mod:
     description: A permission node for Malts intended for staff members. Also allows a player to open a vault at the same time as another player.
     default: op
     children:
       malts.command.vaultadmin: true
       malts.command.warehouseadmin: true
+      malts.bypass.openvault: true
   malts.default:
     description: A permission node for Malts intended for players.
     default: true
@@ -55,3 +56,13 @@ permissions:
       malts.command.vaults: true
       malts.command.warehouseadmin: true
       malts.command.warehouse: true
+  malts.bypass.*:
+    children:
+      malts.bypass.openvault: true
+      malts.bypass.economy: true
+  malts.bypass.openvault:
+    description: Allows a player to bypass vault opening checks.
+    default: op
+  malts.bypass.economy:
+    description: Allows a player to bypass economy checks.
+    default: op

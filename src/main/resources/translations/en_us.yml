@@ -40,6 +40,12 @@ gui:
   viewExpired: This gui view has expired. (Object expired, try re-opening this GUI.)
   promptInputTimeOut: Your prompt input timed out.
 
+
+economy:
+  vaults:
+    created: You created a new vault for <aqua><b>${cost}</b></aqua>!
+    cannotAffordCreation: You cannot afford to create a new vault for <aqua><b>${cost}</b></aqua>.
+
 command:
   help: |
     
