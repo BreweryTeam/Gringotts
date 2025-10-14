@@ -138,6 +138,8 @@ public class Lang extends OkaeriFile {
         public static class Vaults extends OkaeriConfig {
             private String created;
             private String cannotAffordCreation;
+            private String accessed;
+            private String cannotAffordAccess;
         }
     }
 

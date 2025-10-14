@@ -45,6 +45,8 @@ economy:
   vaults:
     created: You created a new vault for <aqua><b>${cost}</b></aqua>!
     cannotAffordCreation: You cannot afford to create a new vault for <aqua><b>${cost}</b></aqua>.
+    accessed: You accessed a vault for <aqua><b>${cost}</b></aqua>!
+    cannotAffordAccess: You cannot afford to access a vault for <aqua><b>${cost}</b></aqua>.
 
 command:
   help: |

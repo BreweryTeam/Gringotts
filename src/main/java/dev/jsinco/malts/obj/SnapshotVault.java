@@ -23,6 +23,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import static dev.jsinco.malts.obj.Vault.BYPASS_OPEN_VAULT_PERM;
+import static dev.jsinco.malts.obj.Vault.LIST_UUID_TYPE_TOKEN;
 
 /**
  * A snapshot of a vault's data, used for displaying in GUIs without loading the full vault.
@@ -65,7 +66,7 @@ public class SnapshotVault implements AbstractGuiItem {
         this.customName = customName != null && !customName.isEmpty() ? customName : "Vault #" + id;
         this.icon = icon != null && icon.isItem() ? icon : Material.CHEST;
 
-        List<UUID> json = Util.GSON.fromJson(trustedPlayers, Vault.LIST_UUID_TYPE_TOKEN);
+        List<UUID> json = Util.GSON.fromJson(trustedPlayers, LIST_UUID_TYPE_TOKEN);
         this.trustedPlayers = json != null ? ImmutableList.copyOf(json) : ImmutableList.of();
     }
 

@@ -95,19 +95,22 @@ public abstract class DataSource {
 
         getVault(owner, id, false).thenAccept(vault -> {
             if (vault == null) {
-                if (econ == null) {
-                    vault = new Vault(owner, id);
-                } else if (econ.withdrawOrBypass(player, creationFee)) {
-                    vault = new Vault(owner, id);
-                    lang.entry(l -> l.economy().vaults().created(), player, Couple.of("{cost}", String.format("%,.2f", creationFee)));
-                } else {
+                if (econ != null && !econ.withdrawOrBypass(player, creationFee)) {
                     lang.entry(l -> l.economy().vaults().cannotAffordCreation(), player, Couple.of("{cost}", String.format("%,.2f", creationFee)));
                     return;
                 }
-            } else if (econ != null && !econ.withdrawOrBypass(player, accessFee)) {
-                lang.entry(l -> l.economy().vaults().cannotAffordCreation(), player, Couple.of("{cost}", String.format("%,.2f", accessFee)));
-                return;
+                vault = new Vault(owner, id);
+                if (econ != null) {
+                    lang.entry(l -> l.economy().vaults().created(), player, Couple.of("{cost}", String.format("%,.2f", creationFee)));
+                }
+            } else if (econ != null) {
+                if (!econ.withdrawOrBypass(player, accessFee)) {
+                    lang.entry(l -> l.economy().vaults().cannotAffordAccess(), player, Couple.of("{cost}", String.format("%,.2f", accessFee)));
+                    return;
+                }
+                lang.entry(l -> l.economy().vaults().accessed(), player, Couple.of("{cost}", String.format("%,.2f", accessFee)));
             }
+
             consumer.accept(vault);
         });
     }
