@@ -201,7 +201,6 @@ public class Config extends OkaeriFile {
 
         @Comment({
                 "The economy provider to use for Malts transactions",
-                "",
                 "* Options: NONE, VAULT"
         })
         private EconomyProvider economyProvider = EconomyProvider.NONE;

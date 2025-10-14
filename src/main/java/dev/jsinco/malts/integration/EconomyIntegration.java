@@ -5,6 +5,8 @@ import org.bukkit.entity.Player;
 
 public interface EconomyIntegration extends Integration {
 
+    String BYPASS_ECONOMY_PERMISSION = "malts.bypass.economy";
+
     /**
      * Attempts to withdraw the specified amount of currency from
      * the economy for the given player.
@@ -40,7 +42,7 @@ public interface EconomyIntegration extends Integration {
      * @return true if successful, false otherwise.
      */
     default boolean withdrawOrBypass(Player player, double amount) {
-        if (player.hasPermission("malts.bypass.economy")) {
+        if (player.hasPermission(BYPASS_ECONOMY_PERMISSION)) {
             return true;
         }
         return withdraw(player, amount);

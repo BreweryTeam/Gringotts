@@ -36,9 +36,12 @@ import java.util.UUID;
 @Setter
 public class Vault implements MaltsInventory {
 
+    public static final Type LIST_UUID_TYPE_TOKEN = new TypeToken<List<UUID>>(){}.getType();
+    public static String BYPASS_OPEN_VAULT_PERM = "malts.bypass.openvault";
+
     private static final Gson GSON = Util.GSON;
-    public static final Type TYPE_TOKEN = new TypeToken<List<UUID>>(){}.getType();
     private static final Config cfg = ConfigManager.get(Config.class);
+
 
     private final UUID owner;
     private final int id;
@@ -85,7 +88,7 @@ public class Vault implements MaltsInventory {
         this.customName = customName != null && !customName.isEmpty() ? customName : "Vault #" + id;
         this.icon = icon != null && icon.isItem() ? icon : cfg.vaults().defaultIcon();
 
-        List<UUID> json = GSON.fromJson(trustedPlayers, TYPE_TOKEN);
+        List<UUID> json = GSON.fromJson(trustedPlayers, LIST_UUID_TYPE_TOKEN);
         this.trustedPlayers = json != null ? json : new ArrayList<>();
 
         ItemStack[] items = null;
@@ -107,7 +110,7 @@ public class Vault implements MaltsInventory {
     }
 
     public String encodeTrusted() {
-        return GSON.toJson(trustedPlayers, TYPE_TOKEN);
+        return GSON.toJson(trustedPlayers, LIST_UUID_TYPE_TOKEN);
     }
 
     public void open(Player player) {
@@ -131,7 +134,7 @@ public class Vault implements MaltsInventory {
 
             player.openInventory(this.inventory);
 
-            if (updatedState == VaultOpenState.OPEN_BY_MOD && updatedOtherPlayer.getOpenInventory().getTopInventory().getHolder(false) instanceof Vault otherVault) {
+            if (updatedState == VaultOpenState.BYPASSED && updatedOtherPlayer.getOpenInventory().getTopInventory().getHolder(false) instanceof Vault otherVault) {
                 otherVault.update(updatedOtherPlayer);
             }
         });
@@ -140,8 +143,8 @@ public class Vault implements MaltsInventory {
     public Couple<@NotNull VaultOpenState, @Nullable Player> getOpenState() {
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (this.equals(player.getOpenInventory().getTopInventory().getHolder(false))) {
-                if (player.hasPermission("malts.mod")) {
-                    return Couple.of(VaultOpenState.OPEN_BY_MOD, player);
+                if (player.hasPermission(BYPASS_OPEN_VAULT_PERM)) {
+                    return Couple.of(VaultOpenState.BYPASSED, player);
                 }
                 return Couple.of(VaultOpenState.OPEN, player);
             }
@@ -163,7 +166,7 @@ public class Vault implements MaltsInventory {
     }
 
     public boolean canAccess(Player player) {
-        return player.getUniqueId() == this.owner || this.trustedPlayers.contains(player.getUniqueId()) || player.hasPermission("malts.mod");
+        return player.getUniqueId() == this.owner || this.trustedPlayers.contains(player.getUniqueId()) || player.hasPermission(BYPASS_OPEN_VAULT_PERM);
     }
 
     public boolean isTrusted(UUID uuid) {
@@ -229,7 +232,7 @@ public class Vault implements MaltsInventory {
 
     public enum VaultOpenState {
         OPEN,
-        OPEN_BY_MOD,
+        BYPASSED,
         CLOSED;
     }
 }

@@ -2,12 +2,10 @@ package dev.jsinco.malts.obj;
 
 import com.google.common.collect.ImmutableList;
 import dev.jsinco.malts.configuration.ConfigManager;
-import dev.jsinco.malts.configuration.files.Config;
 import dev.jsinco.malts.configuration.files.GuiConfig;
 import dev.jsinco.malts.configuration.files.Lang;
 import dev.jsinco.malts.gui.EditVaultGui;
 import dev.jsinco.malts.gui.item.AbstractGuiItem;
-import dev.jsinco.malts.integration.EconomyIntegration;
 import dev.jsinco.malts.storage.DataSource;
 import dev.jsinco.malts.utility.Couple;
 import dev.jsinco.malts.utility.ItemStacks;
@@ -24,13 +22,14 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
+import static dev.jsinco.malts.obj.Vault.BYPASS_OPEN_VAULT_PERM;
+
 /**
  * A snapshot of a vault's data, used for displaying in GUIs without loading the full vault.
  */
 public class SnapshotVault implements AbstractGuiItem {
 
     private static final GuiConfig.YourVaultsGui.VaultItem cfg = ConfigManager.get(GuiConfig.class).yourVaultsGui().vaultItem();
-    private static final Lang lng = ConfigManager.get(Lang.class);
 
     @Getter
     private final UUID owner;
@@ -66,7 +65,7 @@ public class SnapshotVault implements AbstractGuiItem {
         this.customName = customName != null && !customName.isEmpty() ? customName : "Vault #" + id;
         this.icon = icon != null && icon.isItem() ? icon : Material.CHEST;
 
-        List<UUID> json = Util.GSON.fromJson(trustedPlayers, Vault.TYPE_TOKEN);
+        List<UUID> json = Util.GSON.fromJson(trustedPlayers, Vault.LIST_UUID_TYPE_TOKEN);
         this.trustedPlayers = json != null ? ImmutableList.copyOf(json) : ImmutableList.of();
     }
 
@@ -86,7 +85,7 @@ public class SnapshotVault implements AbstractGuiItem {
     }
 
     public boolean canAccess(Player player) {
-        return player.getUniqueId() == this.owner || this.trustedPlayers.contains(player.getUniqueId()) || player.hasPermission("malts.mod");
+        return player.getUniqueId() == this.owner || this.trustedPlayers.contains(player.getUniqueId()) || player.hasPermission(BYPASS_OPEN_VAULT_PERM);
     }
 
     @SuppressWarnings("unchecked")
