@@ -13,6 +13,7 @@ import java.util.UUID;
  * If the player cannot add the player to their trust list (because trust list is at cap),
  * this event will be called in a cancelled state
  */
+@Deprecated
 public class VaultTrustPlayerEvent extends VaultEvent {
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
@@ -65,6 +66,11 @@ public class VaultTrustPlayerEvent extends VaultEvent {
 
     @Override
     public @NotNull HandlerList getHandlers() {
+        return HANDLER_LIST;
+    }
+
+    @NotNull
+    public static HandlerList getHandlerList() {
         return HANDLER_LIST;
     }
 }

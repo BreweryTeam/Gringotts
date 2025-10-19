@@ -4,8 +4,6 @@ import com.google.common.base.Preconditions;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import dev.jsinco.malts.Malts;
-import dev.jsinco.malts.api.events.CachedObjectEvent;
-import dev.jsinco.malts.api.events.interfaces.EventAction;
 import dev.jsinco.malts.configuration.ConfigManager;
 import dev.jsinco.malts.configuration.files.Config;
 import dev.jsinco.malts.configuration.files.Lang;
@@ -134,7 +132,7 @@ public abstract class DataSource {
 
                 if (cachedObject.isExpired()) {
                     cachedObjects.remove(cachedObject);
-                    new CachedObjectEvent(this, cachedObject, EventAction.REMOVE).callEvent();
+                    //new CachedObjectEvent(this, cachedObject, EventAction.REMOVE).callEvent();
                     Text.debug("Uncached " + cachedObject.getClass().getSimpleName() + ": " + cachedObject.getUuid() + " because it was expired");
                 }
             }
@@ -168,7 +166,7 @@ public abstract class DataSource {
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }
 
-    public CompletableFuture<Void> closeAsync() {
+    public CompletableFuture<Void> close() {
         // Wait for all saves to complete, then close hikari
         return clearCache()
                 .exceptionally(ex -> {
@@ -306,7 +304,7 @@ public abstract class DataSource {
             obj.setExpire(expireTime);
             synchronized (cachedObjects) {
                 cachedObjects.add(obj);
-                new CachedObjectEvent(this, obj, EventAction.ADD).callEvent();
+                //new CachedObjectEvent(this, obj, EventAction.ADD).callEvent();
             }
 
             String expireMsg = expireTime != null ? " until " + expireTime : "";
@@ -322,7 +320,7 @@ public abstract class DataSource {
             Text.debug("Uncaching " + cachedObject.getClass().getSimpleName() + ": " + cachedObject.getUuid());
             cachedObject.save(this);
             cachedObjects.remove(cachedObject);
-            new CachedObjectEvent(this, cachedObject, EventAction.REMOVE).callEvent();
+            //new CachedObjectEvent(this, cachedObject, EventAction.REMOVE).callEvent();
         }
     }
 

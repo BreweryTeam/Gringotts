@@ -59,6 +59,6 @@ public final class Malts extends JavaPlugin {
             }
         }
 
-        dataSource.closeAsync();
+        dataSource.close();
     }
 }

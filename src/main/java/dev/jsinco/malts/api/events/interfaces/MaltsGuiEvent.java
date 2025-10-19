@@ -1,20 +1,23 @@
 package dev.jsinco.malts.api.events.interfaces;
 
+import dev.jsinco.malts.api.events.MaltsEvent;
 import dev.jsinco.malts.gui.MaltsGui;
+import org.bukkit.Bukkit;
 import org.bukkit.event.Cancellable;
-import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Base event for all Malts gui-related events
  */
-public abstract class MaltsGuiEvent extends Event implements Cancellable {
+@Deprecated
+public abstract class MaltsGuiEvent extends MaltsEvent implements Cancellable {
 
     private final MaltsGui gui;
 
     private boolean cancelled;
 
     public MaltsGuiEvent(@NotNull MaltsGui gui) {
+        super(!Bukkit.isPrimaryThread());
         this.gui = gui;
     }
 

@@ -133,6 +133,11 @@ public class SnapshotVault implements AbstractGuiItem {
                 MaltsPlayer maltsPlayer = DataSource.getInstance().cachedObject(player.getUniqueId(), MaltsPlayer.class);
                 EditVaultGui editVaultGui = new EditVaultGui(vault, maltsPlayer, player);
                 editVaultGui.open(player);
+                try {
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
     }

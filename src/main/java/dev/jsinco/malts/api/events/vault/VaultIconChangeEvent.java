@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Called when a vault's icon is changed
  */
+@Deprecated
 public class VaultIconChangeEvent extends VaultEvent {
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
@@ -38,6 +39,11 @@ public class VaultIconChangeEvent extends VaultEvent {
 
     @Override
     public @NotNull HandlerList getHandlers() {
+        return HANDLER_LIST;
+    }
+
+    @NotNull
+    public static HandlerList getHandlerList() {
         return HANDLER_LIST;
     }
 }

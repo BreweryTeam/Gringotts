@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
  * If the player cannot open the vault (because another player that does not have the permission 'malts.mod' is viewing the vault already),
  * the event will be called in a cancelled state.
  */
+@Deprecated
 public class VaultOpenEvent extends VaultEvent {
 
     private static final HandlerList HANDLER_LIST = new HandlerList();
@@ -59,6 +60,11 @@ public class VaultOpenEvent extends VaultEvent {
 
     @Override
     public @NotNull HandlerList getHandlers() {
+        return HANDLER_LIST;
+    }
+
+    @NotNull
+    public static HandlerList getHandlerList() {
         return HANDLER_LIST;
     }
 

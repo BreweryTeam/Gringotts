@@ -45,11 +45,11 @@ public class VaultListener implements Listener {
         if (!(event.getInventory().getHolder(false) instanceof Vault vault)) {
             return;
         }
-        VaultClickEvent vaultClickEvent = new VaultClickEvent(vault, event);
-        if (!vaultClickEvent.callEvent()) {
-            event.setCancelled(true);
-            return;
-        }
+//        VaultClickEvent vaultClickEvent = new VaultClickEvent(vault, event);
+//        if (!vaultClickEvent.callEvent()) {
+//            event.setCancelled(true);
+//            return;
+//        }
 
         Player player = (Player) event.getWhoClicked();
         Config.QuickReturn quickReturn = ConfigManager.get(Config.class).quickReturn();

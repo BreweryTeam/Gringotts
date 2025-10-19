@@ -1,6 +1,8 @@
 package dev.jsinco.malts.api.events.interfaces;
 
+import dev.jsinco.malts.api.events.MaltsEvent;
 import dev.jsinco.malts.obj.Warehouse;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
@@ -9,7 +11,8 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Base event for all warehouse-related events
  */
-public abstract class WarehouseEvent extends Event implements Cancellable {
+@Deprecated
+public abstract class WarehouseEvent extends MaltsEvent implements Cancellable {
 
     private final Warehouse warehouse;
     private Material material;
@@ -17,6 +20,7 @@ public abstract class WarehouseEvent extends Event implements Cancellable {
     private boolean cancelled;
 
     public WarehouseEvent(@NotNull Warehouse warehouse, @NotNull Material material) {
+        super(!Bukkit.isPrimaryThread());
         this.warehouse = warehouse;
         this.material = material;
     }

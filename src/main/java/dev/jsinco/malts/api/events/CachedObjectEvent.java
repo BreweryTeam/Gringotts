@@ -3,14 +3,15 @@ package dev.jsinco.malts.api.events;
 import dev.jsinco.malts.api.events.interfaces.EventAction;
 import dev.jsinco.malts.obj.CachedObject;
 import dev.jsinco.malts.storage.DataSource;
-import org.bukkit.event.Event;
+import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Called when an object is cached to or removed from a data source's cache
  */
-public class CachedObjectEvent extends Event {
+@Deprecated
+public class CachedObjectEvent extends MaltsEvent {
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
     private final DataSource dataSource;
@@ -18,6 +19,7 @@ public class CachedObjectEvent extends Event {
     private final EventAction action;
 
     public CachedObjectEvent(@NotNull DataSource dataSource, @NotNull CachedObject object, @NotNull EventAction action) {
+        super(!Bukkit.isPrimaryThread());
         this.dataSource = dataSource;
         this.object = object;
         this.action = action;
@@ -53,6 +55,11 @@ public class CachedObjectEvent extends Event {
 
     @Override
     public @NotNull HandlerList getHandlers() {
+        return HANDLER_LIST;
+    }
+
+    @NotNull
+    public static HandlerList getHandlerList() {
         return HANDLER_LIST;
     }
 }

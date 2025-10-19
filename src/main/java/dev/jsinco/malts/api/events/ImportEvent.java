@@ -1,6 +1,7 @@
 package dev.jsinco.malts.api.events;
 
 import dev.jsinco.malts.importers.Importer;
+import org.bukkit.Bukkit;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
@@ -10,7 +11,8 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Called when Malts attempts to start importing data from another plugin
  */
-public class ImportEvent extends Event implements Cancellable {
+@Deprecated
+public class ImportEvent extends MaltsEvent implements Cancellable {
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
     private Importer importer;
@@ -18,6 +20,7 @@ public class ImportEvent extends Event implements Cancellable {
     private boolean cancelled;
 
     public ImportEvent(Importer importer) {
+        super(!Bukkit.isPrimaryThread());
         this.importer = importer;
     }
 
@@ -52,4 +55,10 @@ public class ImportEvent extends Event implements Cancellable {
     public @NotNull HandlerList getHandlers() {
         return HANDLER_LIST;
     }
+
+    @NotNull
+    public static HandlerList getHandlerList() {
+        return HANDLER_LIST;
+    }
+
 }

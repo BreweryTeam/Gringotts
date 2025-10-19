@@ -97,7 +97,6 @@ public enum WarehouseMode {
             int amt = item.getAmount();
             inv.addItem(item);
             CoreProtectIntegration coreProtectIntegration = Registry.INTEGRATIONS.get(CoreProtectIntegration.class);
-            System.out.println(coreProtectIntegration);
             if (coreProtectIntegration != null) {
                 coreProtectIntegration.logContainer(player, container);
             }

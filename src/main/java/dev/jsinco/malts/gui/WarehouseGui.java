@@ -249,7 +249,7 @@ public class WarehouseGui extends MaltsGui {
 
     @Override
     public void openImpl(Player player) {
-        Executors.sync(() -> player.openInventory(this.paginatedGui.getPage(0)));
+        player.openInventory(this.paginatedGui.getPage(0));
     }
 
     private void refresh(Player player) {

@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
  * Called when material is destocked from a warehouse
  */
 @SuppressWarnings({"LombokSetterMayBeUsed", "LombokGetterMayBeUsed"})
+@Deprecated
 public class WarehouseDestockEvent extends WarehouseEvent {
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
@@ -36,8 +37,14 @@ public class WarehouseDestockEvent extends WarehouseEvent {
         this.amount = amount;
     }
 
+
     @Override
     public @NotNull HandlerList getHandlers() {
+        return HANDLER_LIST;
+    }
+
+    @NotNull
+    public static HandlerList getHandlerList() {
         return HANDLER_LIST;
     }
 }

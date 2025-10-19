@@ -1,20 +1,23 @@
 package dev.jsinco.malts.api.events.interfaces;
 
+import dev.jsinco.malts.api.events.MaltsEvent;
 import dev.jsinco.malts.obj.Vault;
+import org.bukkit.Bukkit;
 import org.bukkit.event.Cancellable;
-import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Base event for all vault-related events
  */
-public abstract class VaultEvent extends Event implements Cancellable {
+@Deprecated
+public abstract class VaultEvent extends MaltsEvent implements Cancellable {
 
     private final Vault vault;
 
     private boolean cancelled;
 
     public VaultEvent(@NotNull Vault vault) {
+        super(!Bukkit.isPrimaryThread());
         this.vault = vault;
     }
 

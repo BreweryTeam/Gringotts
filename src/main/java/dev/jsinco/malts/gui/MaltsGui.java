@@ -4,6 +4,7 @@ import dev.jsinco.malts.api.events.gui.MaltsGuiOpenEvent;
 import dev.jsinco.malts.obj.MaltsInventory;
 import dev.jsinco.malts.gui.item.AbstractGuiItem;
 import dev.jsinco.malts.gui.item.IgnoreAutoRegister;
+import dev.jsinco.malts.utility.Executors;
 import dev.jsinco.malts.utility.Text;
 import lombok.Getter;
 import org.bukkit.Bukkit;
@@ -33,10 +34,13 @@ public abstract class MaltsGui implements MaltsInventory {
 
 
     public void open(Player player) {
-        MaltsGuiOpenEvent event = new MaltsGuiOpenEvent(this, player);
-        if (event.callEvent()) {
-            this.openImpl(event.getPlayer());
-        }
+        Executors.sync(() -> {
+            //MaltsGuiOpenEvent event = new MaltsGuiOpenEvent(this, player);
+//            if (event.callEvent()) {
+//                this.openImpl(event.getPlayer());
+//            }
+            this.openImpl(player);
+        });
     }
 
 

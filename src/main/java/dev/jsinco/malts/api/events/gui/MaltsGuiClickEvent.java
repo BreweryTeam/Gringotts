@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
  * Called when a player clicks in a Malts GUI inventory.
  * Wrapper for InventoryClickEvent.
  */
+@Deprecated
 public class MaltsGuiClickEvent extends MaltsGuiEvent {
     private static final HandlerList HANDLER_LIST = new HandlerList();
 

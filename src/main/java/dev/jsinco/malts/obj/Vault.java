@@ -116,16 +116,18 @@ public class Vault implements MaltsInventory {
     public void open(Player player) {
         Couple<VaultOpenState, Player> couple = this.getOpenState();
         Executors.runSync(() -> {
-            VaultOpenEvent event = new VaultOpenEvent(this, player, couple);
-            event.setCancelled(couple.a() == VaultOpenState.OPEN);
-            event.callEvent();
+            //VaultOpenEvent event = new VaultOpenEvent(this, player, couple);
+            //event.setCancelled();
+            //event.callEvent();
 
-            Couple<VaultOpenState, Player> updatedCouple = event.getOpenState();
-            VaultOpenState updatedState = updatedCouple.a();
-            Player updatedOtherPlayer = updatedCouple.b();
+//            Couple<VaultOpenState, Player> updatedCouple = event.getOpenState();
+//            VaultOpenState updatedState = updatedCouple.a();
+//            Player updatedOtherPlayer = updatedCouple.b();
+            VaultOpenState state = couple.a();
+            Player otherPlayer = couple.b();
 
-            if (event.isCancelled()) {
-                if (updatedState == VaultOpenState.OPEN) {
+            if (couple.a() == VaultOpenState.OPEN) {
+                if (state == VaultOpenState.OPEN) {
                     ConfigManager.get(Lang.class).entry(l -> l.vaults().alreadyOpen(), player);
                 }
                 return;
@@ -134,8 +136,8 @@ public class Vault implements MaltsInventory {
 
             player.openInventory(this.inventory);
 
-            if (updatedState == VaultOpenState.BYPASSED && updatedOtherPlayer.getOpenInventory().getTopInventory().getHolder(false) instanceof Vault otherVault) {
-                otherVault.update(updatedOtherPlayer);
+            if (state == VaultOpenState.BYPASSED && otherPlayer.getOpenInventory().getTopInventory().getHolder(false) instanceof Vault otherVault) {
+                otherVault.update(otherPlayer);
             }
         });
     }
@@ -175,41 +177,44 @@ public class Vault implements MaltsInventory {
 
     public boolean addTrusted(UUID uuid) {
         int cap = cfg.vaults().trustCap();
-        VaultTrustPlayerEvent event = new VaultTrustPlayerEvent(this, EventAction.ADD, uuid);
-        event.setCancelled(trustedPlayers.size() >= cap);
-        event.callEvent();
+        //VaultTrustPlayerEvent event = new VaultTrustPlayerEvent(this, EventAction.ADD, uuid);
+        //event.setCancelled();
+        //event.callEvent();
 
-        if (event.isCancelled()) {
+        if (trustedPlayers.size() >= cap) {
             return false;
         }
-        trustedPlayers.add(event.getTrustedUUID());
+        trustedPlayers.add(uuid);
         return true;
     }
 
     public boolean removeTrusted(UUID uuid) {
         if (!trustedPlayers.contains(uuid)) return false;
-        VaultTrustPlayerEvent event = new VaultTrustPlayerEvent(this, EventAction.REMOVE, uuid);
-        if (event.callEvent()) return false;
+        //VaultTrustPlayerEvent event = new VaultTrustPlayerEvent(this, EventAction.REMOVE, uuid);
+        //if (event.callEvent()) return false;
 
-        trustedPlayers.remove(event.getTrustedUUID());
+        trustedPlayers.remove(uuid);
         return true;
     }
 
     public boolean setCustomName(@NotNull String customName) {
         int maxLength = cfg.vaults().maxNameCharacters();
-        VaultNameChangeEvent event = new VaultNameChangeEvent(this, customName);
-        event.setCancelled(customName.length() > maxLength);
-        if (event.callEvent()) return false;
+//        VaultNameChangeEvent event = new VaultNameChangeEvent(this, customName);
+//        event.setCancelled(customName.length() > maxLength);
+//        if (event.callEvent()) return false;
+        if (customName.length() > maxLength) {
+            return false;
+        }
 
         this.customName = customName;
         return true;
     }
 
     public boolean setIcon(@NotNull Material icon) {
-        VaultIconChangeEvent event = new VaultIconChangeEvent(this, icon);
-        if (!event.callEvent()) return false;
+//        VaultIconChangeEvent event = new VaultIconChangeEvent(this, icon);
+//        if (!event.callEvent()) return false;
 
-        this.icon = event.getNewIcon();
+        this.icon = icon;
         return true;
     }
 

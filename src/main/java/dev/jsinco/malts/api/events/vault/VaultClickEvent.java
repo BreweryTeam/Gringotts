@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
  * Called when a player clicks in a vault inventory.
  * Wrapper for InventoryClickEvent.
  */
+@Deprecated
 public class VaultClickEvent extends VaultEvent {
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
@@ -31,6 +32,11 @@ public class VaultClickEvent extends VaultEvent {
 
     @Override
     public @NotNull HandlerList getHandlers() {
+        return HANDLER_LIST;
+    }
+
+    @NotNull
+    public static HandlerList getHandlerList() {
         return HANDLER_LIST;
     }
 }

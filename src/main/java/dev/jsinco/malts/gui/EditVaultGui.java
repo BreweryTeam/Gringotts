@@ -211,7 +211,7 @@ public class EditVaultGui extends MaltsGui {
 
     @Override
     public void openImpl(Player player) {
-        Executors.sync(() -> player.openInventory(this.getInventory()));
+        player.openInventory(this.getInventory());
     }
 
     private String trustListCap() {

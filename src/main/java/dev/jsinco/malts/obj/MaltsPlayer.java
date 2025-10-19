@@ -96,6 +96,11 @@ public class MaltsPlayer implements CachedObject {
     }
 
     @Override
+    public boolean isExpired() {
+        return CachedObject.super.isExpired() && getPlayer() == null;
+    }
+
+    @Override
     public String toString() {
         return "MaltsPlayer{" +
                 "uuid=" + uuid +

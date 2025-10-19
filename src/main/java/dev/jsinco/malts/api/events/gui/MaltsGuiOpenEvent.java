@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Called when a player opens a Malts gui
  */
+@Deprecated
 public class MaltsGuiOpenEvent extends MaltsGuiEvent {
     private static final HandlerList HANDLER_LIST = new HandlerList();
 

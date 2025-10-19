@@ -18,6 +18,7 @@ import dev.jsinco.malts.utility.Util;
 import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -79,21 +80,20 @@ public class Warehouse implements CachedObject {
             amt = maxWarehouseStock - currentStockQuantity;
         }
 
-        WarehouseStockEvent stockEvent = new WarehouseStockEvent(this, material, amt);
-        if (!stockEvent.callEvent()) return 0;
-
-        material = stockEvent.getMaterial();
-        amt = stockEvent.getAmount();
+        //WarehouseStockEvent stockEvent = new WarehouseStockEvent(this, material, amt);
+        //if (!stockEvent.callEvent()) return 0;
+       // material = stockEvent.getMaterial();
+        //amt = stockEvent.getAmount();
 
 
         Stock stock = warehouseMap.get(material);
         if (stock != null) {
             stock.increase(amt);
         } else {
-            WarehouseCompartmentEvent compartmentEvent = new WarehouseCompartmentEvent(this, EventAction.ADD, material);
-            if (!compartmentEvent.callEvent()) return 0;
+            //WarehouseCompartmentEvent compartmentEvent = new WarehouseCompartmentEvent(this, EventAction.ADD, material);
+            //if (!compartmentEvent.callEvent()) return 0;
 
-            material = compartmentEvent.getMaterial();
+            //material = compartmentEvent.getMaterial();
             warehouseMap.put(material, new Stock(material, amt));
         }
 
@@ -105,13 +105,14 @@ public class Warehouse implements CachedObject {
         Stock stock = warehouseMap.get(material);
         if (stock == null) return null;
 
-        WarehouseDestockEvent event = new WarehouseDestockEvent(this, material, stock.getAmount());
-        event.setCancelled(stock.getAmount() < 1);
+        //WarehouseDestockEvent event = new WarehouseDestockEvent(this, material, stock.getAmount());
+        //event.setCancelled(stock.getAmount() < 1);
 
-        if (!event.callEvent()) {
-            return null;
-        } else if (event.getAmount() < amt) {
-            amt = event.getAmount();
+//        if (!event.callEvent()) {
+//            return null;
+//        } else
+        if (stock.getAmount() < amt) {
+            amt = stock.getAmount();
         }
 
         if (amt < 1) {
@@ -153,10 +154,10 @@ public class Warehouse implements CachedObject {
         Stock stock = warehouseMap.get(material);
         if (stock == null) return TriState.ALTERNATIVE_STATE;
 
-        WarehouseCompartmentEvent event = new WarehouseCompartmentEvent(this, EventAction.REMOVE, material);
-        event.setCancelled(stock.getAmount() > 0);
+        //WarehouseCompartmentEvent event = new WarehouseCompartmentEvent(this, EventAction.REMOVE, material);
+        //event.setCancelled();
 
-        if (event.callEvent()) {
+        if (stock.getAmount() > 0) {
             warehouseMap.remove(material);
             return TriState.TRUE;
         }
@@ -186,6 +187,10 @@ public class Warehouse implements CachedObject {
         return dataSource.saveWarehouse(this);
     }
 
+    @Override
+    public boolean isExpired() {
+        return CachedObject.super.isExpired() && Bukkit.getPlayer(owner) == null;
+    }
 
     public List<GuiItem> stockAsGuiItems(int truncate) {
         List<GuiItem> items = new ArrayList<>();

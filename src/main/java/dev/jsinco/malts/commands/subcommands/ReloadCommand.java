@@ -29,7 +29,7 @@ public class ReloadCommand implements SubCommand {
             Driver setDriver = storage.driver();
             DataSource dataSource = DataSource.getInstance();
             if (setDriver.getIdentifyingClass() != dataSource.getClass()) {
-                dataSource.closeAsync().whenComplete((unused, throwable) -> {
+                dataSource.close().whenComplete((unused, throwable) -> {
                     DataSource.createInstance(storage);
                     lng.entry(l -> l.command().reload().newDatabaseDriverSet(), sender, Couple.of("{driver}", setDriver.toString()));
                 });

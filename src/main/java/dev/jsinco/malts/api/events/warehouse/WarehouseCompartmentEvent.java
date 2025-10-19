@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Called when a compartment is added or removed from a warehouse
  */
+@Deprecated
 public class WarehouseCompartmentEvent extends WarehouseEvent {
 
     private static final HandlerList HANDLER_LIST = new HandlerList();
@@ -33,6 +34,11 @@ public class WarehouseCompartmentEvent extends WarehouseEvent {
 
     @Override
     public @NotNull HandlerList getHandlers() {
+        return HANDLER_LIST;
+    }
+
+    @NotNull
+    public static HandlerList getHandlerList() {
         return HANDLER_LIST;
     }
 }

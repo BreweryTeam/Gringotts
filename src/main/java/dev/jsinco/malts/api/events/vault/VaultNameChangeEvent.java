@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Called when a vault's name is changed
  */
+@Deprecated
 public class VaultNameChangeEvent extends VaultEvent {
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
@@ -37,6 +38,11 @@ public class VaultNameChangeEvent extends VaultEvent {
 
     @Override
     public @NotNull HandlerList getHandlers() {
+        return HANDLER_LIST;
+    }
+
+    @NotNull
+    public static HandlerList getHandlerList() {
         return HANDLER_LIST;
     }
 }
