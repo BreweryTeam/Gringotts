@@ -10,14 +10,13 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Called when a player opens a Malts gui
  */
-@Deprecated
 public class MaltsGuiOpenEvent extends MaltsGuiEvent {
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
     private Player player;
 
-    public MaltsGuiOpenEvent(@NotNull MaltsGui gui, @NotNull Player player) {
-        super(gui);
+    public MaltsGuiOpenEvent(@NotNull MaltsGui gui, @NotNull Player player, boolean async) {
+        super(gui, async);
         this.player = player;
     }
 

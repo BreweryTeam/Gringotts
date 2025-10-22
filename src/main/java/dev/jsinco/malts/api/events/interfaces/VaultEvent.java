@@ -9,15 +9,14 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Base event for all vault-related events
  */
-@Deprecated
 public abstract class VaultEvent extends MaltsEvent implements Cancellable {
 
     private final Vault vault;
 
     private boolean cancelled;
 
-    public VaultEvent(@NotNull Vault vault) {
-        super(!Bukkit.isPrimaryThread());
+    public VaultEvent(@NotNull Vault vault, boolean async) {
+        super(async);
         this.vault = vault;
     }
 

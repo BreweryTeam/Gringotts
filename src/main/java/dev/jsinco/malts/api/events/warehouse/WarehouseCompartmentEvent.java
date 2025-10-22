@@ -7,10 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Called when a compartment is added or removed from a warehouse
- */
-@Deprecated
+
 public class WarehouseCompartmentEvent extends WarehouseEvent {
 
     private static final HandlerList HANDLER_LIST = new HandlerList();
@@ -18,8 +15,8 @@ public class WarehouseCompartmentEvent extends WarehouseEvent {
     private final EventAction action;
 
 
-    public WarehouseCompartmentEvent(Warehouse warehouse, EventAction action, Material material) {
-        super(warehouse, material);
+    public WarehouseCompartmentEvent(Warehouse warehouse, EventAction action, Material material, boolean async) {
+        super(warehouse, material, async);
         this.action = action;
     }
 

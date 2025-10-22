@@ -73,6 +73,7 @@ public class Warehouse implements CachedObject {
         Preconditions.checkNotNull(maltsPlayer, "MaltsPlayer is null for owner: " + owner);
         int currentStockQuantity = currentStockQuantity();
         int maxWarehouseStock = maltsPlayer.getCalculatedMaxWarehouseStock();
+        boolean async = !Bukkit.isPrimaryThread();
 
         if (!material.isItem()) {
             throw new IllegalArgumentException("Material must be an item");
@@ -80,20 +81,20 @@ public class Warehouse implements CachedObject {
             amt = maxWarehouseStock - currentStockQuantity;
         }
 
-        //WarehouseStockEvent stockEvent = new WarehouseStockEvent(this, material, amt);
-        //if (!stockEvent.callEvent()) return 0;
-       // material = stockEvent.getMaterial();
-        //amt = stockEvent.getAmount();
+        WarehouseStockEvent stockEvent = new WarehouseStockEvent(this, material, amt, async);
+        if (!stockEvent.callEvent()) return 0;
+        material = stockEvent.getMaterial();
+        amt = stockEvent.getAmount();
 
 
         Stock stock = warehouseMap.get(material);
         if (stock != null) {
             stock.increase(amt);
         } else {
-            //WarehouseCompartmentEvent compartmentEvent = new WarehouseCompartmentEvent(this, EventAction.ADD, material);
-            //if (!compartmentEvent.callEvent()) return 0;
+            WarehouseCompartmentEvent compartmentEvent = new WarehouseCompartmentEvent(this, EventAction.ADD, material, async);
+            if (!compartmentEvent.callEvent()) return 0;
 
-            //material = compartmentEvent.getMaterial();
+            material = compartmentEvent.getMaterial();
             warehouseMap.put(material, new Stock(material, amt));
         }
 
@@ -105,14 +106,13 @@ public class Warehouse implements CachedObject {
         Stock stock = warehouseMap.get(material);
         if (stock == null) return null;
 
-        //WarehouseDestockEvent event = new WarehouseDestockEvent(this, material, stock.getAmount());
-        //event.setCancelled(stock.getAmount() < 1);
+        WarehouseDestockEvent event = new WarehouseDestockEvent(this, material, stock.getAmount(), !Bukkit.isPrimaryThread());
+        event.setCancelled(stock.getAmount() < 1);
 
-//        if (!event.callEvent()) {
-//            return null;
-//        } else
-        if (stock.getAmount() < amt) {
-            amt = stock.getAmount();
+        if (!event.callEvent()) {
+            return null;
+        } else if (event.getAmount() < amt) {
+            amt = event.getAmount();
         }
 
         if (amt < 1) {
@@ -154,10 +154,10 @@ public class Warehouse implements CachedObject {
         Stock stock = warehouseMap.get(material);
         if (stock == null) return TriState.ALTERNATIVE_STATE;
 
-        //WarehouseCompartmentEvent event = new WarehouseCompartmentEvent(this, EventAction.REMOVE, material);
-        //event.setCancelled();
+        WarehouseCompartmentEvent event = new WarehouseCompartmentEvent(this, EventAction.REMOVE, material, !Bukkit.isPrimaryThread());
+        event.setCancelled(stock.getAmount() > 0);
 
-        if (stock.getAmount() > 0) {
+        if (!event.callEvent()) {
             warehouseMap.remove(material);
             return TriState.TRUE;
         }

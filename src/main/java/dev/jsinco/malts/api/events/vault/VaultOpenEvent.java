@@ -13,7 +13,6 @@ import org.jetbrains.annotations.Nullable;
  * If the player cannot open the vault (because another player that does not have the permission 'malts.mod' is viewing the vault already),
  * the event will be called in a cancelled state.
  */
-@Deprecated
 public class VaultOpenEvent extends VaultEvent {
 
     private static final HandlerList HANDLER_LIST = new HandlerList();
@@ -23,8 +22,8 @@ public class VaultOpenEvent extends VaultEvent {
 
     private boolean cancelled;
 
-    public VaultOpenEvent(@NotNull Vault vault, @NotNull Player viewer, @NotNull Couple<Vault.@NotNull VaultOpenState, @Nullable Player> state) {
-        super(vault);
+    public VaultOpenEvent(@NotNull Vault vault, @NotNull Player viewer, @NotNull Couple<Vault.@NotNull VaultOpenState, @Nullable Player> state, boolean async) {
+        super(vault, async);
         this.viewer = viewer;
         this.openState = state;
     }

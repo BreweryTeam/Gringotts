@@ -26,16 +26,19 @@ import dev.jsinco.malts.integration.external.TownyIntegration;
 import dev.jsinco.malts.integration.external.VaultIntegration;
 import dev.jsinco.malts.integration.external.WorldGuardIntegration;
 import dev.jsinco.malts.integration.compiled.BStatsIntegration;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 
-public class Registry<T extends RegistryItem> {
+public class Registry<T extends RegistryItem> implements Iterable<Map.Entry<String, T>> {
 
     public static final Registry<SubCommand> SUB_COMMANDS = fromClasses(VaultsCommand.class, WarehouseCommand.class, ImportCommand.class, VaultOtherCommand.class, WarehouseAdminCommand.class, MaxCommand.class, VaultAdminCommand.class, ReloadCommand.class, HelpCommand.class);
     public static final Registry<Importer> IMPORTERS = fromClasses(PlayerVaultsImporter.class);
@@ -69,6 +72,15 @@ public class Registry<T extends RegistryItem> {
 
     public Collection<String> keySet() {
         return map.keySet();
+    }
+
+    public Stream<Map.Entry<String, T>> stream() {
+        return map.entrySet().stream();
+    }
+
+    @Override
+    public @NotNull Iterator<Map.Entry<String, T>> iterator() {
+        return map.entrySet().iterator();
     }
 
     //@SuppressWarnings("unchecked")

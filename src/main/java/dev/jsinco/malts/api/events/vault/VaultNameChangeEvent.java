@@ -8,14 +8,13 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Called when a vault's name is changed
  */
-@Deprecated
 public class VaultNameChangeEvent extends VaultEvent {
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
     private String newName;
 
-    public VaultNameChangeEvent(@NotNull Vault vault, @NotNull String newName) {
-        super(vault);
+    public VaultNameChangeEvent(@NotNull Vault vault, @NotNull String newName, boolean async) {
+        super(vault, async);
         this.newName = newName;
     }
 

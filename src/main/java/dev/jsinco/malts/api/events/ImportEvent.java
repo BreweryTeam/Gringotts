@@ -8,10 +8,7 @@ import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Called when Malts attempts to start importing data from another plugin
- */
-@Deprecated
+
 public class ImportEvent extends MaltsEvent implements Cancellable {
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
@@ -19,8 +16,8 @@ public class ImportEvent extends MaltsEvent implements Cancellable {
 
     private boolean cancelled;
 
-    public ImportEvent(Importer importer) {
-        super(!Bukkit.isPrimaryThread());
+    public ImportEvent(Importer importer, boolean async) {
+        super(async);
         this.importer = importer;
     }
 

@@ -9,14 +9,13 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Called when a vault's icon is changed
  */
-@Deprecated
 public class VaultIconChangeEvent extends VaultEvent {
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
     private Material newIcon;
 
-    public VaultIconChangeEvent(@NotNull Vault vault, @NotNull Material newIcon) {
-        super(vault);
+    public VaultIconChangeEvent(@NotNull Vault vault, @NotNull Material newIcon, boolean async) {
+        super(vault, async);
         this.newIcon = newIcon;
     }
 

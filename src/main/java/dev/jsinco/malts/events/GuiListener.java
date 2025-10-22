@@ -14,11 +14,11 @@ public class GuiListener implements Listener {
             return;
         }
 
-//        MaltsGuiClickEvent maltsGuiClickEvent = new MaltsGuiClickEvent(gui, event);
-//        if (!maltsGuiClickEvent.callEvent()) {
-//            event.setCancelled(true);
-//            return;
-//        }
+        MaltsGuiClickEvent maltsGuiClickEvent = new MaltsGuiClickEvent(gui, event, false);
+        if (!maltsGuiClickEvent.callEvent()) {
+            event.setCancelled(true);
+            return;
+        }
 
         gui.onPreInventoryClick(event);
     }

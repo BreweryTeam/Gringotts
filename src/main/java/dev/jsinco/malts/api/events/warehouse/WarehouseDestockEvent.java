@@ -10,14 +10,13 @@ import org.jetbrains.annotations.NotNull;
  * Called when material is destocked from a warehouse
  */
 @SuppressWarnings({"LombokSetterMayBeUsed", "LombokGetterMayBeUsed"})
-@Deprecated
 public class WarehouseDestockEvent extends WarehouseEvent {
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
     private int amount;
 
-    public WarehouseDestockEvent(Warehouse warehouse, Material material, int amount) {
-        super(warehouse, material);
+    public WarehouseDestockEvent(Warehouse warehouse, Material material, int amount, boolean async) {
+        super(warehouse, material, async);
         this.amount = amount;
     }
 

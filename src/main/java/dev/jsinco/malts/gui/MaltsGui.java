@@ -35,11 +35,10 @@ public abstract class MaltsGui implements MaltsInventory {
 
     public void open(Player player) {
         Executors.sync(() -> {
-            //MaltsGuiOpenEvent event = new MaltsGuiOpenEvent(this, player);
-//            if (event.callEvent()) {
-//                this.openImpl(event.getPlayer());
-//            }
-            this.openImpl(player);
+            MaltsGuiOpenEvent event = new MaltsGuiOpenEvent(this, player, false);
+            if (event.callEvent()) {
+                this.openImpl(event.getPlayer());
+            }
         });
     }
 

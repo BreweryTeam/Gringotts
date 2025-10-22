@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class MaltsBaseCommand implements TabExecutor {
 
@@ -53,10 +54,13 @@ public class MaltsBaseCommand implements TabExecutor {
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
-        if (args.length == 1) {
-            List<String> subCommandNames = new ArrayList<>(Registry.SUB_COMMANDS.keySet());
-            return subCommandNames.stream()
-                    .filter(name -> name.startsWith(args[0].toLowerCase()))
+        if (args.length <= 1) {
+            return Registry.SUB_COMMANDS.stream()
+                    .filter(it -> {
+                        String perm = it.getValue().permission();
+                        return perm == null || sender.hasPermission(perm);
+                    })
+                    .map(Map.Entry::getKey)
                     .toList();
         }
 

@@ -10,14 +10,13 @@ import org.jetbrains.annotations.NotNull;
  * Called when a player clicks in a vault inventory.
  * Wrapper for InventoryClickEvent.
  */
-@Deprecated
 public class VaultClickEvent extends VaultEvent {
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
     private final InventoryClickEvent backing;
 
-    public VaultClickEvent(@NotNull Vault vault, @NotNull InventoryClickEvent backing) {
-        super(vault);
+    public VaultClickEvent(@NotNull Vault vault, @NotNull InventoryClickEvent backing, boolean async) {
+        super(vault, async);
         this.backing = backing;
     }
 

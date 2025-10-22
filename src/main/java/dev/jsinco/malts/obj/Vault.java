@@ -116,15 +116,14 @@ public class Vault implements MaltsInventory {
     public void open(Player player) {
         Couple<VaultOpenState, Player> couple = this.getOpenState();
         Executors.runSync(() -> {
-            //VaultOpenEvent event = new VaultOpenEvent(this, player, couple);
-            //event.setCancelled();
-            //event.callEvent();
+            VaultOpenEvent event = new VaultOpenEvent(this, player, couple, !Bukkit.isPrimaryThread());
+            event.setCancelled(couple.a() == VaultOpenState.OPEN);
 
-//            Couple<VaultOpenState, Player> updatedCouple = event.getOpenState();
-//            VaultOpenState updatedState = updatedCouple.a();
-//            Player updatedOtherPlayer = updatedCouple.b();
-            VaultOpenState state = couple.a();
-            Player otherPlayer = couple.b();
+            if (!event.callEvent()) return;
+
+            Couple<VaultOpenState, Player> updatedCouple = event.getOpenState();
+            VaultOpenState state = updatedCouple.a();
+            Player otherPlayer = updatedCouple.b();
 
             if (couple.a() == VaultOpenState.OPEN) {
                 if (state == VaultOpenState.OPEN) {
@@ -177,31 +176,32 @@ public class Vault implements MaltsInventory {
 
     public boolean addTrusted(UUID uuid) {
         int cap = cfg.vaults().trustCap();
-        //VaultTrustPlayerEvent event = new VaultTrustPlayerEvent(this, EventAction.ADD, uuid);
-        //event.setCancelled();
-        //event.callEvent();
+        VaultTrustPlayerEvent event = new VaultTrustPlayerEvent(this, EventAction.ADD, uuid, !Bukkit.isPrimaryThread());
+        event.setCancelled(trustedPlayers.size() >= cap);
 
-        if (trustedPlayers.size() >= cap) {
+        if (!event.callEvent()) {
             return false;
         }
-        trustedPlayers.add(uuid);
+        trustedPlayers.add(event.getTrustedUUID());
         return true;
     }
 
     public boolean removeTrusted(UUID uuid) {
         if (!trustedPlayers.contains(uuid)) return false;
-        //VaultTrustPlayerEvent event = new VaultTrustPlayerEvent(this, EventAction.REMOVE, uuid);
-        //if (event.callEvent()) return false;
+        VaultTrustPlayerEvent event = new VaultTrustPlayerEvent(this, EventAction.REMOVE, uuid, !Bukkit.isPrimaryThread());
+        if (!event.callEvent()) return false;
 
-        trustedPlayers.remove(uuid);
+        trustedPlayers.remove(event.getTrustedUUID());
         return true;
     }
 
     public boolean setCustomName(@NotNull String customName) {
         int maxLength = cfg.vaults().maxNameCharacters();
-//        VaultNameChangeEvent event = new VaultNameChangeEvent(this, customName);
-//        event.setCancelled(customName.length() > maxLength);
-//        if (event.callEvent()) return false;
+        VaultNameChangeEvent event = new VaultNameChangeEvent(this, customName, !Bukkit.isPrimaryThread());
+        event.setCancelled(customName.length() > maxLength);
+        if (!event.callEvent()) return false;
+        customName = event.getNewName();
+
         if (customName.length() > maxLength) {
             return false;
         }
@@ -211,10 +211,10 @@ public class Vault implements MaltsInventory {
     }
 
     public boolean setIcon(@NotNull Material icon) {
-//        VaultIconChangeEvent event = new VaultIconChangeEvent(this, icon);
-//        if (!event.callEvent()) return false;
+        VaultIconChangeEvent event = new VaultIconChangeEvent(this, icon, !Bukkit.isPrimaryThread());
+        if (!event.callEvent()) return false;
 
-        this.icon = icon;
+        this.icon = event.getNewIcon();
         return true;
     }
 

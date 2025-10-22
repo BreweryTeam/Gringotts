@@ -3,12 +3,13 @@ package dev.jsinco.malts.api.events;
 import dev.jsinco.malts.api.events.interfaces.EventAction;
 import dev.jsinco.malts.obj.CachedObject;
 import dev.jsinco.malts.storage.DataSource;
-import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Called when an object is cached to or removed from a data source's cache
+ * Called when a CachedObject is cached to or removed from a DataSource
+ *
+ * @deprecated Not implemented.
  */
 @Deprecated
 public class CachedObjectEvent extends MaltsEvent {
@@ -18,8 +19,8 @@ public class CachedObjectEvent extends MaltsEvent {
     private final CachedObject object;
     private final EventAction action;
 
-    public CachedObjectEvent(@NotNull DataSource dataSource, @NotNull CachedObject object, @NotNull EventAction action) {
-        super(!Bukkit.isPrimaryThread());
+    public CachedObjectEvent(@NotNull DataSource dataSource, @NotNull CachedObject object, @NotNull EventAction action, boolean async) {
+        super(async);
         this.dataSource = dataSource;
         this.object = object;
         this.action = action;
