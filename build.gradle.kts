@@ -176,8 +176,8 @@ class DiscordWebhook(
     var avatarUrl: String = "https://github.com/breweryteam.png"
     var embedTitle: String = "Embed Title"
     var embedDescription: String = "Embed Description"
-    var embedColor: String = "b96648"
-    var embedThumbnailUrl: String = "https://github.com/BreweryTeam/Malts/blob/master/images/maltslogo.png?raw=true"
+    var embedColor: String = "2c2d45"
+    var embedThumbnailUrl: String = "https://iili.io/KUX4gYQ.png"
     var embedImageUrl: String? = null
 
     private fun hexStringToInt(hex: String): Int {
