@@ -25,7 +25,8 @@ public class MaltsBaseCommand implements TabExecutor {
         if (args.length == 0 && sender.hasPermission("malts.command.base")) {
             String baseCommandBehavior = ConfigManager.get(Config.class).baseCommandBehavior();
             SubCommand subCommand = Registry.SUB_COMMANDS.get(baseCommandBehavior);
-            if (subCommand == null) {
+            if (subCommand == null || (subCommand.playerOnly() && !(sender instanceof Player)) ||
+                    (subCommand.permission() != null && !sender.hasPermission(subCommand.permission()))) {
                 subCommand = Registry.SUB_COMMANDS.get(HelpCommand.class);
             }
             return subCommand.execute(Malts.getInstance(), sender, label, new ArrayList<>());

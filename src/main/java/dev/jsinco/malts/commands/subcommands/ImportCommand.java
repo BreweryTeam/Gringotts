@@ -28,10 +28,9 @@ public class ImportCommand implements SubCommand {
 
         ImportEvent event = new ImportEvent(imp, false);
         event.setCancelled(imp == null || !imp.canImport());
-        if (!event.callEvent()) return true;
-        Importer importer = event.getImporter();
 
-        if (importer == null || !importer.canImport()) {
+
+        if (!event.callEvent()) {
             lng.entry(l -> l.command()._import().cannotImport(),
                     sender,
                     Couple.of("{importer}", importerName)
@@ -39,6 +38,7 @@ public class ImportCommand implements SubCommand {
             return true;
         }
 
+        Importer importer = event.getImporter();
 
         lng.entry(l -> l.command()._import().startImport(),
                 List.of(sender, CONSOLE),
