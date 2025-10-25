@@ -63,7 +63,7 @@ dependencies {
 tasks {
 
     shadowJar {
-        val shaded = "dev.jsinco.gringotts.shaded"
+        val shaded = "$group.shaded"
         relocate("eu.okaeri", "$shaded.okaeri")
         relocate("com.zaxxer.hikari", "$shaded.hikari")
         relocate("org.bstats", "$shaded.bstats")
