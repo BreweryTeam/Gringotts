@@ -34,6 +34,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.UUID;
@@ -62,9 +63,10 @@ public abstract class DataSource {
 
     public abstract CompletableFuture<@Nullable Vault> getVault(UUID owner, int id, boolean createIfNull);
 
-    public abstract CompletableFuture<@NotNull List<SnapshotVault>> getVaults(UUID owner);
+    public abstract CompletableFuture<@NotNull Collection<SnapshotVault>> getVaults(UUID owner);
     public abstract CompletableFuture<Void> saveVault(Vault vault);
     public abstract CompletableFuture<@NotNull Boolean> deleteVault(UUID owner, int id);
+    public abstract CompletableFuture<@NotNull Collection<Vault>> getAllVaults(); // Used for exporting vaults. (Mainly to other plugins)
 
 
     public abstract CompletableFuture<@NotNull Warehouse> getWarehouse(UUID owner);
@@ -206,6 +208,23 @@ public abstract class DataSource {
             );
         }
         return create ? new Vault(owner, id) : null;
+    }
+
+    public List<Vault> mapVaults(ResultSet rs) throws SQLException {
+        List<Vault> vaults = new ArrayList<>();
+        while (rs.next()) {
+            vaults.add(
+                    new Vault(
+                            UUID.fromString(rs.getString("owner")),
+                            rs.getInt("id"),
+                            rs.getString("inventory"),
+                            rs.getString("custom_name"),
+                            Material.getMaterial(rs.getString("icon")),
+                            rs.getString("trusted_players")
+                    )
+            );
+        }
+        return vaults;
     }
 
     public List<SnapshotVault> mapSnapshotVaults(ResultSet rs, UUID owner) throws SQLException {

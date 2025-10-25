@@ -14,7 +14,7 @@ plugins {
 }
 
 group = "dev.jsinco.malts"
-version = "0.3-BETA"
+version = "0.4-BETA"
 
 repositories {
     mavenCentral()
@@ -26,12 +26,14 @@ repositories {
     maven("https://repo.glaremasters.me/repository/towny/")
     maven("https://maven.playpro.com/")
     maven("https://jitpack.io")
+    maven("https://repo.rosewooddev.io/repository/public/")
 }
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT") // repo.papermc.io
     compileOnly("org.projectlombok:lombok:1.18.30") // mavenCentral
     compileOnly("org.xerial:sqlite-jdbc:3.47.2.0") // mavenCentral
+    compileOnly("org.jetbrains:annotations:26.0.2-1") // mavenCentral
     compileOnly("com.drtshock.playervaults:PlayerVaultsX:4.4.7") // repo.jsinco.dev
     compileOnly("org.popcraft:bolt-bukkit:1.1.33") /* repo.codemc.io */ {
         artifact { classifier = "" }
@@ -43,6 +45,10 @@ dependencies {
     compileOnly("net.coreprotect:coreprotect:23.0") // maven.playpro.com
     compileOnly("com.github.MilkBowl:VaultAPI:1.7") /* jitpack.io */ {
         exclude(group = "org.bukkit")
+    }
+    compileOnly("org.black_ixx:playerpoints:3.3.3") // repo.rosewooddev.io
+    compileOnly("com.artillexstudios.axvaults:AxVaults:2.10.1") /* repo.jsinco.dev */ {
+        exclude("org.jetbrains", "annotations")
     }
 
 
@@ -104,7 +110,7 @@ modrinth {
     versionType.set("release")
     uploadFile.set(tasks.shadowJar)
     loaders.addAll("paper", "purpur")
-    gameVersions.addAll(listOf("1.21.8", "1.21.7", "1.21.4", "1.21.1", "1.20.6", "1.20.4"))
+    gameVersions.addAll(listOf("1.21.10", "1.21.9","1.21.8", "1.21.7", "1.21.4", "1.21.1", "1.20.6", "1.20.4"))
     changelog.set(System.getenv("CHANGE_LOG") ?: "No changelog provided.")
 }
 

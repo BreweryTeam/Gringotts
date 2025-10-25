@@ -31,60 +31,7 @@ public final class ItemStacks {
 
     private static final GuiConfig.BorderItem cfg = ConfigManager.get(GuiConfig.class).borderItem();
     private static final UUID STATIC_UUID = UUID.fromString("ffd467ff-d884-4ace-8732-72e0d8e476f2");
-    private static final Map<ItemStack, int[]> defaultItems = new HashMap<>();
-    private static final ItemStack BACK_BUTTON = builder()
-            .material(Material.BARRIER)
-            .displayName("<red><b>Back")
-            .lore("<gray>Go back to the previous menu")
-            .colorIfAbsentLore(NamedTextColor.GRAY)
-            .build();
     public static final ItemStack BORDER = builder().displayName(cfg.name()).material(cfg.material()).lore(cfg.lore()).build();
-
-    static {
-        defaultItems.put(borderItem(Material.GREEN_STAINED_GLASS_PANE), new int[]{0, 8, 45, 53});
-        defaultItems.put(borderItem(Material.SHORT_GRASS), new int[]{1, 7, 46, 52});
-        defaultItems.put(borderItem(Material.FERN), new int[]{2, 6, 47, 51});
-        defaultItems.put(borderItem(Material.ROSE_BUSH), new int[]{3, 5, 48, 50});
-        defaultItems.put(borderItem(Material.RED_MUSHROOM), new int[]{4, 49});
-    }
-
-    public static Inventory getBaseInv(InventoryHolder holder, int size, String title) {
-        return getBaseInv(holder, size, title, false);
-    }
-
-    public static Inventory getBaseInv(InventoryHolder holder, int size, String title, boolean backButton) {
-        return getBaseInv(holder, size, Text.mm(title), backButton);
-    }
-
-    public static Inventory getBaseInv(InventoryHolder holder, int size, Component title, boolean backButton) {
-        Inventory inv = Bukkit.createInventory(holder, size, title);
-        if (size < 18) { // Inventory size is too small for us to put our borders.
-            return inv;
-        }
-
-        Map<ItemStack, int[]> items = new HashMap<>(defaultItems);
-        if (backButton) {
-            items.put(BACK_BUTTON, new int[]{49});
-        }
-
-        for (Map.Entry<ItemStack, int[]> entry : items.entrySet()) {
-            ItemStack item = entry.getKey();
-            int[] slots = entry.getValue();
-            for (int i = 0; i < slots.length; i++) {
-                if (size == 54) {
-                    inv.setItem(slots[i], item);
-                } else {
-                    int factor = 54 - size;
-                    if (i < slots.length / 2) {
-                        inv.setItem(slots[i], item);
-                    } else {
-                        inv.setItem(slots[i] - factor, item);
-                    }
-                }
-            }
-        }
-        return inv;
-    }
 
     public static ItemStack borderItem(Material m) {
         return builder().material(m).displayName("<black>").build();

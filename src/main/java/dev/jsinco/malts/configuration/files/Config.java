@@ -201,7 +201,7 @@ public class Config extends OkaeriFile {
 
         @Comment({
                 "The economy provider to use for Malts transactions",
-                "* Options: NONE, VAULT"
+                "* Options: NONE, VAULT, PLAYER_POINTS"
         })
         private EconomyProvider economyProvider = EconomyProvider.NONE;
         private Vaults vaults = new Vaults();

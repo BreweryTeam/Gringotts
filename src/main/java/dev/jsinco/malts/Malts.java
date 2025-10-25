@@ -43,7 +43,6 @@ public final class Malts extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new WarehouseListener(), this);
         getServer().getPluginManager().registerEvents(new GuiListener(), this);
         getServer().getPluginManager().registerEvents(new ChatPromptInputListener(), this);
-
     }
 
     @Override

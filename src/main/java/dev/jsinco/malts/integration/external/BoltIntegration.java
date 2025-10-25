@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.popcraft.bolt.BoltAPI;
 
+@Deprecated // Unused integration
 public class BoltIntegration implements ProtectionIntegration {
 
     private BoltAPI bolt;

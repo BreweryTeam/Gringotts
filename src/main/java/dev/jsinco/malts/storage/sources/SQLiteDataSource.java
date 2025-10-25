@@ -2,14 +2,12 @@ package dev.jsinco.malts.storage.sources;
 
 import com.zaxxer.hikari.HikariConfig;
 import dev.jsinco.malts.configuration.files.Config;
-import dev.jsinco.malts.enums.TriState;
 import dev.jsinco.malts.obj.MaltsPlayer;
 import dev.jsinco.malts.obj.SnapshotVault;
 import dev.jsinco.malts.obj.Stock;
 import dev.jsinco.malts.obj.Vault;
 import dev.jsinco.malts.obj.Warehouse;
 import dev.jsinco.malts.storage.DataSource;
-import dev.jsinco.malts.utility.Couple;
 import dev.jsinco.malts.utility.Executors;
 import dev.jsinco.malts.utility.Text;
 import org.bukkit.Material;
@@ -21,8 +19,8 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -85,7 +83,7 @@ public class SQLiteDataSource extends DataSource {
     }
 
     @Override
-    public CompletableFuture<List<SnapshotVault>> getVaults(UUID owner) {
+    public CompletableFuture<@NotNull Collection<SnapshotVault>> getVaults(UUID owner) {
         return Executors.supplyAsyncWithSQLException(() -> {
             try (Connection connection = this.connection()) {
                 PreparedStatement statement = connection.prepareStatement(
@@ -136,6 +134,19 @@ public class SQLiteDataSource extends DataSource {
         }, singleThread);
     }
 
+    @Override
+    public CompletableFuture<@NotNull Collection<Vault>> getAllVaults() {
+        return Executors.supplyAsyncWithSQLException(() -> {
+            try (Connection connection = this.connection()) {
+                PreparedStatement statement = connection.prepareStatement(
+                        this.getStatement("vaults/select_all_vaults.sql")
+                );
+
+                ResultSet resultSet = statement.executeQuery();
+                return this.mapVaults(resultSet);
+            }
+        });
+    }
 
     @Override
     public CompletableFuture<@NotNull Warehouse> getWarehouse(UUID owner) {

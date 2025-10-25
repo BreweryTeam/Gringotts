@@ -15,6 +15,7 @@ import dev.jsinco.malts.configuration.OkaeriFile;
 import dev.jsinco.malts.configuration.files.Config;
 import dev.jsinco.malts.configuration.files.GuiConfig;
 import dev.jsinco.malts.configuration.files.Lang;
+import dev.jsinco.malts.importers.AxVaultsImporter;
 import dev.jsinco.malts.importers.Importer;
 import dev.jsinco.malts.importers.PlayerVaultsImporter;
 import dev.jsinco.malts.integration.external.BoltIntegration;
@@ -22,6 +23,7 @@ import dev.jsinco.malts.integration.external.CoreProtectIntegration;
 import dev.jsinco.malts.integration.Integration;
 import dev.jsinco.malts.integration.IntegrationCrafter;
 import dev.jsinco.malts.integration.external.LWCIntegration;
+import dev.jsinco.malts.integration.external.PlayerPointsIntegration;
 import dev.jsinco.malts.integration.external.TownyIntegration;
 import dev.jsinco.malts.integration.external.VaultIntegration;
 import dev.jsinco.malts.integration.external.WorldGuardIntegration;
@@ -41,9 +43,9 @@ import java.util.stream.Stream;
 public class Registry<T extends RegistryItem> implements Iterable<Map.Entry<String, T>> {
 
     public static final Registry<SubCommand> SUB_COMMANDS = fromClasses(VaultsCommand.class, WarehouseCommand.class, ImportCommand.class, VaultOtherCommand.class, WarehouseAdminCommand.class, MaxCommand.class, VaultAdminCommand.class, ReloadCommand.class, HelpCommand.class);
-    public static final Registry<Importer> IMPORTERS = fromClasses(PlayerVaultsImporter.class);
+    public static final Registry<Importer> IMPORTERS = fromClasses(PlayerVaultsImporter.class, AxVaultsImporter.class);
     public static final Registry<OkaeriFile> CONFIGS = fromClassesWithCrafter(new ConfigManager(), Config.class, GuiConfig.class, Lang.class);
-    public static final Registry<Integration> INTEGRATIONS = fromClassesWithCrafter(new IntegrationCrafter(), BStatsIntegration.class, BoltIntegration.class, LWCIntegration.class, WorldGuardIntegration.class, TownyIntegration.class, CoreProtectIntegration.class, VaultIntegration.class);
+    public static final Registry<Integration> INTEGRATIONS = fromClassesWithCrafter(new IntegrationCrafter(), BStatsIntegration.class, CoreProtectIntegration.class, VaultIntegration.class, PlayerPointsIntegration.class);
 
     private final Map<String, T> map;
 

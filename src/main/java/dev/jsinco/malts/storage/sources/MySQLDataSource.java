@@ -16,8 +16,8 @@ import org.jetbrains.annotations.NotNull;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -69,7 +69,7 @@ public class MySQLDataSource extends DataSource {
     }
 
     @Override
-    public CompletableFuture<List<SnapshotVault>> getVaults(UUID owner) {
+    public CompletableFuture<@NotNull Collection<SnapshotVault>> getVaults(UUID owner) {
         return Executors.supplyAsyncWithSQLException(() -> {
             try (Connection connection = this.connection()) {
                 PreparedStatement statement = connection.prepareStatement(
@@ -116,6 +116,20 @@ public class MySQLDataSource extends DataSource {
 
                 Text.debug("Attempted to delete vault: " + owner + " #" + id);
                 return rowsAffected > 0;
+            }
+        });
+    }
+
+    @Override
+    public CompletableFuture<@NotNull Collection<Vault>> getAllVaults() {
+        return Executors.supplyAsyncWithSQLException(() -> {
+            try (Connection connection = this.connection()) {
+                PreparedStatement statement = connection.prepareStatement(
+                        this.getStatement("vaults/select_all_vaults.sql")
+                );
+
+                ResultSet resultSet = statement.executeQuery();
+                return this.mapVaults(resultSet);
             }
         });
     }

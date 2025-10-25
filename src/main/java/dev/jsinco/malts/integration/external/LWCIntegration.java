@@ -8,6 +8,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+@Deprecated // Unused integration
 public class LWCIntegration implements ProtectionIntegration {
 
     private LWC lwc;

@@ -2,6 +2,7 @@ package dev.jsinco.malts.enums;
 
 import dev.jsinco.malts.integration.EconomyIntegration;
 import dev.jsinco.malts.integration.Integration;
+import dev.jsinco.malts.integration.external.PlayerPointsIntegration;
 import dev.jsinco.malts.integration.external.VaultIntegration;
 import dev.jsinco.malts.registry.Registry;
 import org.jetbrains.annotations.Nullable;
@@ -9,7 +10,8 @@ import org.jetbrains.annotations.Nullable;
 public enum EconomyProvider {
 
     NONE(registry -> null),
-    VAULT(registry -> registry.get(VaultIntegration.class));
+    VAULT(registry -> registry.get(VaultIntegration.class)),
+    PLAYER_POINTS(registry -> registry.get(PlayerPointsIntegration.class));
 
     private final Provider provider;
 

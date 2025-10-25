@@ -18,17 +18,16 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * <p></p>
  * The main entry point for the Malts API.
  * This class consists of various static methods to interact with the Malts plugin.
  * It is advised for you to read the Javadocs for each method to understand their usage.
  * For extra information, you may look into each class' source code
- * </p>
+ *
  * <br><br/>
  * <p>
  * Events can be found in the {@link dev.jsinco.malts.api.events} package.
@@ -159,7 +158,7 @@ public final class MaltsAPI {
      * @return A future that will complete with a list of snapshot vaults, or complete exceptionally if an error occurs
      */
     @NotNull
-    public static CompletableFuture<@NotNull List<SnapshotVault>> getVaults(UUID owner) {
+    public static CompletableFuture<@NotNull Collection<SnapshotVault>> getVaults(UUID owner) {
         return getDataSource().getVaults(owner);
     }
 
@@ -182,6 +181,15 @@ public final class MaltsAPI {
     @NotNull
     public static CompletableFuture<@NotNull Boolean> deleteVault(UUID owner, int id) {
         return getDataSource().deleteVault(owner, id);
+    }
+
+    /**
+     * Queries the database for all vaults.
+     * @return A future that will complete with a list of all vaults, or complete exceptionally if an error occurs
+     */
+    @NotNull
+    public static CompletableFuture<@NotNull Collection<Vault>> getAllVaults() {
+        return getDataSource().getAllVaults();
     }
 
     /**

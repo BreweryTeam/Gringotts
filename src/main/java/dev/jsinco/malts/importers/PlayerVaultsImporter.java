@@ -19,7 +19,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-public class PlayerVaultsImporter implements FlatFileImporter {
+public class PlayerVaultsImporter implements Importer {
 
 
     @Override
@@ -28,16 +28,10 @@ public class PlayerVaultsImporter implements FlatFileImporter {
     }
 
     @Override
-    public Path path() {
-        Path path = Malts.getInstance().getDataPath().getParent();
-        return path.resolve("PlayerVaults")
-                .resolve("newvaults");
-    }
-
-    @Override
     public boolean canImport() {
         return ClassUtil.classExists("com.drtshock.playervaults.vaultmanagement.CardboardBoxSerialization");
     }
+
 
     @Override
     public CompletableFuture<Map<UUID, Result>> importAll() {
@@ -58,7 +52,6 @@ public class PlayerVaultsImporter implements FlatFileImporter {
                         .collect(Collectors.toMap(Couple::a, Couple::b)));
     }
 
-    @Override
     public CompletableFuture<Couple<UUID, Result>> importVaults(File file) {
         DataSource dataSource = DataSource.getInstance();
         String uuidAsString = file.getName().replace(".yml", "");
@@ -106,6 +99,12 @@ public class PlayerVaultsImporter implements FlatFileImporter {
 
             return chain.thenApply(v -> Couple.of(owner, expectedResult));
         });
+    }
+
+    public Path path() {
+        Path path = Malts.getInstance().getDataPath().getParent();
+        return path.resolve("PlayerVaults")
+                .resolve("newvaults");
     }
 
 }

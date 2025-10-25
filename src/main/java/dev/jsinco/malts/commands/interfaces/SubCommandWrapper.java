@@ -22,8 +22,12 @@ public abstract class SubCommandWrapper implements TabExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
-        if (subCommand.playerOnly() && !(sender instanceof Player)) {
-            ConfigManager.get(Lang.class).entry(l -> l.command().base().playerOnly(), sender);
+        Lang lang = ConfigManager.get(Lang.class);
+        if (subCommand.permission() != null && !sender.hasPermission(subCommand.permission())) {
+            lang.entry(l -> l.command().base().noPermission(), sender);
+            return true;
+        } else if (subCommand.playerOnly() && !(sender instanceof Player)) {
+            lang.entry(l -> l.command().base().playerOnly(), sender);
             return true;
         }
         return subCommand.execute(Malts.getInstance(), sender, label, List.of(args));
@@ -31,6 +35,9 @@ public abstract class SubCommandWrapper implements TabExecutor {
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+        if (subCommand.permission() != null && !sender.hasPermission(subCommand.permission())) {
+            return null;
+        }
         return subCommand.tabComplete(Malts.getInstance(), sender, label, List.of(args));
     }
 

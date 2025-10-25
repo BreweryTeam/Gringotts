@@ -20,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
 
+@Deprecated // Unused integration
 public class WorldGuardIntegration implements ProtectionIntegration {
 
 
