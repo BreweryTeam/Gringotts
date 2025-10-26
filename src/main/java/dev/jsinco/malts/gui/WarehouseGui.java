@@ -5,6 +5,7 @@ import dev.jsinco.malts.configuration.ConfigManager;
 import dev.jsinco.malts.configuration.files.GuiConfig;
 import dev.jsinco.malts.configuration.IntPair;
 import dev.jsinco.malts.configuration.files.Lang;
+import dev.jsinco.malts.enums.QuickReturnClickType;
 import dev.jsinco.malts.enums.TriState;
 import dev.jsinco.malts.enums.WarehouseMode;
 import dev.jsinco.malts.gui.item.GuiItem;
@@ -238,9 +239,10 @@ public class WarehouseGui extends MaltsGui {
         Config.QuickReturn quickReturn = ConfigManager.get(Config.class).quickReturn();
 
         event.setCancelled(true);
+        MaltsPlayer maltsPlayer = DataSource.getInstance().cachedObject(player.getUniqueId(), MaltsPlayer.class);
+        QuickReturnClickType quickReturnClickType = maltsPlayer.getQuickReturnClickType();
 
-        if (event.getClickedInventory() == null && quickReturn.enabled() && event.getClick() == quickReturn.clickType()) {
-            MaltsPlayer maltsPlayer = DataSource.getInstance().cachedObject(player.getUniqueId(), MaltsPlayer.class);
+        if (event.getClickedInventory() == null && quickReturn.enabled() && quickReturnClickType != null && quickReturnClickType.getBacking() == event.getClick()) {
             YourVaultsGui gui = new YourVaultsGui(maltsPlayer);
             gui.open(player);
         }

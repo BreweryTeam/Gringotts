@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -60,6 +61,11 @@ public class SQLiteDataSource extends DataSource {
             try (Connection connection = this.connection()) {
                 for (String statement : this.getStatements("tables/sqlite/create_tables.sql")) {
                     connection.prepareStatement(statement).execute();
+                }
+            } catch (SQLException ex) {
+                // i hate sqlite so much
+                if (!ex.getMessage().contains("duplicate column name")) {
+                    ex.printStackTrace();
                 }
             }
             return null;
@@ -241,8 +247,8 @@ public class SQLiteDataSource extends DataSource {
                 statement.setInt(2, maltsPlayer.getMaxVaults());
                 statement.setInt(3, maltsPlayer.getMaxWarehouseStock());
                 statement.setString(4, maltsPlayer.getWarehouseMode().name());
+                statement.setString(5, maltsPlayer.getQuickReturnClickType().name());
                 statement.executeUpdate();
-                Text.debug("Saved malts player: " + maltsPlayer.getUuid());
             }
             return null;
         }, singleThread);

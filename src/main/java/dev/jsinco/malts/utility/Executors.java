@@ -35,7 +35,13 @@ public final class Executors {
     }
 
     public static BukkitTask runAsync(Runnable runnable) {
-        return Bukkit.getScheduler().runTaskAsynchronously(instance, runnable);
+        return Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+            try {
+                runnable.run();
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
+        });
     }
 
     @Nullable
@@ -79,7 +85,13 @@ public final class Executors {
     }
 
     public static BukkitTask sync(Runnable runnable) {
-        return Bukkit.getScheduler().runTask(instance, runnable);
+        return Bukkit.getScheduler().runTask(instance, () -> {
+            try {
+                runnable.run();
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
+        });
     }
 
     public static void runSync(Runnable runnable) {

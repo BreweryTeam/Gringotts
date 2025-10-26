@@ -3,6 +3,7 @@ package dev.jsinco.malts.events;
 import dev.jsinco.malts.api.events.vault.VaultClickEvent;
 import dev.jsinco.malts.configuration.files.Config;
 import dev.jsinco.malts.configuration.ConfigManager;
+import dev.jsinco.malts.enums.QuickReturnClickType;
 import dev.jsinco.malts.gui.MaltsGui;
 import dev.jsinco.malts.gui.VaultOtherGui;
 import dev.jsinco.malts.gui.YourVaultsGui;
@@ -57,11 +58,16 @@ public class VaultListener implements Listener {
         if (event.getClickedInventory() != null) {
             vault.update(player);
             return;
-        } else if (!quickReturn.enabled() || event.getClick() != quickReturn.clickType()) {
-            return;
         }
 
         MaltsPlayer maltsPlayer = DataSource.getInstance().cachedObject(player.getUniqueId(), MaltsPlayer.class);
+        QuickReturnClickType quickReturnClickType = maltsPlayer.getQuickReturnClickType();
+
+        if (!quickReturn.enabled() || quickReturnClickType == null || quickReturnClickType.getBacking() != event.getClick()) {
+            return;
+        }
+
+
         MaltsGui gui;
         if (!vault.getOwner().equals(player.getUniqueId())) {
             gui = new VaultOtherGui(player, Bukkit.getOfflinePlayer(vault.getOwner()));

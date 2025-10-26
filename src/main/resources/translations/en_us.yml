@@ -81,3 +81,6 @@ command:
     success: Successfully reloaded configuration files.
     failed: Failed to reload one or more configuration files. Check console for stacktrace.
     newDatabaseDriverSet: The database driver in the configuration file has been changed. Malts will now reload from <red>{driver}</red> using the new driver. Please be aware that Malts provides no methods for transferring data between databases.
+  quickreturn:
+    success: Your quick return click preference has been set.
+    failed: You either provided no arguments or did not provide a valid option.

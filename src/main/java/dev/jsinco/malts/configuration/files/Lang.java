@@ -92,6 +92,7 @@ public class Lang extends OkaeriFile {
         private Import _import = new Import();
         private VaultOther vaultOther = new VaultOther();
         private Reload reload = new Reload();
+        private QuickReturn quickReturn = new QuickReturn();
 
         @Getter
         @Accessors(fluent = true)
@@ -125,6 +126,13 @@ public class Lang extends OkaeriFile {
             private String success;
             private String failed;
             private String newDatabaseDriverSet;
+        }
+
+        @Getter
+        @Accessors(fluent = true)
+        public static class QuickReturn extends OkaeriConfig {
+            private String success;
+            private String failed;
         }
     }
 

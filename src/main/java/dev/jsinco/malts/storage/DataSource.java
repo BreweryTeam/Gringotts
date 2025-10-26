@@ -7,6 +7,7 @@ import dev.jsinco.malts.Malts;
 import dev.jsinco.malts.configuration.ConfigManager;
 import dev.jsinco.malts.configuration.files.Config;
 import dev.jsinco.malts.configuration.files.Lang;
+import dev.jsinco.malts.enums.QuickReturnClickType;
 import dev.jsinco.malts.enums.TriState;
 import dev.jsinco.malts.enums.WarehouseMode;
 import dev.jsinco.malts.integration.EconomyIntegration;
@@ -248,7 +249,8 @@ public abstract class DataSource {
             int maxVaults = rs.getInt("max_vaults");
             int maxWarehouseStock = rs.getInt("max_warehouse_stock");
             WarehouseMode warehouseMode = Util.getEnum(rs.getString("warehouse_mode"), WarehouseMode.class);
-            return new MaltsPlayer(uuid, maxVaults, maxWarehouseStock, warehouseMode);
+            QuickReturnClickType quickReturnClickType = Util.getEnum(rs.getString("quick_return_click_type"), QuickReturnClickType.class);
+            return new MaltsPlayer(uuid, maxVaults, maxWarehouseStock, warehouseMode, quickReturnClickType);
         }
         return new MaltsPlayer(uuid);
     }

@@ -44,6 +44,7 @@ permissions:
       malts.command.vaults: true
       malts.command.vaultother: true
       malts.command.warehouse: true
+      malts.command.quickreturn: true
   malts.command.*:
     children:
       malts.command.base: true
@@ -56,6 +57,7 @@ permissions:
       malts.command.vaults: true
       malts.command.warehouseadmin: true
       malts.command.warehouse: true
+      malts.command.quickreturn: true
   malts.bypass.*:
     children:
       malts.bypass.openvault: true

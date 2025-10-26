@@ -40,11 +40,7 @@ public class VaultsCommand implements SubCommand {
             return true;
         }
 
-        UUID owner = player.getUniqueId();
-
         Config.Economy cfg = ConfigManager.get(Config.class).economy();
-        @Nullable EconomyIntegration econ = cfg.economyProvider().getIntegration();
-        double cost = cfg.vaults().creationFee();
 
         dataSource.getVaultWithEconomy(player, vaultId, vault -> {
             vault.open(player);

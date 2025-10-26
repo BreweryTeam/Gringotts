@@ -4,13 +4,13 @@ import dev.jsinco.malts.configuration.OkaeriFile;
 import dev.jsinco.malts.configuration.OkaeriFileName;
 import dev.jsinco.malts.enums.Driver;
 import dev.jsinco.malts.enums.EconomyProvider;
+import dev.jsinco.malts.enums.QuickReturnClickType;
 import dev.jsinco.malts.enums.WarehouseMode;
 import eu.okaeri.configs.OkaeriConfig;
 import eu.okaeri.configs.annotation.Comment;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.bukkit.Material;
-import org.bukkit.event.inventory.ClickType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,8 +48,15 @@ public class Config extends OkaeriFile {
     public static class QuickReturn extends OkaeriConfig {
         @Comment("Whether or not to enable the quick return feature.")
         private boolean enabled = true;
-        @Comment("https://jd.papermc.io/paper/1.21.9/org/bukkit/event/inventory/ClickType.html")
-        private ClickType clickType = ClickType.RIGHT;
+        @Comment({
+                "The default click types that will trigger",
+                "the quick return feature. Players can configure",
+                "their own click type preferences individually.",
+                "using '/malts quickreturn <type>'",
+                " ",
+                "* Options: LEFT, RIGHT, MIDDLE, NONE",
+        })
+        private QuickReturnClickType defaultClickType = QuickReturnClickType.RIGHT;
     }
 
     @Comment({

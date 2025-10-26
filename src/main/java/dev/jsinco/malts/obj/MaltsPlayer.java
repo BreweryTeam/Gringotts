@@ -2,6 +2,7 @@ package dev.jsinco.malts.obj;
 
 import dev.jsinco.malts.configuration.files.Config;
 import dev.jsinco.malts.configuration.ConfigManager;
+import dev.jsinco.malts.enums.QuickReturnClickType;
 import dev.jsinco.malts.enums.WarehouseMode;
 import dev.jsinco.malts.storage.DataSource;
 import lombok.Getter;
@@ -29,6 +30,7 @@ public class MaltsPlayer implements CachedObject {
     private int maxVaults;
     private int maxWarehouseStock;
     private WarehouseMode warehouseMode;
+    private QuickReturnClickType quickReturnClickType;
 
 
     public MaltsPlayer(UUID uuid) {
@@ -36,13 +38,15 @@ public class MaltsPlayer implements CachedObject {
         this.maxVaults = 0;
         this.maxWarehouseStock = 0;
         this.warehouseMode = WarehouseMode.NONE;
+        this.quickReturnClickType = cfg.quickReturn().defaultClickType();
     }
 
-    public MaltsPlayer(@NotNull UUID uuid, int maxVaults, int maxWarehouseStock, WarehouseMode warehouseMode) {
+    public MaltsPlayer(@NotNull UUID uuid, int maxVaults, int maxWarehouseStock, WarehouseMode warehouseMode, QuickReturnClickType quickReturnClickType) {
         this.uuid = uuid;
         this.maxVaults = maxVaults;
         this.maxWarehouseStock = maxWarehouseStock;
         this.warehouseMode = warehouseMode == null ? WarehouseMode.NONE : warehouseMode;
+        this.quickReturnClickType = quickReturnClickType == null ? cfg.quickReturn().defaultClickType() : quickReturnClickType;
     }
 
     @Nullable

@@ -225,8 +225,8 @@ public class MySQLDataSource extends DataSource {
                 statement.setInt(2, maltsPlayer.getMaxVaults());
                 statement.setInt(3, maltsPlayer.getMaxWarehouseStock());
                 statement.setString(4, maltsPlayer.getWarehouseMode().name());
+                statement.setString(5, maltsPlayer.getQuickReturnClickType().name());
                 statement.executeUpdate();
-                Text.debug("Saved Malts player: " + maltsPlayer.getUuid());
             }
             return null;
         });

@@ -14,7 +14,7 @@ plugins {
 }
 
 group = "dev.jsinco.malts"
-version = "0.4-BETA"
+version = "0.5-BETA"
 
 repositories {
     mavenCentral()
@@ -63,7 +63,7 @@ dependencies {
 tasks {
 
     shadowJar {
-        val shaded = "$group.shaded"
+        val shaded = "dev.jsinco.malts.shaded"
         relocate("eu.okaeri", "$shaded.okaeri")
         relocate("com.zaxxer.hikari", "$shaded.hikari")
         relocate("org.bstats", "$shaded.bstats")

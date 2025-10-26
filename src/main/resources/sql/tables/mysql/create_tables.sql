@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS malts_players(
     uuid VARCHAR(36) NOT NULL PRIMARY KEY,
     max_vaults INTEGER NOT NULL,
     max_warehouse_stock INTEGER NOT NULL,
-    warehouse_mode TEXT
+    warehouse_mode TEXT,
+    quick_return_click_type TEXT
 );
 
 CREATE TABLE IF NOT EXISTS malts_warehouses(
@@ -23,3 +24,6 @@ CREATE TABLE IF NOT EXISTS malts_warehouses(
     PRIMARY KEY (owner, material),
     FOREIGN KEY (owner) REFERENCES malts_players(uuid)
 );
+
+-- Migration code
+ALTER TABLE malts_players ADD COLUMN IF NOT EXISTS quick_return_click_type TEXT;
