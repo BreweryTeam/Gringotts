@@ -114,24 +114,19 @@ public class Vault implements MaltsInventory {
     }
 
     public void open(Player player) {
-        Couple<VaultOpenState, Player> couple = this.getOpenState();
         Executors.runSync(() -> {
+            Couple<VaultOpenState, Player> couple = this.getOpenState();
             VaultOpenEvent event = new VaultOpenEvent(this, player, couple, !Bukkit.isPrimaryThread());
             event.setCancelled(couple.a() == VaultOpenState.OPEN);
 
-            if (!event.callEvent()) return;
+            if (!event.callEvent()) {
+                ConfigManager.get(Lang.class).entry(l -> l.vaults().alreadyOpen(), player);
+                return;
+            }
 
             Couple<VaultOpenState, Player> updatedCouple = event.getOpenState();
             VaultOpenState state = updatedCouple.a();
             Player otherPlayer = updatedCouple.b();
-
-            if (couple.a() == VaultOpenState.OPEN) {
-                if (state == VaultOpenState.OPEN) {
-                    ConfigManager.get(Lang.class).entry(l -> l.vaults().alreadyOpen(), player);
-                }
-                return;
-            }
-
 
             player.openInventory(this.inventory);
 
