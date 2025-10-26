@@ -18,15 +18,11 @@ import dev.jsinco.malts.configuration.files.Lang;
 import dev.jsinco.malts.importers.AxVaultsImporter;
 import dev.jsinco.malts.importers.Importer;
 import dev.jsinco.malts.importers.PlayerVaultsImporter;
-import dev.jsinco.malts.integration.external.BoltIntegration;
 import dev.jsinco.malts.integration.external.CoreProtectIntegration;
 import dev.jsinco.malts.integration.Integration;
 import dev.jsinco.malts.integration.IntegrationCrafter;
-import dev.jsinco.malts.integration.external.LWCIntegration;
 import dev.jsinco.malts.integration.external.PlayerPointsIntegration;
-import dev.jsinco.malts.integration.external.TownyIntegration;
 import dev.jsinco.malts.integration.external.VaultIntegration;
-import dev.jsinco.malts.integration.external.WorldGuardIntegration;
 import dev.jsinco.malts.integration.compiled.BStatsIntegration;
 import org.jetbrains.annotations.NotNull;
 
@@ -85,7 +81,7 @@ public class Registry<T extends RegistryItem> implements Iterable<Map.Entry<Stri
         return map.entrySet().iterator();
     }
 
-    //@SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "RedundantCast"})
     @SafeVarargs
     public static <E extends RegistryItem> Registry<E> fromClassesWithCrafter(RegistryCrafter crafter, Class<? extends E>... classes) {
         List<E> eClasses = new ArrayList<>();

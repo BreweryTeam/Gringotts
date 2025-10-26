@@ -14,33 +14,35 @@ import org.bukkit.event.player.PlayerItemConsumeEvent;
 
 public class WarehouseListener implements Listener {
 
-    private void handle(Event event, Player player) {
+    private void handle(Event event, Player player, boolean failSilently) {
         MaltsPlayer maltsPlayer = DataSource.getInstance().cachedObject(player.getUniqueId(), MaltsPlayer.class);
         if (maltsPlayer == null) {
-            throw new IllegalStateException("MaltsPlayer is not cached.");
+            if (!failSilently) throw new IllegalStateException("MaltsPlayer is not cached. UUID: " + player.getUniqueId());
+            return;
         }
         maltsPlayer.getWarehouseMode().handle(event, maltsPlayer, player);
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onPlayerAttemptPickupItem(PlayerAttemptPickupItemEvent event) {
-        handle(event, event.getPlayer());
+        // This event can fire after `PlayerQuitEvent`, so we fail silently here.
+        handle(event, event.getPlayer(), true);
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent event) {
-        handle(event, event.getPlayer());
+        handle(event, event.getPlayer(), false);
     }
 
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
-        handle(event, event.getPlayer());
+        handle(event, event.getPlayer(), false);
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onPlayerItemConsume(PlayerItemConsumeEvent event) {
-        handle(event, event.getPlayer());
+        handle(event, event.getPlayer(), false);
     }
 
 }
