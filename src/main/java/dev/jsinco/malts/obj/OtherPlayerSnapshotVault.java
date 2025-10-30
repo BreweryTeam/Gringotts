@@ -11,7 +11,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class OtherPlayerSnapshotVault extends SnapshotVault {
 
-    private static final GuiConfig.VaultOtherGui.VaultItem cfg = ConfigManager.get(GuiConfig.class).vaultOtherGui().vaultItem();
+    private static final GuiConfig cfg = ConfigManager.get(GuiConfig.class);
 
     public OtherPlayerSnapshotVault(SnapshotVault snapshotVault) {
         super(snapshotVault.getOwner(), snapshotVault.getId(), snapshotVault.getCustomName(), snapshotVault.getIcon(), snapshotVault.getTrustedPlayers());
@@ -25,9 +25,9 @@ public class OtherPlayerSnapshotVault extends SnapshotVault {
                         Couple.of("{vaultName}", getCustomName()),
                         Couple.of("{id}", getId())
                 )
-                .displayName(cfg.name())
+                .displayName(cfg.vaultOtherGui().vaultItem().name())
                 .material(getIcon())
-                .lore(cfg.lore())
+                .lore(cfg.vaultOtherGui().vaultItem().lore())
                 .build();
     }
 

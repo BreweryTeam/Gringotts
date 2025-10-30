@@ -26,7 +26,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class VaultOtherGui extends MaltsGui implements PromisedInventory {
 
-    private static final GuiConfig.VaultOtherGui cfg = ConfigManager.get(GuiConfig.class).vaultOtherGui();
+    private static final GuiConfig cfg = ConfigManager.get(GuiConfig.class);
     private static final Lang lng = ConfigManager.get(Lang.class);
 
     private PaginatedGui paginatedGui;
@@ -35,11 +35,11 @@ public class VaultOtherGui extends MaltsGui implements PromisedInventory {
     private final OfflinePlayer target;
 
     private final GuiItem previousPage = GuiItem.builder()
-            .index(() -> cfg.previousPage().slot())
+            .index(() -> cfg.vaultOtherGui().previousPage().slot())
             .itemStack(b -> b
-                    .displayName(cfg.previousPage().title())
-                    .material(cfg.previousPage().material())
-                    .lore(cfg.previousPage().lore())
+                    .displayName(cfg.vaultOtherGui().previousPage().title())
+                    .material(cfg.vaultOtherGui().previousPage().material())
+                    .lore(cfg.vaultOtherGui().previousPage().lore())
             )
             .action(e -> {
                 Player player = (Player) e.getWhoClicked();
@@ -53,11 +53,11 @@ public class VaultOtherGui extends MaltsGui implements PromisedInventory {
             })
             .build();
     private final GuiItem nextPage = GuiItem.builder()
-            .index(() -> cfg.nextPage().slot())
+            .index(() -> cfg.vaultOtherGui().nextPage().slot())
             .itemStack(b -> b
-                    .displayName(cfg.nextPage().title())
-                    .material(cfg.nextPage().material())
-                    .lore(cfg.nextPage().lore())
+                    .displayName(cfg.vaultOtherGui().nextPage().title())
+                    .material(cfg.vaultOtherGui().nextPage().material())
+                    .lore(cfg.vaultOtherGui().nextPage().lore())
             )
             .action(e -> {
                 Player player = (Player) e.getWhoClicked();
@@ -74,19 +74,19 @@ public class VaultOtherGui extends MaltsGui implements PromisedInventory {
 
 
     public VaultOtherGui(Player viewer, OfflinePlayer target) {
-        super("Placeholder", cfg.size());
+        super(cfg.vaultOtherGui().title(), cfg.vaultOtherGui().size());
         this.viewer = viewer;
         this.target = target;
 
         this.autoRegister(false);
 
-        IntPair slots = cfg.vaultItem().slots();
-        List<Integer> ignoredSlots = cfg.vaultItem().ignoredSlots();
-        if (cfg.borders()) {
+        IntPair slots = cfg.vaultOtherGui().vaultItem().slots();
+        List<Integer> ignoredSlots = cfg.vaultOtherGui().vaultItem().ignoredSlots();
+        if (cfg.vaultOtherGui().borders()) {
             for (int i = 0; i < this.inventory.getSize(); i++) {
                 ItemStack itemStack = this.inventory.getItem(i);
                 if (itemStack != null || (slots.includes(i) && !ignoredSlots.contains(i))) continue;
-                this.inventory.setItem(i, ItemStacks.BORDER);
+                this.inventory.setItem(i, ItemStacks.borderItem());
             }
         }
     }
@@ -129,12 +129,12 @@ public class VaultOtherGui extends MaltsGui implements PromisedInventory {
                     itemStacks.add(snapshotVault.guiItemStack());
                 }
 
-                IntPair slots = cfg.vaultItem().slots();
+                IntPair slots = cfg.vaultOtherGui().vaultItem().slots();
                 this.paginatedGui = PaginatedGui.builder()
-                        .name(cfg.title().replace("{name}", targetName()))
+                        .name(cfg.vaultOtherGui().title().replace("{name}", targetName()))
                         .items(itemStacks)
                         .startEndSlots(slots.a(), slots.b())
-                        .ignoredSlots(cfg.vaultItem().ignoredSlots())
+                        .ignoredSlots(cfg.vaultOtherGui().vaultItem().ignoredSlots())
                         .base(this.inventory)
                         .build();
 

@@ -33,7 +33,7 @@ import java.util.Objects;
 
 public class WarehouseGui extends MaltsGui {
 
-    private static final GuiConfig.WarehouseGui cfg = ConfigManager.get(GuiConfig.class).warehouseGui();
+    private static final GuiConfig cfg = ConfigManager.get(GuiConfig.class);
     private static final Lang lng = ConfigManager.get(Lang.class);
 
     private PaginatedGui paginatedGui;
@@ -45,11 +45,11 @@ public class WarehouseGui extends MaltsGui {
 
 
     private final GuiItem previousPage = GuiItem.builder()
-            .index(() -> cfg.previousPage().slot())
+            .index(() -> cfg.warehouseGui().previousPage().slot())
             .itemStack(b -> b
-                    .displayName(cfg.previousPage().title())
-                    .material(cfg.previousPage().material())
-                    .lore(cfg.previousPage().lore())
+                    .displayName(cfg.warehouseGui().previousPage().title())
+                    .material(cfg.warehouseGui().previousPage().material())
+                    .lore(cfg.warehouseGui().previousPage().lore())
             )
             .action(e -> {
                 Player player = (Player) e.getWhoClicked();
@@ -63,11 +63,11 @@ public class WarehouseGui extends MaltsGui {
             })
             .build();
     private final GuiItem nextPage = GuiItem.builder()
-            .index(() -> cfg.nextPage().slot())
+            .index(() -> cfg.warehouseGui().nextPage().slot())
             .itemStack(b -> b
-                    .displayName(cfg.nextPage().title())
-                    .material(cfg.nextPage().material())
-                    .lore(cfg.nextPage().lore())
+                    .displayName(cfg.warehouseGui().nextPage().title())
+                    .material(cfg.warehouseGui().nextPage().material())
+                    .lore(cfg.warehouseGui().nextPage().lore())
             )
             .action(e -> {
                 Player player = (Player) e.getWhoClicked();
@@ -82,14 +82,14 @@ public class WarehouseGui extends MaltsGui {
             .build();
     @SuppressWarnings("unchecked")
     private final UncontainedGuiItem managerButton = UncontainedGuiItem.builder()
-            .index(() -> cfg.managerButton().slot())
+            .index(() -> cfg.warehouseGui().managerButton().slot())
             .itemStack(b -> b
                     .stringReplacements(
                             Couple.of("{mode}", Util.formatEnumerator(maltsPlayer.getWarehouseMode()))
                     )
-                    .displayName(cfg.managerButton().name())
-                    .material(cfg.managerButton().material())
-                    .lore(cfg.managerButton().lore())
+                    .displayName(cfg.warehouseGui().managerButton().name())
+                    .material(cfg.warehouseGui().managerButton().material())
+                    .lore(cfg.warehouseGui().managerButton().lore())
             )
             .action((event, self, isClicked) -> {
                 // TODO: Clean this up.
@@ -111,7 +111,7 @@ public class WarehouseGui extends MaltsGui {
                     if (nextMode == mode) return;
 
                     maltsPlayer.setWarehouseMode(nextMode);
-                    event.getInventory().setItem(cfg.managerButton().slot(), self.guiItemStack());
+                    event.getInventory().setItem(cfg.warehouseGui().managerButton().slot(), self.guiItemStack());
                     lng.entry(l -> l.warehouse().changedMode(), player, Couple.of("{mode}", Util.formatEnumerator(maltsPlayer.getWarehouseMode())));
                     return;
                 }
@@ -168,7 +168,7 @@ public class WarehouseGui extends MaltsGui {
 
     @SuppressWarnings("unchecked")
     private final UncontainedGuiItem statusIcon = UncontainedGuiItem.builder()
-            .index(() -> cfg.statusIcon().slot())
+            .index(() -> cfg.warehouseGui().statusIcon().slot())
             .itemStack(b -> b
                     .stringReplacements(
                             Couple.of("{name}", maltsPlayer.name()),
@@ -176,22 +176,22 @@ public class WarehouseGui extends MaltsGui {
                             Couple.of("{maxStock}", maltsPlayer.getCalculatedMaxWarehouseStock()),
                             Couple.of("{stockPercent}", warehouseUsagePercent())
                     )
-                    .displayName(cfg.statusIcon().name())
-                    .lore(cfg.statusIcon().lore())
-                    .material(cfg.statusIcon().material())
-                    .headOwner(cfg.statusIcon().headOwner())
+                    .displayName(cfg.warehouseGui().statusIcon().name())
+                    .lore(cfg.warehouseGui().statusIcon().lore())
+                    .material(cfg.warehouseGui().statusIcon().material())
+                    .headOwner(cfg.warehouseGui().statusIcon().headOwner())
             )
             .action((event, self, isClicked) -> {
                 ItemStack clickedItem = event.getCurrentItem();
                 Inventory inv = event.getInventory();
-                if (event.getClickedInventory() == inv && !ItemStacks.BORDER.isSimilar(clickedItem)) {
-                    Executors.delayedSync(1, () -> inv.setItem(cfg.statusIcon().slot(), self.guiItemStack()));
+                if (event.getClickedInventory() == inv && !ItemStacks.borderItem().isSimilar(clickedItem)) {
+                    Executors.delayedSync(1, () -> inv.setItem(cfg.warehouseGui().statusIcon().slot(), self.guiItemStack()));
                 }
             })
             .build();
 
     public WarehouseGui(Warehouse warehouse, MaltsPlayer maltsPlayer) {
-        super(cfg.title(), cfg.size());
+        super(cfg.warehouseGui().title(), cfg.warehouseGui().size());
         this.maltsPlayer = maltsPlayer;
         this.warehouse = warehouse;
 
@@ -203,21 +203,21 @@ public class WarehouseGui extends MaltsGui {
             addGuiItem(guiItem);
         }
 
-        IntPair slots = cfg.warehouseItem().slots();
-        List<Integer> ignoredSlots = cfg.warehouseItem().ignoredSlots();
+        IntPair slots = cfg.warehouseGui().warehouseItem().slots();
+        List<Integer> ignoredSlots = cfg.warehouseGui().warehouseItem().ignoredSlots();
 
-        if (cfg.borders()) {
+        if (cfg.warehouseGui().borders()) {
             int i = 0;
             for (ItemStack itemStack : inventory.getContents()) {
                 if (itemStack == null && (!slots.includes(i) || ignoredSlots.contains(i))) {
-                    inventory.setItem(i, ItemStacks.BORDER);
+                    inventory.setItem(i, ItemStacks.borderItem());
                 }
                 i++;
             }
         }
 
         this.paginatedGui = PaginatedGui.builder()
-                .name(cfg.title())
+                .name(cfg.warehouseGui().title())
                 .items(itemStacks)
                 .startEndSlots(slots.a(), slots.b())
                 .ignoredSlots(ignoredSlots)

@@ -15,6 +15,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -39,8 +40,6 @@ public class VaultsCommand implements SubCommand {
             lng.entry(l -> l.vaults().noAccess(), player, Couple.of("{id}", vaultId));
             return true;
         }
-
-        Config.Economy cfg = ConfigManager.get(Config.class).economy();
 
         dataSource.getVaultWithEconomy(player, vaultId, vault -> {
             vault.open(player);

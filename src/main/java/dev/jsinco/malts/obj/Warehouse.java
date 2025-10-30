@@ -36,8 +36,8 @@ import java.util.concurrent.CompletableFuture;
 
 public class Warehouse implements CachedObject {
 
-    private static final GuiConfig.WarehouseGui.WarehouseItem guiCfg = ConfigManager.get(GuiConfig.class).warehouseGui().warehouseItem();
-    private static final Config.Warehouse cfg = ConfigManager.get(Config.class).warehouse();
+    private static final GuiConfig guiCfg = ConfigManager.get(GuiConfig.class);
+    private static final Config cfg = ConfigManager.get(Config.class);
     private static final Lang lng = ConfigManager.get(Lang.class);
 
     @Getter @Setter
@@ -124,7 +124,7 @@ public class Warehouse implements CachedObject {
     }
 
     public boolean canStock(Material material) {
-        return !((cfg.blacklistSingleStackMaterials() && material.getMaxStackSize() == 1) || cfg.blacklistedMaterials().contains(material));
+        return !((cfg.warehouse().blacklistSingleStackMaterials() && material.getMaxStackSize() == 1) || cfg.warehouse().blacklistedMaterials().contains(material));
     }
 
     public boolean hasItem(Material material) {
@@ -208,8 +208,8 @@ public class Warehouse implements CachedObject {
                                     Couple.of("{material}", Util.formatEnumerator(material.toString()))
                             )
                             .material(material)
-                            .displayName(guiCfg.name())
-                            .lore(guiCfg.lore())
+                            .displayName(guiCfg.warehouseGui().warehouseItem().name())
+                            .lore(guiCfg.warehouseGui().warehouseItem().lore())
                     )
                     .action(e -> {
                         if (e.isCancelled()) {
@@ -284,7 +284,7 @@ public class Warehouse implements CachedObject {
                         }
 
                         Util.editMeta(clickedItem, meta ->
-                                meta.lore(Text.mmlNoItalic(Util.replaceAll(guiCfg.lore(), "{quantity}", String.valueOf(stock.getAmount())), NamedTextColor.WHITE))
+                                meta.lore(Text.mmlNoItalic(Util.replaceAll(guiCfg.warehouseGui().warehouseItem().lore(), "{quantity}", String.valueOf(stock.getAmount())), NamedTextColor.WHITE))
                         );
                     }).build();
             items.add(guiItem);

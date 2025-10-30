@@ -30,7 +30,7 @@ import static dev.jsinco.malts.obj.Vault.LIST_UUID_TYPE_TOKEN;
  */
 public class SnapshotVault implements AbstractGuiItem {
 
-    private static final GuiConfig.YourVaultsGui.VaultItem cfg = ConfigManager.get(GuiConfig.class).yourVaultsGui().vaultItem();
+    private static final GuiConfig cfg = ConfigManager.get(GuiConfig.class);
 
     @Getter
     private final UUID owner;
@@ -97,9 +97,9 @@ public class SnapshotVault implements AbstractGuiItem {
                         Couple.of("{vaultName}", customName),
                         Couple.of("{id}", id)
                 )
-                .displayName(cfg.name())
+                .displayName(cfg.yourVaultsGui().vaultItem().name())
                 .material(icon)
-                .lore(cfg.lore())
+                .lore(cfg.yourVaultsGui().vaultItem().lore())
                 .build();
     }
 

@@ -26,12 +26,11 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ItemStacks {
 
-    private static final GuiConfig.BorderItem cfg = ConfigManager.get(GuiConfig.class).borderItem();
     private static final UUID STATIC_UUID = UUID.fromString("ffd467ff-d884-4ace-8732-72e0d8e476f2");
-    public static final ItemStack BORDER = builder().displayName(cfg.name()).material(cfg.material()).lore(cfg.lore()).build();
 
-    public static ItemStack borderItem(Material m) {
-        return builder().material(m).displayName("<black>").build();
+    public static ItemStack borderItem() {
+        GuiConfig.BorderItem cfg = ConfigManager.get(GuiConfig.class).borderItem();
+        return builder().displayName(cfg.name()).material(cfg.material()).lore(cfg.lore()).build();
     }
 
 

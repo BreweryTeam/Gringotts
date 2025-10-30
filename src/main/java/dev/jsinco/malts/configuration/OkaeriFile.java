@@ -1,6 +1,7 @@
 package dev.jsinco.malts.configuration;
 
 import dev.jsinco.malts.registry.RegistryItem;
+import dev.jsinco.malts.utility.Text;
 import eu.okaeri.configs.OkaeriConfig;
 
 import java.nio.file.Path;
@@ -38,10 +39,11 @@ public class OkaeriFile extends OkaeriConfig implements RegistryItem {
 
     public void reload() {
         Path bindFile = DATA_FOLDER.resolve(this.getFileName(true));
-        if (!this.getBindFile().toFile().getName().equals(bindFile.toFile().getName())) {
+        if (!this.getBindFile().equals(bindFile)) {
             this.setBindFile(bindFile);
         }
         this.load(true);
+        Text.debug("Finished reloading configuration file: " + this.getFileName());
     }
 
     @Override
