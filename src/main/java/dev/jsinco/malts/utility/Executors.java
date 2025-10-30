@@ -112,7 +112,7 @@ public final class Executors {
                     Thread thread = new Thread(runnable);
                     //thread.setName("SQLite-SingleThread");
                     thread.setDaemon(true);
-                    thread.setContextClassLoader(Malts.class.getClassLoader()); // even tried setting the classloader
+                    thread.setContextClassLoader(Malts.class.getClassLoader());
                     return thread;
                 }
         );

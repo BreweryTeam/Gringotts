@@ -157,7 +157,7 @@ public class Warehouse implements CachedObject {
         WarehouseCompartmentEvent event = new WarehouseCompartmentEvent(this, EventAction.REMOVE, material, !Bukkit.isPrimaryThread());
         event.setCancelled(stock.getAmount() > 0);
 
-        if (!event.callEvent()) {
+        if (event.callEvent()) {
             warehouseMap.remove(material);
             return TriState.TRUE;
         }
@@ -220,6 +220,11 @@ public class Warehouse implements CachedObject {
                         ItemStack clickedItem = e.getCurrentItem();
                         switch (e.getClick()) {
                             case LEFT -> {
+                                int invAmt = Util.getAmountInvCanHold(inv, material);
+                                if (invAmt == 0) {
+                                    lng.entry(l -> l.warehouse().inventoryFull(), player);
+                                    return;
+                                }
                                 ItemStack item = destockItem(material, 1);
                                 if (item == null) {
                                     lng.entry(l -> l.warehouse().notEnoughMaterial(), player,
@@ -230,6 +235,11 @@ public class Warehouse implements CachedObject {
                                 }
                             }
                             case RIGHT -> {
+                                int invAmt = Util.getAmountInvCanHold(inv, material);
+                                if (invAmt == 0) {
+                                    lng.entry(l -> l.warehouse().inventoryFull(), player);
+                                    return;
+                                }
                                 ItemStack item = destockItem(material, 64);
                                 if (item == null) {
                                     lng.entry(l -> l.warehouse().notEnoughMaterial(), player,

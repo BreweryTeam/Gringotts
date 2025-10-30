@@ -166,7 +166,9 @@ public class Config extends OkaeriFile {
             List<Pattern> patterns = blacklistedMaterials.stream().map(Pattern::compile).toList();
             List<Material> blacklist = new ArrayList<>();
             for (Material material : materials) {
-                if (patterns.stream().anyMatch(pattern -> pattern.matcher(material.toString()).matches())) {
+                if (blacklistedMaterials.contains(material.name())) {
+                    blacklist.add(material);
+                } else if (patterns.stream().anyMatch(pattern -> pattern.matcher(material.toString()).matches())) {
                     blacklist.add(material);
                 }
             }

@@ -141,6 +141,21 @@ public class SQLiteDataSource extends DataSource {
     }
 
     @Override
+    public CompletableFuture<@NotNull Integer> deleteVaults(UUID owner) {
+        return Executors.supplyAsyncWithSQLException(() -> {
+            try (Connection connection = this.connection()) {
+                PreparedStatement statement = connection.prepareStatement(
+                        this.getStatement("vaults/delete_all_vaults.sql")
+                );
+                statement.setString(1, owner.toString());
+                int rowsAffected = statement.executeUpdate();
+                Text.debug("Deleted all vaults for owner: " + owner);
+                return rowsAffected;
+            }
+        }, singleThread);
+    }
+
+    @Override
     public CompletableFuture<@NotNull Collection<Vault>> getAllVaults() {
         return Executors.supplyAsyncWithSQLException(() -> {
             try (Connection connection = this.connection()) {

@@ -213,6 +213,15 @@ public class Vault implements MaltsInventory {
         return true;
     }
 
+    public Vault copy(UUID newOwner) {
+        Vault copy = new Vault(newOwner, this.id);
+        copy.setCustomName(this.customName);
+        copy.setIcon(this.icon);
+        copy.setTrustedPlayers(new ArrayList<>(this.trustedPlayers));
+        copy.getInventory().setContents(this.getInventory().getContents());
+        return copy;
+    }
+
     private static ItemStack[] decodeInventory(String encodedInventory) {
         byte[] itemByteArray = Base64.getDecoder().decode(encodedInventory);
         return ItemStack.deserializeItemsFromBytes(itemByteArray);

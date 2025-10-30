@@ -24,6 +24,6 @@ public enum TriState {
     }
 
     public static TriState fromBoolean(Boolean b) {
-        return b == null ? ALTERNATIVE_STATE : fromBoolean(b);
+        return b == null ? ALTERNATIVE_STATE : fromBoolean(b.booleanValue());
     }
 }

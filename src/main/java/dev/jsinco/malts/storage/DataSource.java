@@ -67,6 +67,7 @@ public abstract class DataSource {
     public abstract CompletableFuture<@NotNull Collection<SnapshotVault>> getVaults(UUID owner);
     public abstract CompletableFuture<Void> saveVault(Vault vault);
     public abstract CompletableFuture<@NotNull Boolean> deleteVault(UUID owner, int id);
+    public abstract CompletableFuture<@NotNull Integer> deleteVaults(UUID owner);
     public abstract CompletableFuture<@NotNull Collection<Vault>> getAllVaults(); // Used for exporting vaults. (Mainly to other plugins)
 
 

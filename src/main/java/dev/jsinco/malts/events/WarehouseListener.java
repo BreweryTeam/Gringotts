@@ -23,24 +23,24 @@ public class WarehouseListener implements Listener {
         maltsPlayer.getWarehouseMode().handle(event, maltsPlayer, player);
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerAttemptPickupItem(PlayerAttemptPickupItemEvent event) {
         // This event can fire after `PlayerQuitEvent`, so we fail silently here.
         handle(event, event.getPlayer(), true);
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent event) {
         handle(event, event.getPlayer(), false);
     }
 
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
         handle(event, event.getPlayer(), false);
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerItemConsume(PlayerItemConsumeEvent event) {
         handle(event, event.getPlayer(), false);
     }

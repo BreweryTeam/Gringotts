@@ -23,8 +23,6 @@ public final class Malts extends JavaPlugin {
     @Getter
     private static boolean shutdown;
 
-
-
     @Override
     public void onLoad() {
         instance = this;

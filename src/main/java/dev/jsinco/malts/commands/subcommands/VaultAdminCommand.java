@@ -3,14 +3,18 @@ package dev.jsinco.malts.commands.subcommands;
 import dev.jsinco.malts.Malts;
 import dev.jsinco.malts.commands.interfaces.SubCommand;
 import dev.jsinco.malts.obj.MaltsPlayer;
+import dev.jsinco.malts.obj.SnapshotVault;
+import dev.jsinco.malts.obj.Vault;
 import dev.jsinco.malts.registry.Registry;
 import dev.jsinco.malts.storage.DataSource;
 import dev.jsinco.malts.utility.Couple;
+import dev.jsinco.malts.utility.Executors;
 import dev.jsinco.malts.utility.Util;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -99,7 +103,34 @@ public class VaultAdminCommand implements SubCommand {
         }, (plugin, sender, label, args, offlinePlayer) -> {
             VaultOtherCommand vaultOtherCommand = Registry.SUB_COMMANDS.get(VaultOtherCommand.class);
             return vaultOtherCommand.tabComplete(plugin, sender, label, Util.plusFirstIndex(args, offlinePlayer.getName()));
-        });
+        }),
+        TRANSFER((plugin, sender, label, args, offlinePlayer) -> {
+            DataSource dataSource = DataSource.getInstance();
+            OfflinePlayer otherPlayer = Bukkit.getOfflinePlayer(args.getFirst());
+
+            Executors.runAsync(task -> {
+                List<Vault> player1Vaults = dataSource.getVaults(offlinePlayer.getUniqueId()).join().stream().map(it -> it.toVault().join()).toList();
+                List<Vault> player2Vaults = dataSource.getVaults(otherPlayer.getUniqueId()).join().stream().map(it -> it.toVault().join()).toList();
+
+                dataSource.deleteVaults(offlinePlayer.getUniqueId()).join();
+                dataSource.deleteVaults(otherPlayer.getUniqueId()).join();
+                for (Vault vault : player1Vaults) {
+                    dataSource.saveVault(vault.copy(otherPlayer.getUniqueId())).join();
+                }
+                for (Vault vault : player2Vaults) {
+                    dataSource.saveVault(vault.copy(offlinePlayer.getUniqueId())).join();
+                }
+                // TODO: Lang message
+                sender.sendMessage("Transferred " + player1Vaults.size() + " vaults from " + offlinePlayer.getName() + " to " + otherPlayer.getName() + " and " + player2Vaults.size() + " vaults from " + otherPlayer.getName() + " to " + offlinePlayer.getName() + ".");
+            });
+            return true;
+        }, (plugin, sender, label, args, offlinePlayer) -> {
+            if (args.size() == 1) {
+                return null;
+            }
+            return List.of();
+        })
+        ;
 
         private final Handler executor;
         private final TabCompleter tabCompleter;

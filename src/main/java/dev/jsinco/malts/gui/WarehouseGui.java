@@ -129,9 +129,13 @@ public class WarehouseGui extends MaltsGui {
                 Material material = clickedItem.getType();
                 switch (state) {
                     case LEFT -> {
+                        if (clickedInventory == event.getInventory()) {
+                            break;
+                        }
+
                         if (!warehouse.canStock(material)) {
                             lng.entry(l -> l.warehouse().blacklistedItem(), player, Couple.of("{material}", Util.formatEnumerator(material)));
-                        } else if (clickedInventory != event.getInventory() && !warehouse.hasCompartment(material)) {
+                        } else if (!warehouse.hasCompartment(material)) {
                             warehouse.stockItem(material, 0);
                             refresh(player);
                         } else {
