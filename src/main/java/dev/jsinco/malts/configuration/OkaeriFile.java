@@ -38,7 +38,7 @@ public class OkaeriFile extends OkaeriConfig implements RegistryItem {
 
     public void reload() {
         Path bindFile = DATA_FOLDER.resolve(this.getFileName(true));
-        if (!this.getBindFile().equals(bindFile)) {
+        if (!this.getBindFile().toFile().getName().equals(bindFile.toFile().getName())) {
             this.setBindFile(bindFile);
         }
         this.load(true);
