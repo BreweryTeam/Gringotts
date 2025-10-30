@@ -181,7 +181,7 @@ public class GuiConfig extends OkaeriFile {
         @Getter
         @Accessors(fluent = true)
         public static class WarehouseQuickbar extends OkaeriConfig {
-            private String name = "<aqua>ViewWarehouse";
+            private String name = "<aqua>View Warehouse";
             private List<String> lore = List.of("", "<white>Click to view your", "<white>warehouse");
             private Material material = Material.ENDER_CHEST;
             private int slot = 45;
